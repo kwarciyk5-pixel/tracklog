@@ -151,7 +151,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v1';
+var YC_VERSION = 'yc-v2';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},
   sign: function(dir){ return dir === 'short' ? -1 : 1; },
@@ -368,7 +368,7 @@ if (typeof module !== 'undefined') module.exports = YC;
     var j; try { j = JSON.parse($('l-json').value); } catch(e){ msg('l-msg', 'Not valid JSON: ' + e.message, 'err'); return; }
     var errs = YC.validate(j);
     if (errs.length){ msg('l-msg', errs.join(' · '), 'err'); return; }
-    if (!j.copier) j.copier = me.email;
+    j.copier = me.email; /* always the signed-in user, whatever the file says */
     var t = YC.dayStats(j.calls), exists = days.some(function(d){ return d.date === j.date && d.copier === j.copier; });
     $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · ' + esc(j.copier) + (exists ? ' · <span class="warn">replaces existing day</span>' : '') + '</div>' +
       '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations</div>' +
