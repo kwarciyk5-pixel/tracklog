@@ -46,6 +46,19 @@ h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
 .tile .s{font-size:11px;color:var(--muted)}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:0}
 .note{font-size:11.5px;color:var(--dim);margin:0}
+.tile svg,.card svg{width:100%;height:auto;display:block}
+.tile svg{margin-top:2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+.legend{display:flex;gap:6px 14px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:5px;background:currentColor}
+.legend i.b{height:8px;width:8px;border-radius:2px}
+.seg{display:inline-grid;grid-auto-flow:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.seg button{background:var(--surface);color:var(--muted);border:0;padding:6px 12px;font:500 12px var(--sans);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--accent)}
+.seg button:focus-visible{outline:2px solid var(--cy);outline-offset:-2px}
+.dash-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.dash-top .meta{font-size:12px;color:var(--muted)}
 .rows{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .row{display:grid;grid-template-columns:1.3fr .7fr .7fr .7fr .9fr;gap:8px;align-items:center;background:var(--surface);padding:10px 12px;font-size:13px;min-width:0;border:0;color:inherit;text-align:left;width:100%;font-family:inherit;cursor:pointer}
 .row.head{background:var(--surface-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);cursor:default}
@@ -115,8 +128,13 @@ a{color:var(--accent)}
     </div>
 
     <section class="tab" id="tab-dash">
+      <div class="dash-top"><div class="seg" id="dash-range" role="group" aria-label="Range"><button data-r="month" aria-pressed="true">Month</button><button data-r="week" aria-pressed="false">Week</button><button data-r="day" aria-pressed="false">Day</button></div><span class="meta" id="dash-meta"></span></div>
       <div class="tiles" id="dash-tiles"></div>
-      <p class="note">Batch 1: totals only. Charts and the six visual tiles come in Batch 2.</p>
+      <div class="two">
+        <div class="card"><h2>Equity curve &middot; cumulative R per call</h2><div id="ch-eq"></div><div class="legend" id="lg-eq"></div></div>
+        <div class="card"><h2>Gap per day &middot; R, by cause</h2><div id="ch-gap"></div><div class="legend"><span class="cyan"><i class="b"></i>missed</span><span class="warn"><i class="b"></i>stop / size</span><span class="pos"><i class="b"></i>fills</span><span style="color:var(--muted)"><i class="b"></i>mgmt</span></div></div>
+      </div>
+      <p class="note">Each call&rsquo;s R is rounded to 2 dp before summing, as on the day pages. Caller $ is estimated, gross.</p>
     </section>
 
     <section class="tab" id="tab-days" hidden>
@@ -151,7 +169,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v2';
+var YC_VERSION = 'yc-v3';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},
   sign: function(dir){ return dir === 'short' ? -1 : 1; },
@@ -166,34 +184,44 @@ var YC = {
   },
   realR: function(s, dir){ var a = YC.slPts(s), p = YC.pts(s, dir); return (a && p != null) ? p / a : null; },
   riskUsd: function(s){ var a = YC.slPts(s); return (a != null && s.qty) ? a * s.qty * (YC.mult[s.contract] || 0) : null; },
-  gapCause: function(call){
-    if (!call.copy) return 'missed';
-    if (call.copy.sl !== call.yush.sl) return 'stop_size';
-    if (call.copy.entry !== call.yush.entry) return 'fills';
-    return 'mgmt';
+  rd: function(x){ return x == null ? null : Math.round(x * 100 + (x >= 0 ? 1e-9 : -1e-9)) / 100; },
+  /* Gap per call, split into parts (Batch 2, Iris 11 Oct). R per call is rounded to 2 dp before summing, as on the day pages.
+     gap = copy R - caller R; missed = whole gap; stop/size = copy R - copy R on his stop; fills = entry difference / his stop; mgmt = the rest. */
+  gapParts: function(call){
+    var y = call.yush, c = call.copy, d = call.dir, rd = YC.rd;
+    var yR = rd(YC.realR(y, d)), z = {missed:0, stop_size:0, fills:0, mgmt:0};
+    if (yR == null) return {gap:null, parts:z};
+    if (!c){ z.missed = -yR; return {gap:-yR, parts:z}; }
+    var cR = rd(YC.realR(c, d)); if (cR == null) return {gap:null, parts:z};
+    var gap = rd(cR - yR), ySl = YC.slPts(y), cPts = YC.pts(c, d);
+    z.stop_size = (c.sl !== y.sl && ySl) ? rd(YC.realR(c, d) - cPts / ySl) : 0;
+    z.fills = (c.entry !== y.entry && ySl) ? rd(YC.sign(d) * (y.entry - c.entry) / ySl) : 0;
+    z.mgmt = rd(gap - z.stop_size - z.fills);
+    return {gap:gap, parts:z};
   },
   callStats: function(call){
     var y = call.yush, c = call.copy, d = call.dir;
     var o = { yR: YC.realR(y, d), yPts: YC.pts(y, d), yPlan: YC.planR(y), yRisk: YC.riskUsd(y),
               cR: c ? YC.realR(c, d) : null, cPts: c ? YC.pts(c, d) : null, cPlan: c ? YC.planR(c) : null, cRisk: c ? YC.riskUsd(c) : null };
-    o.gap = (o.yR != null) ? ((o.cR == null ? 0 : o.cR) - o.yR) : null;
-    o.cause = YC.gapCause(call);
+    var g = YC.gapParts(call); o.gap = g.gap; o.parts = g.parts;
     return o;
   },
   dayStats: function(calls){
-    var t = { yR:0, yPts:0, yW:0, yL:0, cR:0, cPts:0, cW:0, cL:0, cUsd:0, taken:0, missed:0, devs:0, gap:0, cause:{missed:0, stop_size:0, fills:0, mgmt:0} };
+    var t = { yR:0, yPts:0, yW:0, yL:0, cR:0, cPts:0, cW:0, cL:0, cUsd:0, yUsd:0, taken:0, missed:0, devs:0, gap:0, cause:{missed:0, stop_size:0, fills:0, mgmt:0}, low:0 }, run = 0, rd = YC.rd;
     calls.forEach(function(k){
       var s = YC.callStats(k);
-      if (s.yR != null){ t.yR += s.yR; t.yPts += s.yPts; if (s.yR > 0) t.yW++; else if (s.yR < 0) t.yL++; }
-      if (k.copy){ t.taken++; if (s.cR != null){ t.cR += s.cR; t.cPts += s.cPts; if (s.cR > 0) t.cW++; else if (s.cR < 0) t.cL++; } t.cUsd += (k.copy.net_usd || 0); }
+      if (s.yR != null){ t.yR += rd(s.yR); t.yPts += s.yPts; if (s.yR > 0) t.yW++; else if (s.yR < 0) t.yL++; }
+      t.yUsd += (k.yush.net_usd_est || 0);
+      if (k.copy){ t.taken++; if (s.cR != null){ t.cR += rd(s.cR); t.cPts += s.cPts; if (s.cR > 0) t.cW++; else if (s.cR < 0) t.cL++; } t.cUsd += (k.copy.net_usd || 0); run += (k.copy.net_usd || 0); if (run < t.low) t.low = run; }
       else t.missed++;
       t.devs += (k.deviations || []).length;
-      if (s.gap != null){ t.gap += s.gap; t.cause[s.cause] += s.gap; }
+      if (s.gap != null){ t.gap += s.gap; Object.keys(t.cause).forEach(function(c){ t.cause[c] += s.parts[c]; }); }
     });
+    ['yR','cR','gap'].forEach(function(f){ t[f] = rd(t[f]); }); Object.keys(t.cause).forEach(function(c){ t.cause[c] = rd(t.cause[c]); });
     return t;
   },
   r2: function(x){ return x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2); },
-  usd: function(x){ return x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toLocaleString('en-US', {maximumFractionDigits:2}); },
+  usd: function(x){ return x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toLocaleString('en-US', Math.abs(x) % 1 ? {minimumFractionDigits:2, maximumFractionDigits:2} : {maximumFractionDigits:0}); },
   px: function(x){ return x == null ? '—' : (+x).toFixed(2); },
   hms: function(s){ if (s == null) return '—'; var m = Math.floor(s/60), r = s % 60; return m + 'm' + (r < 10 ? '0' : '') + r + 's'; },
   validate: function(j){
@@ -284,18 +312,127 @@ if (typeof module !== 'undefined') module.exports = YC;
 
   function renderAll(){ renderDash(); renderDays(); renderSettings(); }
 
+  /* ===== DASHBOARD (Batch 2) ===== */
+  var range = 'month'; try { range = localStorage.getItem('yc_range') || 'month'; } catch(e){}
+  var C = { gold:'#c9a96e', cy:'#22d3ee', win:'#4ade80', loss:'#f87171', warn:'#f59e0b', muted:'#8a8f98', dim:'#5c6068', s2:'#16181b', b:'#1f2126', bs:'#2a2d33', bg:'#08090a' };
+  var CAUSE = [['missed', C.cy], ['stop_size', C.warn], ['fills', C.win], ['mgmt', C.muted]];
+  document.querySelectorAll('#dash-range button').forEach(function(b){ b.addEventListener('click', function(){ range = b.dataset.r; try { localStorage.setItem('yc_range', range); } catch(e){} renderDash(); }); });
+  function rangeDates(){
+    var ds = days.map(function(d){ return d.date; }).sort(); if (!ds.length) return [];
+    var last = ds[ds.length - 1];
+    if (range === 'day') return [last];
+    if (range === 'week'){ var x = new Date(last + 'T12:00:00Z'), dow = (x.getUTCDay() + 6) % 7; x.setUTCDate(x.getUTCDate() - dow); var mon = x.toISOString().slice(0,10); return ds.filter(function(d){ return d >= mon && d <= last; }); }
+    return ds;
+  }
+  var f2 = function(x){ return (+x).toFixed(2); };
+  var shortD = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][x.getUTCMonth()]; };
+  function bar(w, frac, color){ return '<rect x="0" y="0" width="' + w + '" height="8" rx="2" fill="' + C.s2 + '"/>' + (frac > 0 ? '<rect x="0" y="0" width="' + Math.max(1, w * Math.min(1, frac)).toFixed(1) + '" height="8" rx="2" fill="' + color + '"/>' : ''); }
+  function blocks(items){ /* items: [{fill, stroke, dash, label}] laid out across 120 wide */
+    var n = items.length; if (!n) return '<svg viewBox="0 0 120 14"><rect x="0" y="2" width="120" height="10" rx="2" fill="' + C.s2 + '"/></svg>';
+    var gap = n > 20 ? 1 : 3, w = (120 - gap * (n - 1)) / n;
+    return '<svg viewBox="0 0 120 14">' + items.map(function(it, i){ var x = (i * (w + gap)).toFixed(2);
+      return '<rect x="' + x + '" y="2" width="' + w.toFixed(2) + '" height="10" rx="' + Math.min(2, w / 3).toFixed(1) + '" fill="' + (it.fill || 'none') + '"' + (it.stroke ? ' stroke="' + it.stroke + '" stroke-width=".8"' + (it.dash ? ' stroke-dasharray="2 1.5"' : '') : '') + '/>' +
+        (it.label && w > 22 ? '<text x="' + (+x + w / 2).toFixed(2) + '" y="10.2" font-size="6.5" fill="' + C.bg + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + it.label + '</text>' : ''); }).join('') + '</svg>';
+  }
+  function niceStep(span){ var raw = span / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
+  function yAxis(lo, hi){ /* returns {lo,hi,ticks} with 0 included */
+    lo = Math.min(lo, 0); hi = Math.max(hi, 0); if (hi - lo < 0.5){ hi += 0.25; lo -= 0.25; }
+    var st = niceStep(hi - lo); lo = Math.floor(lo / st - 1e-9) * st; hi = Math.ceil(hi / st + 1e-9) * st;
+    var t = []; for (var v = lo; v <= hi + st / 2; v += st) t.push(Math.round(v * 100) / 100);
+    return {lo:lo, hi:hi, ticks:t};
+  }
+  var fmtTick = function(v){ return v === 0 ? '0' : (v > 0 ? '+' : '−') + String(Math.abs(v)); };
+
   function renderDash(){
-    var all = calls.map(callObj), t = YC.dayStats(all);
-    var last = days[0];
-    var tiles = [
-      ['R · Caller vs Copy', '<span class="gold">' + YC.r2(t.yR) + '</span> <span class="s">/</span> <span class="cyan">' + YC.r2(t.cR) + '</span>', all.length + ' calls · ' + t.taken + ' taken'],
-      ['Gap · month', '<span class="' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</span>', 'miss ' + YC.r2(t.cause.missed) + ' · stop/size ' + YC.r2(t.cause.stop_size)],
-      ['Calls copied', t.taken + '<span class="s"> / ' + all.length + '</span>', t.missed + ' missed · ' + t.devs + ' deviations'],
-      ['Copy net $', '<span class="' + (t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(t.cUsd) + '</span>', days.length + ' days'],
-      ['Balance', last && last.balance_eod != null ? (+last.balance_eod).toLocaleString('en-US') : '—', last ? 'EOD ' + fmtDate(last.date) : ''],
-      ['Caller $ est.', '<span class="gold">' + YC.usd(all.reduce(function(a, k){ return a + (k.yush.net_usd_est || 0); }, 0)) + '</span>', 'gross, from his shown exits']
-    ];
-    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x[0] + '</div><div class="v">' + x[1] + '</div><div class="s">' + x[2] + '</div></div>'; }).join('');
+    document.querySelectorAll('#dash-range button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.r === range); });
+    var dates = rangeDates(), inR = {}; dates.forEach(function(d){ inR[d] = 1; });
+    var all = calls.filter(function(c){ return inR[c.date]; }).map(callObj), t = YC.dayStats(all);
+    var perDay = dates.map(function(d){ var dc = all.filter(function(k){ return k.date === d; }), s = YC.dayStats(dc), row = days.find(function(x){ return x.date === d; }); return { date:d, s:s, row:row }; });
+    $('dash-meta').textContent = dates.length ? (dates.length === 1 ? shortD(dates[0]) : shortD(dates[0]) + ' – ' + shortD(dates[dates.length - 1])) + ' · ' + dates.length + (dates.length === 1 ? ' day' : ' days') : 'no days imported';
+    var dll = (settings && settings.dll_usd != null) ? +settings.dll_usd : 600;
+    var comm = perDay.reduce(function(a, p){ return a + (p.row && p.row.commissions != null ? +p.row.commissions : 0); }, 0);
+    var tiles = [];
+
+    /* 1 · R Caller vs Copy */
+    var mx = Math.max(Math.abs(t.yR), Math.abs(t.cR), 0.01);
+    tiles.push(['R · Caller vs Copy', '<span class="gold">' + YC.r2(t.yR) + '</span> <span class="s">/</span> <span class="' + (t.cR < 0 ? 'neg' : 'cyan') + '">' + YC.r2(t.cR) + '</span>',
+      '<svg viewBox="0 0 120 26"><g transform="translate(0,3)">' + bar(120, Math.abs(t.yR) / mx, t.yR < 0 ? C.loss : C.gold) + '</g><g transform="translate(0,15)">' + bar(120, Math.abs(t.cR) / mx, t.cR < 0 ? C.loss : C.cy) + '</g></svg>',
+      all.length + ' calls · ' + t.taken + ' taken · ' + t.yW + '/' + t.yL + ' vs ' + t.cW + '/' + t.cL + ' W/L']);
+
+    /* 2 · Gap split by cause */
+    var absSum = CAUSE.reduce(function(a, c){ return a + Math.abs(t.cause[c[0]]); }, 0), xx = 0, gs = '<rect x="0" y="1" width="120" height="8" rx="2" fill="' + C.s2 + '"/>';
+    CAUSE.forEach(function(c){ var v = Math.abs(t.cause[c[0]]); if (!v || !absSum) return; var w = 120 * v / absSum; gs += '<rect x="' + xx.toFixed(2) + '" y="1" width="' + Math.max(1, w).toFixed(2) + '" height="8" fill="' + c[1] + '"/>'; xx += w; });
+    tiles.push(['Gap · ' + range, '<span class="' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</span>', '<svg viewBox="0 0 120 10">' + gs + '</svg>',
+      '<span class="cyan">miss ' + YC.r2(t.cause.missed) + '</span> · <span class="warn">stop ' + YC.r2(t.cause.stop_size) + '</span> · <span class="pos">fills ' + YC.r2(t.cause.fills) + '</span> · mgmt ' + YC.r2(t.cause.mgmt)]);
+
+    /* 3 · Calls copied */
+    tiles.push(['Calls copied', t.taken + '<span class="s"> / ' + all.length + '</span>', blocks(all.map(function(k){ return !k.copy ? {stroke:C.cy, dash:1} : (k.deviations.length || k.copy.status === 'deviation') ? {fill:C.warn} : {fill:C.win}; })),
+      '<span class="pos">■</span> copied · <span class="cyan">◌</span> missed · <span class="warn">■</span> deviation']);
+
+    /* 4 · Copy net $ — sparkline of cumulative net per day */
+    var cum = 0, pts = [0].concat(perDay.map(function(p){ cum += p.s.cUsd; return cum; })), lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts), sp = (hi - lo) || 1;
+    var py = function(v){ return (26 - (v - lo) / sp * 22).toFixed(1); }, px = function(i){ return (pts.length === 1 ? 116 : 3 + i * 113 / (pts.length - 1)).toFixed(1); };
+    var line = pts.map(function(v, i){ return px(i) + ',' + py(v); }).join(' '), lc = cum < 0 ? C.loss : C.win;
+    tiles.push(['Copy net $', '<span class="' + (t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(t.cUsd) + '</span>',
+      '<svg viewBox="0 0 120 30"><line x1="0" x2="120" y1="' + py(0) + '" y2="' + py(0) + '" stroke="' + C.bs + '" stroke-dasharray="2 2"/><polyline fill="none" stroke="' + lc + '" stroke-width="2" stroke-linejoin="round" points="' + line + '"/><circle cx="' + px(pts.length - 1) + '" cy="' + py(cum) + '" r="2.5" fill="' + lc + '"/></svg>',
+      'comm ' + comm.toFixed(2) + ' · Caller est. <span class="gold">' + YC.usd(t.yUsd) + '</span> gross']);
+
+    /* 5 · DLL room on the worst day (realised, closed trades in call order) */
+    var worst = perDay.reduce(function(m, p){ return p.s.low < m.low ? {low:p.s.low, date:p.date} : m; }, {low:0, date:null}), room = dll + worst.low, rf = Math.max(0, room / dll);
+    var lastRow = perDay.length ? perDay[perDay.length - 1].row : null;
+    tiles.push(['DLL room · worst day', '<span class="' + (rf < 0.34 ? 'neg' : rf < 0.67 ? 'warn' : '') + '">$' + Math.round(room).toLocaleString('en-US') + '</span>',
+      '<svg viewBox="0 0 120 10"><g transform="translate(0,1)">' + bar(120, rf, rf < 0.34 ? C.loss : rf < 0.67 ? C.warn : C.win) + '</g></svg>',
+      'worst day low ' + (worst.low ? '−$' + Math.abs(Math.round(worst.low)) + ' (' + shortD(worst.date) + ')' : '$0') + (lastRow && lastRow.balance_eod != null ? ' · EOD ' + (+lastRow.balance_eod).toLocaleString('en-US') : '')]);
+
+    /* 6 · Deviations by tag */
+    var TAGS = ['P18','P5','P14','P12','T','DLL'], cnt = {}, untagged = 0, list = [];
+    all.forEach(function(k){ k.deviations.forEach(function(v){ if (v.tag) cnt[v.tag] = (cnt[v.tag] || 0) + 1; else untagged++; list.push(v.tag || null); }); });
+    list.sort(function(a, b){ return (a === null ? -1 : TAGS.indexOf(a)) - (b === null ? -1 : TAGS.indexOf(b)); });
+    tiles.push(['Deviations', '<span class="warn">' + list.length + '</span>', blocks(list.map(function(tg){ return tg ? {fill:C.warn, label:tg} : {fill:C.muted, label:'none'}; })),
+      TAGS.slice(0, 4).map(function(k){ return k + ' ' + (cnt[k] || 0); }).join(' · ') + (cnt.T ? ' · T ' + cnt.T : '') + (cnt.DLL ? ' · DLL ' + cnt.DLL : '') + (untagged ? ' · no tag ' + untagged : '')]);
+
+    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x[0] + '</div><div class="v">' + x[1] + '</div>' + x[2] + '<div class="s">' + x[3] + '</div></div>'; }).join('');
+    renderEquity(all); renderGapChart(perDay);
+  }
+
+  function renderEquity(all){
+    var W = 320, H = 150, L = 34, R = 310, T = 14, B = 132;
+    if (!all.length){ $('ch-eq').innerHTML = '<p class="note">No calls in range.</p>'; $('lg-eq').innerHTML = ''; return; }
+    var yc = [0], cc = [0], miss = [], labs = [''], y = 0, c = 0;
+    all.forEach(function(k){ var s = YC.callStats(k); y += YC.rd(s.yR) || 0; if (k.copy) c += YC.rd(s.cR) || 0; else miss.push(yc.length); yc.push(YC.rd(y)); cc.push(YC.rd(c)); labs.push(+k.date.slice(8) + '/' + k.n); });
+    var ax = yAxis(Math.min.apply(null, yc.concat(cc)), Math.max.apply(null, yc.concat(cc)));
+    var X = function(i){ return L + 6 + i * (R - L - 6) / (yc.length - 1); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
+    var g = '<g stroke="' + C.b + '">' + ax.ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (v === 0 ? ' stroke="' + C.bs + '" stroke-dasharray="3 3"' : '') + '/>'; }).join('') + '</g>';
+    g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ax.ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + fmtTick(v) + '</text>'; }).join('') + '</g>';
+    var every = Math.ceil((yc.length - 1) / 8);
+    g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="middle">' + labs.map(function(l, i){ return (i && ((i - 1) % every === 0 || i === labs.length - 1)) ? '<text x="' + X(i).toFixed(1) + '" y="' + (H - 3) + '">' + l + '</text>' : ''; }).join('') + '</g>';
+    var pl = function(a, col, sw){ return '<polyline fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linejoin="round" points="' + a.map(function(v, i){ return X(i).toFixed(1) + ',' + Y(v).toFixed(1); }).join(' ') + '"/>'; };
+    g += pl(yc, C.gold, 4) + pl(cc, C.cy, 1.8); /* caller drawn wider underneath so both show where they overlap */
+    g += miss.map(function(i){ return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(cc[i]).toFixed(1) + '" r="3.5" fill="' + C.bg + '" stroke="' + C.cy + '" stroke-dasharray="2 1.5"/>'; }).join('');
+    var n = yc.length - 1;
+    g += '<circle cx="' + X(n).toFixed(1) + '" cy="' + Y(yc[n]).toFixed(1) + '" r="3" fill="' + C.gold + '"/><circle cx="' + X(n).toFixed(1) + '" cy="' + Y(cc[n]).toFixed(1) + '" r="3" fill="' + C.cy + '"/>';
+    $('ch-eq').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative R per call, Caller vs Copy">' + g + '</svg>';
+    $('lg-eq').innerHTML = '<span class="gold"><i></i>Caller ' + YC.r2(yc[n]) + '</span><span class="cyan"><i></i>Copy ' + YC.r2(cc[n]) + '</span><span>◌ missed</span>';
+  }
+
+  function renderGapChart(perDay){
+    var W = 320, H = 150, L = 34, R = 310, T = 14, B = 128;
+    if (!perDay.length){ $('ch-gap').innerHTML = '<p class="note">No days in range.</p>'; return; }
+    var lo = 0, hi = 0;
+    perDay.forEach(function(p){ var up = 0, dn = 0; CAUSE.forEach(function(c){ var v = p.s.cause[c[0]]; if (v > 0) up += v; else dn += v; }); hi = Math.max(hi, up); lo = Math.min(lo, dn); });
+    var ax = yAxis(lo, hi), Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
+    var g = '<g stroke="' + C.b + '">' + ax.ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (v === 0 ? ' stroke="' + C.bs + '"' : '') + '/>'; }).join('') + '</g>';
+    g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ax.ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + fmtTick(v) + '</text>'; }).join('') + '</g>';
+    var n = perDay.length, slot = (R - L) / n, bw = Math.min(60, slot * 0.6), every = Math.ceil(n / 6);
+    perDay.forEach(function(p, i){
+      var cx = L + slot * (i + 0.5), up = 0, dn = 0;
+      CAUSE.forEach(function(c){ var v = p.s.cause[c[0]]; if (!v) return;
+        var a = v > 0 ? up : dn, b = a + v; if (v > 0) up = b; else dn = b;
+        var y1 = Y(Math.max(a, b)), y2 = Y(Math.min(a, b));
+        g += '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0.6, y2 - y1).toFixed(1) + '" fill="' + c[1] + '"/>'; });
+      if (i % every === 0 || i === n - 1) g += '<text x="' + cx.toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(p.date) + (n <= 3 ? ' ' + YC.r2(p.s.gap) : '') + '</text>';
+    });
+    $('ch-gap').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Gap per day by cause">' + g + '</svg>';
   }
 
   function renderDays(){
