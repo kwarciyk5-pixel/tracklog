@@ -59,6 +59,24 @@ h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
 .seg button:focus-visible{outline:2px solid var(--cy);outline-offset:-2px}
 .dash-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .dash-top .meta{font-size:12px;color:var(--muted)}
+.pp{display:grid;gap:3px}.pp+.pp{margin-top:6px;padding-top:6px;border-top:1px dashed var(--border-strong)}
+.pp .who{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.pp .v2{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:500;line-height:1.1}
+.cal{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.cal .h{font-size:10px;color:var(--dim);text-align:center;letter-spacing:.06em}
+.cal button{aspect-ratio:1.5;border:1px solid var(--border);border-radius:5px;background:var(--surface-2);color:var(--muted);font:11px var(--mono);padding:2px;display:grid;place-items:center;cursor:pointer;min-width:0}
+.cal button.e{opacity:.35;cursor:default}
+.cal button.sel{outline:2px solid var(--accent);outline-offset:1px}
+.cal button small{display:block;font-size:9.5px;line-height:1}
+.rv{display:grid;grid-template-columns:auto repeat(var(--cols,2),1fr);gap:4px 10px;font-size:12.5px;align-items:baseline}
+.rv b{font-weight:500;color:var(--muted)}.rv span{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.rv .hd{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-family:var(--sans)}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stamp{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.logged{display:grid;gap:6px}
+.logged div{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-family:var(--mono);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:7px 9px;background:var(--surface-2)}
+.logged button{background:none;border:1px solid var(--border-strong);color:var(--muted);border-radius:5px;padding:3px 8px;font:11px var(--sans);cursor:pointer}
+.xs{font-size:11px;color:var(--dim)}
 .rows{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
 .row{display:grid;grid-template-columns:1.3fr .7fr .7fr .7fr .9fr;gap:8px;align-items:center;background:var(--surface);padding:10px 12px;font-size:13px;min-width:0;border:0;color:inherit;text-align:left;width:100%;font-family:inherit;cursor:pointer}
 .row.head{background:var(--surface-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);cursor:default}
@@ -128,38 +146,74 @@ a{color:var(--accent)}
     </div>
 
     <section class="tab" id="tab-dash">
-      <div class="dash-top"><div class="seg" id="dash-range" role="group" aria-label="Range"><button data-r="month" aria-pressed="true">Month</button><button data-r="week" aria-pressed="false">Week</button><button data-r="day" aria-pressed="false">Day</button></div><span class="meta" id="dash-meta"></span></div>
+      <div class="dash-top"><div class="seg" id="dash-range" role="group" aria-label="Range"><button data-r="month" aria-pressed="true">Month</button><button data-r="week" aria-pressed="false">Week</button><button data-r="day" aria-pressed="false">Day</button></div><div class="seg who-seg" role="group" aria-label="Copier" hidden></div><span class="meta" id="dash-meta"></span></div>
       <div class="tiles" id="dash-tiles"></div>
       <div class="two">
         <div class="card"><h2>Equity curve &middot; cumulative R per call</h2><div id="ch-eq"></div><div class="legend" id="lg-eq"></div></div>
         <div class="card"><h2>Gap per day &middot; R, by cause</h2><div id="ch-gap"></div><div class="legend"><span class="cyan"><i class="b"></i>missed</span><span class="warn"><i class="b"></i>stop / size</span><span class="pos"><i class="b"></i>fills</span><span style="color:var(--muted)"><i class="b"></i>mgmt</span></div></div>
       </div>
+      <div class="two">
+        <div class="card"><h2>Deviations by tag &middot; per day</h2><div id="ch-dev"></div><div class="legend" id="lg-dev"></div></div>
+        <div class="card"><h2>Hold time vs result &middot; copy R</h2><div id="ch-hold"></div><div class="legend" id="lg-hold"></div></div>
+      </div>
+      <div class="card"><h2>Calendar &middot; copy R and state</h2><div id="cal"></div><div id="cal-note" style="margin-top:10px"></div></div>
+      <div class="card"><div class="day-top" style="margin-bottom:8px"><h2 style="margin:0" id="rv-title">Review</h2><button class="btn" id="b-review" style="flex:0;min-width:0;padding:6px 10px;font-size:12px">Export</button></div><div id="review"></div></div>
       <p class="note">Each call&rsquo;s R is rounded to 2 dp before summing, as on the day pages. Caller $ is estimated, gross.</p>
     </section>
 
     <section class="tab" id="tab-days" hidden>
+      <div class="seg who-seg" role="group" aria-label="Copier" hidden style="justify-self:start"></div>
       <div class="rows" id="day-rows"></div>
       <div id="day-view"></div>
     </section>
 
     <section class="tab" id="tab-log" hidden>
+      <div class="card form" id="logcall">
+        <div class="day-top"><h2 style="margin:0">Log call</h2><span class="stamp" id="lc-stamp">tap any field to stamp</span></div>
+        <div class="g3">
+          <div class="f"><label for="lc-inst">Inst</label><select id="lc-inst"><option>NQ</option><option>ES</option></select></div>
+          <div class="f"><label for="lc-dir">Dir</label><select id="lc-dir"><option value="long">Long</option><option value="short">Short</option></select></div>
+          <div class="f"><label for="lc-src">Source</label><select id="lc-src"><option value="live">Live</option><option value="discord">Discord</option></select></div>
+        </div>
+        <div class="g3">
+          <div class="f"><label for="lc-e">His entry</label><input id="lc-e" inputmode="decimal" autocomplete="off"></div>
+          <div class="f"><label for="lc-sl">His SL</label><input id="lc-sl" inputmode="decimal" autocomplete="off"></div>
+          <div class="f"><label for="lc-tp">His TP</label><input id="lc-tp" inputmode="decimal" autocomplete="off"></div>
+        </div>
+        <div class="g3">
+          <div class="f"><label for="lc-q">His size</label><input id="lc-q" inputmode="numeric" autocomplete="off"></div>
+          <div class="f"><label for="lc-c">Contract</label><select id="lc-c"></select></div>
+          <div class="f"><label for="lc-m">If missed</label><select id="lc-m"><option>M1</option><option>M2</option><option>M3</option></select></div>
+        </div>
+        <div class="stamp" id="lc-calc">Plan R — · half size — · risk —</div>
+        <div class="btnrow"><button class="btn p" id="lc-save">Save call<small>time stamped at first tap</small></button><button class="btn" id="lc-miss">Mark missed<small>saves the call + your miss</small></button></div>
+        <button class="btn" id="lc-reset" style="flex:0;min-width:0;padding:6px 10px;font-size:12px;justify-self:start">Clear form</button>
+        <div class="msg" id="lc-msg" hidden></div>
+        <div><h2>Logged &middot; <span id="lc-day"></span></h2><div class="logged" id="lc-list"></div></div>
+      </div>
       <div class="card form">
         <h2 style="margin:0">Import day &middot; JSON</h2>
-        <p class="note" style="color:var(--muted)">One file per day, in the <span class="num">yc-day-1</span> shape. Re-importing a date replaces that day.</p>
+        <p class="note" style="color:var(--muted)">One file per day, in the <span class="num">yc-day-1</span> shape. Re-importing a date replaces that day for you. Calls you logged live keep their stamp; lag is worked out from it when the file has <span class="num">copy.t_entry</span>.</p>
         <div class="f"><label for="l-file">File</label><input type="file" id="l-file" accept="application/json,.json"></div>
         <div class="f"><label for="l-json">or paste</label><textarea id="l-json" rows="4" placeholder="{ &quot;schema&quot;: &quot;yc-day-1&quot;, &hellip; }"></textarea></div>
         <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save day</button></div>
         <div class="prev" id="l-out"></div>
         <div class="msg" id="l-msg" hidden></div>
       </div>
-      <div class="card">
-        <h2>Log call</h2>
-        <p class="note">Batch 3. Stamps his call live so entry lag is measured.</p>
-      </div>
+
     </section>
 
     <section class="tab" id="tab-set" hidden>
-      <div class="set" id="set-rows"></div>
+      <div class="card form">
+        <h2 style="margin:0">Your settings</h2>
+        <div class="g2"><div class="f"><label for="st-size">Size rule</label><input id="st-size"></div><div class="f"><label for="st-dll">DLL $ / day, net</label><input id="st-dll" inputmode="decimal"></div></div>
+        <div class="g4"><div class="f"><label for="st-NQ">NQ $/pt</label><input id="st-NQ" inputmode="decimal"></div><div class="f"><label for="st-MNQ">MNQ</label><input id="st-MNQ" inputmode="decimal"></div><div class="f"><label for="st-ES">ES</label><input id="st-ES" inputmode="decimal"></div><div class="f"><label for="st-MES">MES</label><input id="st-MES" inputmode="decimal"></div></div>
+        <div class="f"><label for="st-et">ET offset rule</label><input id="st-et"></div>
+        <div class="btnrow"><button class="btn p" id="st-save">Save settings</button></div>
+      </div>
+      <div><h2>App</h2><div class="set" id="set-rows"></div></div>
+      <div><h2>Members</h2><div class="set" id="set-mem"></div></div>
+      <div><h2>Rule changes</h2><div class="set" id="set-rules"></div></div>
       <div class="btnrow"><button class="btn" id="b-export">Export all<small>JSON of every day</small></button><button class="btn" id="b-logout">Sign out</button></div>
       <div class="msg" id="set-msg" hidden></div>
     </section>
@@ -169,7 +223,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v3';
+var YC_VERSION = 'yc-v4';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},
   sign: function(dir){ return dir === 'short' ? -1 : 1; },
@@ -238,10 +292,47 @@ var YC = {
       if (k.copy){ if (typeof k.copy.entry !== 'number' || typeof k.copy.sl !== 'number') e.push(p + 'copy.entry/sl missing');
         if (!Array.isArray(k.copy.exits)) e.push(p + 'copy.exits must be an array'); }
       else if (!k.missed) e.push(p + 'copy null needs missed M1/M2/M3');
+      if (k.copy && k.copy.t_entry != null && !/^\d{2}:\d{2}:\d{2}$/.test(k.copy.t_entry)) e.push(p + 'copy.t_entry must be HH:MM:SS');
       ['entry','sl','tp'].forEach(function(f){ if (k.yush && k.yush[f] != null && typeof k.yush[f] === 'string') e.push(p + 'yush.' + f + ' is a string'); });
     });
     return e;
-  }
+  },
+  /* review for one copier over a set of calls (Instructions §6) */
+  review: function(calls){
+    var rd = YC.rd, o = { calls:calls.length, y:{n:0,w:0,l:0,plan:0,real:0}, c:{n:0,w:0,l:0,plan:0,real:0,hold:0,holdN:0}, missedR:0, devR:0, devCalls:0, tags:{}, dd:0, ddUsd:0 };
+    var cum = 0, peak = 0, usd = 0, peakU = 0;
+    calls.forEach(function(k){
+      var s = YC.callStats(k);
+      if (s.yR != null){ o.y.n++; o.y.real += rd(s.yR); if (s.yPlan != null) o.y.plan += s.yPlan; if (s.yR > 0) o.y.w++; else if (s.yR < 0) o.y.l++; }
+      if (k.copy && s.cR != null){ o.c.n++; o.c.real += rd(s.cR); if (s.cPlan != null) o.c.plan += s.cPlan; if (s.cR > 0) o.c.w++; else if (s.cR < 0) o.c.l++;
+        if (k.copy.hold_s != null){ o.c.hold += k.copy.hold_s; o.c.holdN++; }
+        cum += rd(s.cR); if (cum > peak) peak = cum; if (peak - cum > o.dd) o.dd = peak - cum;
+        usd += (k.copy.net_usd || 0); if (usd > peakU) peakU = usd; if (peakU - usd > o.ddUsd) o.ddUsd = peakU - usd; }
+      if (!k.copy && s.gap != null) o.missedR += s.gap;
+      if ((k.deviations || []).length){ o.devCalls++; if (s.gap != null) o.devR += s.gap; k.deviations.forEach(function(v){ var t = v.tag || 'none'; o.tags[t] = (o.tags[t] || 0) + 1; }); }
+    });
+    ['y','c'].forEach(function(f){ var x = o[f]; x.wr = x.n ? x.w / x.n : null; x.avgPlan = x.n ? x.plan / x.n : null; x.exp = x.n ? x.real / x.n : null; x.real = rd(x.real); });
+    o.c.avgHold = o.c.holdN ? o.c.hold / o.c.holdN : null;
+    o.missedR = rd(o.missedR); o.devR = rd(o.devR); o.dd = rd(o.dd);
+    return o;
+  },
+  /* half of his size, in micros, rounded down (copy rule 1) */
+  halfSize: function(qty, contract){
+    if (!qty) return null;
+    var micro = {NQ:'MNQ', ES:'MES'}[contract], q = micro ? qty * 10 : qty;
+    return { qty: Math.floor(q / 2), contract: micro || contract };
+  },
+  /* ET <-> UTC without fixed offsets */
+  tzParts: function(ms, tz){
+    var p = {}; new Intl.DateTimeFormat('en-US', {timeZone:tz, hourCycle:'h23', year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit'}).formatToParts(new Date(ms)).forEach(function(x){ p[x.type] = x.value; });
+    return { date: p.year + '-' + p.month + '-' + p.day, time: p.hour + ':' + p.minute + ':' + p.second };
+  },
+  etToMs: function(date, time){
+    var g = Date.parse(date + 'T' + time + 'Z'), w = YC.tzParts(g, 'America/New_York'), off = Date.parse(w.date + 'T' + w.time + 'Z') - g;
+    var ms = g - off, w2 = YC.tzParts(ms, 'America/New_York'), off2 = Date.parse(w2.date + 'T' + w2.time + 'Z') - ms;
+    return g - off2;
+  },
+  bkkOf: function(date, time){ return (date && time) ? YC.tzParts(YC.etToMs(date, time), 'Asia/Bangkok').time.slice(0,5) : ''; }
 };
 if (typeof module !== 'undefined') module.exports = YC;
 </script>
@@ -252,11 +343,16 @@ if (typeof module !== 'undefined') module.exports = YC;
   var SB_KEY = 'sb_publishable__bBgcqi4VfhIryjgI5w0VQ_hUHsambk';
   var sb = supabase.createClient(SB_URL, SB_KEY);
   var $ = function(id){ return document.getElementById(id); };
-  var me = null, days = [], calls = [], copies = [], devs = [], settings = null, openDate = null, pending = null;
+  var me = null, members = [], days = [], calls = [], copies = [], devs = [], settingsAll = [], rules = [], openDate = null, pending = null;
+  var myName = null, people = [], who = 'me';
+  var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
-  var fmtDate = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][x.getUTCMonth()] + ' (' + ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.getUTCDay()] + ')'; };
-  var bkk = function(t){ if (!t) return ''; var h = +t.slice(0,2) + 11; return (h % 24 < 10 ? '0' : '') + (h % 24) + t.slice(2,5); };
+  var fmtDate = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + MON[x.getUTCMonth()] + ' (' + DOW[x.getUTCDay()] + ')'; };
+  var shortD = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + MON[x.getUTCMonth()]; };
   function msg(id, text, cls){ var el = $(id); el.textContent = text; el.className = 'msg' + (cls ? ' ' + cls : ''); el.hidden = !text; }
+  var C = { gold:'#c9a96e', cy:'#22d3ee', vi:'#a78bfa', win:'#4ade80', loss:'#f87171', warn:'#f59e0b', muted:'#8a8f98', dim:'#5c6068', s2:'#16181b', b:'#1f2126', bs:'#2a2d33', bg:'#08090a' };
+  var CAUSE = [['missed', C.cy], ['stop_size', C.warn], ['fills', C.win], ['mgmt', C.muted]];
+  var TAGS = ['P18','P5','P14','P12','T','DLL'], TAGC = {P18:'#f87171', P5:'#fb923c', P14:'#f59e0b', P12:'#facc15', T:'#60a5fa', DLL:'#e879f9', none:'#8a8f98'};
 
   /* tabs */
   var tabs = document.querySelectorAll('.tabs button'), panels = {dash:'tab-dash', days:'tab-days', log:'tab-log', set:'tab-set'};
@@ -274,35 +370,59 @@ if (typeof module !== 'undefined') module.exports = YC;
     else { $('login').hidden = false; $('pill').textContent = 'signed out'; }
   });
 
-  /* data */
+  /* ===== data ===== */
   function load(){
     return Promise.all([
+      sb.from('yc_members').select('*'),
       sb.from('yc_days').select('*').order('date', {ascending:false}),
       sb.from('yc_calls').select('*').order('date').order('n'),
       sb.from('yc_copies').select('*'),
       sb.from('yc_deviations').select('*'),
-      sb.from('yc_settings').select('*').eq('copier', me.email).maybeSingle()
+      sb.from('yc_settings').select('*'),
+      sb.from('yc_rule_changes').select('*').order('date', {ascending:false})
     ]).then(function(r){
       var err = r.find(function(x){ return x.error; });
       if (err) throw err.error;
-      days = r[0].data; calls = r[1].data; copies = r[2].data; devs = r[3].data; settings = r[4].data;
+      members = r[0].data || []; days = r[1].data || []; calls = r[2].data || []; copies = r[3].data || []; devs = r[4].data || []; settingsAll = r[5].data || []; rules = r[6].data || [];
+      if (!members.some(function(m){ return m.email === me.email; })) throw new Error('not a member');
+      /* a person = one member name; one person may sign in with more than one Gmail */
+      myName = personOf(me.email);
+      people = [myName];
+      members.forEach(function(m){ var n = personOf(m.email); if ((m.role || 'copier') === 'copier' && people.indexOf(n) < 0) people.push(n); });
+      if (who !== 'me' && who !== 'both' && people.indexOf(who) < 0) who = 'me';
     });
   }
-  /* shape a DB call into the JSON-call shape the calc layer reads */
-  function callObj(c){
-    var cp = copies.find(function(x){ return x.call_id === c.id && x.copier === me.email; });
-    return { n:c.n, date:c.date, time_et:c.time_et, source:c.source, inst:c.inst, dir:c.dir, missed:c.missed, note:c.note,
+  function personOf(email){ var m = members.find(function(x){ return x.email === email; }); return (m && m.name) || email; }
+  function emailsOf(person){ return members.filter(function(m){ return personOf(m.email) === person; }).map(function(m){ return m.email; }); }
+  function sel(){ return who === 'both' ? people.slice() : [who === 'me' ? myName : who]; }
+  function colorOf(person){ var i = people.indexOf(person); return i <= 0 ? C.cy : C.vi; }
+  function settingsOf(person){ var em = emailsOf(person); return (person === myName && settingsAll.find(function(s){ return s.copier === me.email; })) || settingsAll.find(function(s){ return em.indexOf(s.copier) >= 0; }) || null; }
+  function dayRow(date, person){ return days.find(function(d){ return d.date === date && personOf(d.copier) === person; }) || null; }
+  function personDates(person){ var o = {}; days.forEach(function(d){ if (personOf(d.copier) === person) o[d.date] = 1; }); return Object.keys(o).sort(); }
+
+  /* shape a DB call into the JSON-call shape the calc layer reads, for one person */
+  function callObj(c, person){
+    var cp = copies.find(function(x){ return x.call_id === c.id && personOf(x.copier) === person; });
+    var o = { id:c.id, n:c.n, date:c.date, time_et:c.time_et, stamped_at:c.stamped_at, source:c.source, inst:c.inst, dir:c.dir, missed:null, note:c.note,
       yush:{ entry:+c.y_entry, sl:+c.y_sl, tp:c.y_tp == null ? null : +c.y_tp, qty:c.y_qty, contract:c.y_contract, exits:c.y_exits || [], net_usd_est:c.y_net_usd_est == null ? null : +c.y_net_usd_est },
-      copy: cp ? { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note } : null,
-      deviations: cp ? devs.filter(function(d){ return d.copy_id === cp.id; }) : [] };
+      copy:null, deviations:[] };
+    if (cp && cp.status !== 'missed'){
+      o.copy = { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note };
+      o.deviations = devs.filter(function(d){ return d.copy_id === cp.id; });
+    } else {
+      o.missed = (cp && cp.missed) || c.missed || '—';
+      if (cp && cp.note) o.note = cp.note;
+    }
+    return o;
   }
-  function dayCalls(date){ return calls.filter(function(c){ return c.date === date; }).map(callObj); }
+  function callsFor(person, dates){ var inD = {}; dates.forEach(function(d){ inD[d] = 1; }); return calls.filter(function(c){ return inD[c.date]; }).map(function(c){ return callObj(c, person); }); }
 
   function boot(){
     $('login').hidden = true;
     $('pill').textContent = YC_VERSION;
+    try { who = localStorage.getItem('yc_who') || 'me'; } catch(e){}
     load().then(function(){
-      if (settings && settings.mult) YC.mult = settings.mult;
+      var st = settingsOf(myName); if (st && st.mult) YC.mult = st.mult;
       $('app').hidden = false;
       var t = 'dash'; try { t = localStorage.getItem('yc_tab') || 'dash'; } catch(e){}
       show(panels[t] ? t : 'dash');
@@ -310,24 +430,33 @@ if (typeof module !== 'undefined') module.exports = YC;
     }).catch(function(e){ $('login').hidden = false; msg('login-err', 'Signed in as ' + me.email + ' but not on the members list, or: ' + (e.message || e), 'err'); $('b-login').hidden = true; });
   }
 
-  function renderAll(){ renderDash(); renderDays(); renderSettings(); }
+  function renderAll(){ renderWho(); renderDash(); renderDays(); renderLog(); renderSettings(); }
 
-  /* ===== DASHBOARD (Batch 2) ===== */
+  /* copier switch (shown once a second person exists) */
+  function renderWho(){
+    var opts = [['me', myName]].concat(people.slice(1).map(function(p){ return [p, p]; }));
+    if (people.length > 1) opts.push(['both', 'Both']);
+    document.querySelectorAll('.who-seg').forEach(function(g){
+      g.hidden = people.length < 2;
+      g.innerHTML = opts.map(function(o){ return '<button data-w="' + esc(o[0]) + '" aria-pressed="' + (who === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('');
+      g.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ who = b.dataset.w; try { localStorage.setItem('yc_who', who); } catch(e){} renderWho(); renderDash(); renderDays(); }); });
+    });
+  }
+
+  /* ===== DASHBOARD ===== */
   var range = 'month'; try { range = localStorage.getItem('yc_range') || 'month'; } catch(e){}
-  var C = { gold:'#c9a96e', cy:'#22d3ee', win:'#4ade80', loss:'#f87171', warn:'#f59e0b', muted:'#8a8f98', dim:'#5c6068', s2:'#16181b', b:'#1f2126', bs:'#2a2d33', bg:'#08090a' };
-  var CAUSE = [['missed', C.cy], ['stop_size', C.warn], ['fills', C.win], ['mgmt', C.muted]];
+  var calSel = null;
   document.querySelectorAll('#dash-range button').forEach(function(b){ b.addEventListener('click', function(){ range = b.dataset.r; try { localStorage.setItem('yc_range', range); } catch(e){} renderDash(); }); });
-  function rangeDates(){
-    var ds = days.map(function(d){ return d.date; }).sort(); if (!ds.length) return [];
+  function rangeDates(persons){
+    var o = {}; persons.forEach(function(p){ personDates(p).forEach(function(d){ o[d] = 1; }); });
+    var ds = Object.keys(o).sort(); if (!ds.length) return [];
     var last = ds[ds.length - 1];
     if (range === 'day') return [last];
     if (range === 'week'){ var x = new Date(last + 'T12:00:00Z'), dow = (x.getUTCDay() + 6) % 7; x.setUTCDate(x.getUTCDate() - dow); var mon = x.toISOString().slice(0,10); return ds.filter(function(d){ return d >= mon && d <= last; }); }
     return ds;
   }
-  var f2 = function(x){ return (+x).toFixed(2); };
-  var shortD = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][x.getUTCMonth()]; };
   function bar(w, frac, color){ return '<rect x="0" y="0" width="' + w + '" height="8" rx="2" fill="' + C.s2 + '"/>' + (frac > 0 ? '<rect x="0" y="0" width="' + Math.max(1, w * Math.min(1, frac)).toFixed(1) + '" height="8" rx="2" fill="' + color + '"/>' : ''); }
-  function blocks(items){ /* items: [{fill, stroke, dash, label}] laid out across 120 wide */
+  function blocks(items){
     var n = items.length; if (!n) return '<svg viewBox="0 0 120 14"><rect x="0" y="2" width="120" height="10" rx="2" fill="' + C.s2 + '"/></svg>';
     var gap = n > 20 ? 1 : 3, w = (120 - gap * (n - 1)) / n;
     return '<svg viewBox="0 0 120 14">' + items.map(function(it, i){ var x = (i * (w + gap)).toFixed(2);
@@ -335,166 +464,401 @@ if (typeof module !== 'undefined') module.exports = YC;
         (it.label && w > 22 ? '<text x="' + (+x + w / 2).toFixed(2) + '" y="10.2" font-size="6.5" fill="' + C.bg + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + it.label + '</text>' : ''); }).join('') + '</svg>';
   }
   function niceStep(span){ var raw = span / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
-  function yAxis(lo, hi){ /* returns {lo,hi,ticks} with 0 included */
-    lo = Math.min(lo, 0); hi = Math.max(hi, 0); if (hi - lo < 0.5){ hi += 0.25; lo -= 0.25; }
+  function yAxis(lo, hi, minSpan){
+    lo = Math.min(lo, 0); hi = Math.max(hi, 0); var ms = minSpan || 0.5; if (hi - lo < ms){ hi += ms / 2; lo -= ms / 2; }
     var st = niceStep(hi - lo); lo = Math.floor(lo / st - 1e-9) * st; hi = Math.ceil(hi / st + 1e-9) * st;
     var t = []; for (var v = lo; v <= hi + st / 2; v += st) t.push(Math.round(v * 100) / 100);
     return {lo:lo, hi:hi, ticks:t};
   }
   var fmtTick = function(v){ return v === 0 ? '0' : (v > 0 ? '+' : '−') + String(Math.abs(v)); };
+  function grid(ax, Y, L, R, dashZero){
+    return '<g stroke="' + C.b + '">' + ax.ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (v === 0 ? ' stroke="' + C.bs + '"' + (dashZero ? ' stroke-dasharray="3 3"' : '') : '') + '/>'; }).join('') + '</g>' +
+      '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ax.ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + fmtTick(v) + '</text>'; }).join('') + '</g>';
+  }
+  function svgWrap(inner, label, H){ return '<svg viewBox="0 0 320 ' + (H || 150) + '" role="img" aria-label="' + label + '">' + inner + '</svg>'; }
+
+  /* per-person dataset for the current range */
+  function dataset(){
+    var ps = sel(), dates = rangeDates(ps);
+    var per = ps.map(function(p){
+      var pd = personDates(p).filter(function(d){ return dates.indexOf(d) >= 0; });
+      var list = callsFor(p, pd);
+      return { p:p, color:colorOf(p), dates:pd, calls:list, t:YC.dayStats(list),
+        perDay: pd.map(function(d){ var dc = list.filter(function(k){ return k.date === d; }); return { date:d, s:YC.dayStats(dc), row:dayRow(d, p), calls:dc }; }) };
+    });
+    var callerCalls = calls.filter(function(c){ return dates.indexOf(c.date) >= 0; }).map(function(c){ return callObj(c, ps[0]); });
+    return { ps:ps, dates:dates, per:per, caller:YC.dayStats(callerCalls), callerCalls:callerCalls };
+  }
 
   function renderDash(){
     document.querySelectorAll('#dash-range button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.r === range); });
-    var dates = rangeDates(), inR = {}; dates.forEach(function(d){ inR[d] = 1; });
-    var all = calls.filter(function(c){ return inR[c.date]; }).map(callObj), t = YC.dayStats(all);
-    var perDay = dates.map(function(d){ var dc = all.filter(function(k){ return k.date === d; }), s = YC.dayStats(dc), row = days.find(function(x){ return x.date === d; }); return { date:d, s:s, row:row }; });
+    var D = dataset(), multi = D.per.length > 1, dates = D.dates;
     $('dash-meta').textContent = dates.length ? (dates.length === 1 ? shortD(dates[0]) : shortD(dates[0]) + ' – ' + shortD(dates[dates.length - 1])) + ' · ' + dates.length + (dates.length === 1 ? ' day' : ' days') : 'no days imported';
-    var dll = (settings && settings.dll_usd != null) ? +settings.dll_usd : 600;
-    var comm = perDay.reduce(function(a, p){ return a + (p.row && p.row.commissions != null ? +p.row.commissions : 0); }, 0);
-    var tiles = [];
+    var T = D.caller, tiles = [];
+    var wrapP = function(x, fn){ return D.per.map(function(q){ var r = fn(q); return multi ? '<div class="pp"><span class="who" style="color:' + q.color + '">' + esc(q.p) + '</span><span class="v2">' + r.v + '</span>' + r.svg + '<span class="s">' + r.s + '</span></div>' : null; }).join(''); };
 
     /* 1 · R Caller vs Copy */
-    var mx = Math.max(Math.abs(t.yR), Math.abs(t.cR), 0.01);
-    tiles.push(['R · Caller vs Copy', '<span class="gold">' + YC.r2(t.yR) + '</span> <span class="s">/</span> <span class="' + (t.cR < 0 ? 'neg' : 'cyan') + '">' + YC.r2(t.cR) + '</span>',
-      '<svg viewBox="0 0 120 26"><g transform="translate(0,3)">' + bar(120, Math.abs(t.yR) / mx, t.yR < 0 ? C.loss : C.gold) + '</g><g transform="translate(0,15)">' + bar(120, Math.abs(t.cR) / mx, t.cR < 0 ? C.loss : C.cy) + '</g></svg>',
-      all.length + ' calls · ' + t.taken + ' taken · ' + t.yW + '/' + t.yL + ' vs ' + t.cW + '/' + t.cL + ' W/L']);
+    var mx = Math.max.apply(null, [Math.abs(T.yR), 0.01].concat(D.per.map(function(q){ return Math.abs(q.t.cR); })));
+    var rows = [[T.yR, T.yR < 0 ? C.loss : C.gold]].concat(D.per.map(function(q){ return [q.t.cR, q.t.cR < 0 ? C.loss : q.color]; }));
+    tiles.push({ l:'R · Caller vs Copy', v:'<span class="gold">' + YC.r2(T.yR) + '</span>' + D.per.map(function(q){ return ' <span class="s">/</span> <span style="color:' + (q.t.cR < 0 ? C.loss : q.color) + '">' + YC.r2(q.t.cR) + '</span>'; }).join(''),
+      svg:'<svg viewBox="0 0 120 ' + (rows.length * 12 + 2) + '">' + rows.map(function(r, i){ return '<g transform="translate(0,' + (3 + i * 12) + ')">' + bar(120, Math.abs(r[0]) / mx, r[1]) + '</g>'; }).join('') + '</svg>',
+      s: D.callerCalls.length + ' calls · ' + D.per.map(function(q){ return (multi ? esc(q.p) + ' ' : '') + q.t.taken + ' taken'; }).join(' · ') + ' · W/L ' + T.yW + '/' + T.yL + D.per.map(function(q){ return ' vs ' + q.t.cW + '/' + q.t.cL; }).join('') });
 
     /* 2 · Gap split by cause */
-    var absSum = CAUSE.reduce(function(a, c){ return a + Math.abs(t.cause[c[0]]); }, 0), xx = 0, gs = '<rect x="0" y="1" width="120" height="8" rx="2" fill="' + C.s2 + '"/>';
-    CAUSE.forEach(function(c){ var v = Math.abs(t.cause[c[0]]); if (!v || !absSum) return; var w = 120 * v / absSum; gs += '<rect x="' + xx.toFixed(2) + '" y="1" width="' + Math.max(1, w).toFixed(2) + '" height="8" fill="' + c[1] + '"/>'; xx += w; });
-    tiles.push(['Gap · ' + range, '<span class="' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</span>', '<svg viewBox="0 0 120 10">' + gs + '</svg>',
-      '<span class="cyan">miss ' + YC.r2(t.cause.missed) + '</span> · <span class="warn">stop ' + YC.r2(t.cause.stop_size) + '</span> · <span class="pos">fills ' + YC.r2(t.cause.fills) + '</span> · mgmt ' + YC.r2(t.cause.mgmt)]);
+    var gapOne = function(q){ var t = q.t, absSum = CAUSE.reduce(function(a, c){ return a + Math.abs(t.cause[c[0]]); }, 0), xx = 0, gs = '<rect x="0" y="1" width="120" height="8" rx="2" fill="' + C.s2 + '"/>';
+      CAUSE.forEach(function(c){ var v = Math.abs(t.cause[c[0]]); if (!v || !absSum) return; var w = 120 * v / absSum; gs += '<rect x="' + xx.toFixed(2) + '" y="1" width="' + Math.max(1, w).toFixed(2) + '" height="8" fill="' + c[1] + '"/>'; xx += w; });
+      return { v:'<span class="' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</span>', svg:'<svg viewBox="0 0 120 10">' + gs + '</svg>',
+        s:'<span class="cyan">miss ' + YC.r2(t.cause.missed) + '</span> · <span class="warn">stop ' + YC.r2(t.cause.stop_size) + '</span> · <span class="pos">fills ' + YC.r2(t.cause.fills) + '</span> · mgmt ' + YC.r2(t.cause.mgmt) }; };
+    tiles.push(multi ? { l:'Gap · ' + range, multi:wrapP(0, gapOne) } : Object.assign({ l:'Gap · ' + range }, gapOne(D.per[0])));
 
     /* 3 · Calls copied */
-    tiles.push(['Calls copied', t.taken + '<span class="s"> / ' + all.length + '</span>', blocks(all.map(function(k){ return !k.copy ? {stroke:C.cy, dash:1} : (k.deviations.length || k.copy.status === 'deviation') ? {fill:C.warn} : {fill:C.win}; })),
-      '<span class="pos">■</span> copied · <span class="cyan">◌</span> missed · <span class="warn">■</span> deviation']);
+    var cpOne = function(q){ return { v:q.t.taken + '<span class="s"> / ' + q.calls.length + '</span>', svg:blocks(q.calls.map(function(k){ return !k.copy ? {stroke:C.cy, dash:1} : (k.deviations.length || k.copy.status === 'deviation') ? {fill:C.warn} : {fill:C.win}; })), s:multi ? q.t.missed + ' missed · ' + q.t.devs + ' dev' : '<span class="pos">■</span> copied · <span class="cyan">◌</span> missed · <span class="warn">■</span> deviation' }; };
+    tiles.push(multi ? { l:'Calls copied', multi:wrapP(0, cpOne) } : Object.assign({ l:'Calls copied' }, cpOne(D.per[0])));
 
-    /* 4 · Copy net $ — sparkline of cumulative net per day */
-    var cum = 0, pts = [0].concat(perDay.map(function(p){ cum += p.s.cUsd; return cum; })), lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts), sp = (hi - lo) || 1;
-    var py = function(v){ return (26 - (v - lo) / sp * 22).toFixed(1); }, px = function(i){ return (pts.length === 1 ? 116 : 3 + i * 113 / (pts.length - 1)).toFixed(1); };
-    var line = pts.map(function(v, i){ return px(i) + ',' + py(v); }).join(' '), lc = cum < 0 ? C.loss : C.win;
-    tiles.push(['Copy net $', '<span class="' + (t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(t.cUsd) + '</span>',
-      '<svg viewBox="0 0 120 30"><line x1="0" x2="120" y1="' + py(0) + '" y2="' + py(0) + '" stroke="' + C.bs + '" stroke-dasharray="2 2"/><polyline fill="none" stroke="' + lc + '" stroke-width="2" stroke-linejoin="round" points="' + line + '"/><circle cx="' + px(pts.length - 1) + '" cy="' + py(cum) + '" r="2.5" fill="' + lc + '"/></svg>',
-      'comm ' + comm.toFixed(2) + ' · Caller est. <span class="gold">' + YC.usd(t.yUsd) + '</span> gross']);
+    /* 4 · Copy net $ */
+    var netOne = function(q){
+      var cum = 0, pts = [0].concat(q.perDay.map(function(p){ cum += p.s.cUsd; return cum; })), lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts), sp = (hi - lo) || 1;
+      var py = function(v){ return (26 - (v - lo) / sp * 22).toFixed(1); }, px = function(i){ return (pts.length === 1 ? 116 : 3 + i * 113 / (pts.length - 1)).toFixed(1); };
+      var lc = cum < 0 ? C.loss : C.win, comm = q.perDay.reduce(function(a, p){ return a + (p.row && p.row.commissions != null ? +p.row.commissions : 0); }, 0);
+      return { v:'<span class="' + (q.t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(q.t.cUsd) + '</span>',
+        svg:'<svg viewBox="0 0 120 30"><line x1="0" x2="120" y1="' + py(0) + '" y2="' + py(0) + '" stroke="' + C.bs + '" stroke-dasharray="2 2"/><polyline fill="none" stroke="' + lc + '" stroke-width="2" stroke-linejoin="round" points="' + pts.map(function(v, i){ return px(i) + ',' + py(v); }).join(' ') + '"/><circle cx="' + px(pts.length - 1) + '" cy="' + py(cum) + '" r="2.5" fill="' + lc + '"/></svg>',
+        s:'comm ' + comm.toFixed(2) };
+    };
+    var callerUsd = ' · Caller est. <span class="gold">' + YC.usd(T.yUsd) + '</span> gross';
+    if (multi) tiles.push({ l:'Copy net $', multi:wrapP(0, netOne) + '<span class="s">' + callerUsd.slice(3) + '</span>' });
+    else { var n1 = netOne(D.per[0]); n1.s += callerUsd; tiles.push(Object.assign({ l:'Copy net $' }, n1)); }
 
-    /* 5 · DLL room on the worst day (realised, closed trades in call order) */
-    var worst = perDay.reduce(function(m, p){ return p.s.low < m.low ? {low:p.s.low, date:p.date} : m; }, {low:0, date:null}), room = dll + worst.low, rf = Math.max(0, room / dll);
-    var lastRow = perDay.length ? perDay[perDay.length - 1].row : null;
-    tiles.push(['DLL room · worst day', '<span class="' + (rf < 0.34 ? 'neg' : rf < 0.67 ? 'warn' : '') + '">$' + Math.round(room).toLocaleString('en-US') + '</span>',
-      '<svg viewBox="0 0 120 10"><g transform="translate(0,1)">' + bar(120, rf, rf < 0.34 ? C.loss : rf < 0.67 ? C.warn : C.win) + '</g></svg>',
-      'worst day low ' + (worst.low ? '−$' + Math.abs(Math.round(worst.low)) + ' (' + shortD(worst.date) + ')' : '$0') + (lastRow && lastRow.balance_eod != null ? ' · EOD ' + (+lastRow.balance_eod).toLocaleString('en-US') : '')]);
+    /* 5 · DLL room on the worst day */
+    var dllOne = function(q){
+      var st = settingsOf(q.p), dll = st && st.dll_usd != null ? +st.dll_usd : 600;
+      var worst = q.perDay.reduce(function(m, p){ return p.s.low < m.low ? {low:p.s.low, date:p.date} : m; }, {low:0, date:null}), room = dll + worst.low, rf = Math.max(0, room / dll);
+      var last = q.perDay.length ? q.perDay[q.perDay.length - 1].row : null;
+      return { v:'<span class="' + (rf < 0.34 ? 'neg' : rf < 0.67 ? 'warn' : '') + '">$' + Math.round(room).toLocaleString('en-US') + '</span>',
+        svg:'<svg viewBox="0 0 120 10"><g transform="translate(0,1)">' + bar(120, rf, rf < 0.34 ? C.loss : rf < 0.67 ? C.warn : C.win) + '</g></svg>',
+        s:'worst day low ' + (worst.low ? '−$' + Math.abs(Math.round(worst.low)) + ' (' + shortD(worst.date) + ')' : '$0') + (last && last.balance_eod != null ? ' · EOD ' + (+last.balance_eod).toLocaleString('en-US') : '') };
+    };
+    tiles.push(multi ? { l:'DLL room · worst day', multi:wrapP(0, dllOne) } : Object.assign({ l:'DLL room · worst day' }, dllOne(D.per[0])));
 
     /* 6 · Deviations by tag */
-    var TAGS = ['P18','P5','P14','P12','T','DLL'], cnt = {}, untagged = 0, list = [];
-    all.forEach(function(k){ k.deviations.forEach(function(v){ if (v.tag) cnt[v.tag] = (cnt[v.tag] || 0) + 1; else untagged++; list.push(v.tag || null); }); });
-    list.sort(function(a, b){ return (a === null ? -1 : TAGS.indexOf(a)) - (b === null ? -1 : TAGS.indexOf(b)); });
-    tiles.push(['Deviations', '<span class="warn">' + list.length + '</span>', blocks(list.map(function(tg){ return tg ? {fill:C.warn, label:tg} : {fill:C.muted, label:'none'}; })),
-      TAGS.slice(0, 4).map(function(k){ return k + ' ' + (cnt[k] || 0); }).join(' · ') + (cnt.T ? ' · T ' + cnt.T : '') + (cnt.DLL ? ' · DLL ' + cnt.DLL : '') + (untagged ? ' · no tag ' + untagged : '')]);
+    var devOne = function(q){
+      var cnt = {}, untagged = 0, list = [];
+      q.calls.forEach(function(k){ k.deviations.forEach(function(v){ if (v.tag) cnt[v.tag] = (cnt[v.tag] || 0) + 1; else untagged++; list.push(v.tag || null); }); });
+      list.sort(function(a, b){ return (a === null ? -1 : TAGS.indexOf(a)) - (b === null ? -1 : TAGS.indexOf(b)); });
+      return { v:'<span class="warn">' + list.length + '</span>', svg:blocks(list.map(function(tg){ return tg ? {fill:TAGC[tg] || C.warn, label:tg} : {fill:C.muted, label:'none'}; })),
+        s:TAGS.slice(0, 4).map(function(k){ return k + ' ' + (cnt[k] || 0); }).join(' · ') + (cnt.T ? ' · T ' + cnt.T : '') + (cnt.DLL ? ' · DLL ' + cnt.DLL : '') + (untagged ? ' · no tag ' + untagged : '') };
+    };
+    tiles.push(multi ? { l:'Deviations', multi:wrapP(0, devOne) } : Object.assign({ l:'Deviations' }, devOne(D.per[0])));
 
-    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x[0] + '</div><div class="v">' + x[1] + '</div>' + x[2] + '<div class="s">' + x[3] + '</div></div>'; }).join('');
-    renderEquity(all); renderGapChart(perDay);
+    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x.l + '</div>' + (x.multi != null ? x.multi : '<div class="v">' + x.v + '</div>' + x.svg + '<div class="s">' + x.s + '</div>') + '</div>'; }).join('');
+    renderEquity(D); renderGapChart(D); renderDevChart(D); renderHold(D); renderCal(D); renderReview(D);
   }
 
-  function renderEquity(all){
-    var W = 320, H = 150, L = 34, R = 310, T = 14, B = 132;
-    if (!all.length){ $('ch-eq').innerHTML = '<p class="note">No calls in range.</p>'; $('lg-eq').innerHTML = ''; return; }
-    var yc = [0], cc = [0], miss = [], labs = [''], y = 0, c = 0;
-    all.forEach(function(k){ var s = YC.callStats(k); y += YC.rd(s.yR) || 0; if (k.copy) c += YC.rd(s.cR) || 0; else miss.push(yc.length); yc.push(YC.rd(y)); cc.push(YC.rd(c)); labs.push(+k.date.slice(8) + '/' + k.n); });
-    var ax = yAxis(Math.min.apply(null, yc.concat(cc)), Math.max.apply(null, yc.concat(cc)));
-    var X = function(i){ return L + 6 + i * (R - L - 6) / (yc.length - 1); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
-    var g = '<g stroke="' + C.b + '">' + ax.ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (v === 0 ? ' stroke="' + C.bs + '" stroke-dasharray="3 3"' : '') + '/>'; }).join('') + '</g>';
-    g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ax.ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + fmtTick(v) + '</text>'; }).join('') + '</g>';
+  function renderEquity(D){
+    var H = 150, L = 34, R = 310, T = 14, B = 132;
+    var list = D.callerCalls;
+    if (!list.length){ $('ch-eq').innerHTML = '<p class="note">No calls in range.</p>'; $('lg-eq').innerHTML = ''; return; }
+    var yc = [0], labs = [''], y = 0;
+    list.forEach(function(k){ var s = YC.callStats(k); y += YC.rd(s.yR) || 0; yc.push(YC.rd(y)); labs.push(+k.date.slice(8) + '/' + k.n); });
+    var lines = D.per.map(function(q){
+      var arr = [0], miss = [], c = 0, byId = {}; q.calls.forEach(function(k){ byId[k.id] = k; });
+      list.forEach(function(k, i){ var mine = byId[k.id]; if (mine){ if (mine.copy){ var s = YC.callStats(mine); c += YC.rd(s.cR) || 0; } else miss.push(i + 1); } arr.push(YC.rd(c)); });
+      return { q:q, arr:arr, miss:miss };
+    });
+    var allV = yc.concat.apply(yc, lines.map(function(l){ return l.arr; }));
+    var ax = yAxis(Math.min.apply(null, allV), Math.max.apply(null, allV));
+    var X = function(i){ return L + 6 + i * (R - L - 6) / Math.max(1, yc.length - 1); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
+    var g = grid(ax, Y, L, R, true);
     var every = Math.ceil((yc.length - 1) / 8);
     g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="middle">' + labs.map(function(l, i){ return (i && ((i - 1) % every === 0 || i === labs.length - 1)) ? '<text x="' + X(i).toFixed(1) + '" y="' + (H - 3) + '">' + l + '</text>' : ''; }).join('') + '</g>';
     var pl = function(a, col, sw){ return '<polyline fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linejoin="round" points="' + a.map(function(v, i){ return X(i).toFixed(1) + ',' + Y(v).toFixed(1); }).join(' ') + '"/>'; };
-    g += pl(yc, C.gold, 4) + pl(cc, C.cy, 1.8); /* caller drawn wider underneath so both show where they overlap */
-    g += miss.map(function(i){ return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(cc[i]).toFixed(1) + '" r="3.5" fill="' + C.bg + '" stroke="' + C.cy + '" stroke-dasharray="2 1.5"/>'; }).join('');
     var n = yc.length - 1;
-    g += '<circle cx="' + X(n).toFixed(1) + '" cy="' + Y(yc[n]).toFixed(1) + '" r="3" fill="' + C.gold + '"/><circle cx="' + X(n).toFixed(1) + '" cy="' + Y(cc[n]).toFixed(1) + '" r="3" fill="' + C.cy + '"/>';
-    $('ch-eq').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Cumulative R per call, Caller vs Copy">' + g + '</svg>';
-    $('lg-eq').innerHTML = '<span class="gold"><i></i>Caller ' + YC.r2(yc[n]) + '</span><span class="cyan"><i></i>Copy ' + YC.r2(cc[n]) + '</span><span>◌ missed</span>';
+    g += pl(yc, C.gold, 4); /* caller drawn wider underneath so both show where they overlap */
+    lines.forEach(function(l, j){ g += pl(l.arr, l.q.color, j ? 1.4 : 1.8); });
+    lines.forEach(function(l){ g += l.miss.map(function(i){ return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(l.arr[i]).toFixed(1) + '" r="3.5" fill="' + C.bg + '" stroke="' + l.q.color + '" stroke-dasharray="2 1.5"/>'; }).join(''); });
+    g += '<circle cx="' + X(n).toFixed(1) + '" cy="' + Y(yc[n]).toFixed(1) + '" r="3" fill="' + C.gold + '"/>' + lines.map(function(l){ return '<circle cx="' + X(n).toFixed(1) + '" cy="' + Y(l.arr[n]).toFixed(1) + '" r="3" fill="' + l.q.color + '"/>'; }).join('');
+    $('ch-eq').innerHTML = svgWrap(g, 'Cumulative R per call, Caller vs Copy', H);
+    $('lg-eq').innerHTML = '<span class="gold"><i></i>Caller ' + YC.r2(yc[n]) + '</span>' + lines.map(function(l){ return '<span style="color:' + l.q.color + '"><i></i>' + (D.per.length > 1 ? esc(l.q.p) : 'Copy') + ' ' + YC.r2(l.arr[n]) + '</span>'; }).join('') + '<span>◌ missed</span>';
   }
 
-  function renderGapChart(perDay){
-    var W = 320, H = 150, L = 34, R = 310, T = 14, B = 128;
-    if (!perDay.length){ $('ch-gap').innerHTML = '<p class="note">No days in range.</p>'; return; }
-    var lo = 0, hi = 0;
-    perDay.forEach(function(p){ var up = 0, dn = 0; CAUSE.forEach(function(c){ var v = p.s.cause[c[0]]; if (v > 0) up += v; else dn += v; }); hi = Math.max(hi, up); lo = Math.min(lo, dn); });
+  function renderGapChart(D){
+    var H = 150, L = 34, R = 310, T = 14, B = 128;
+    var dates = D.dates;
+    if (!dates.length){ $('ch-gap').innerHTML = '<p class="note">No days in range.</p>'; return; }
+    var lo = 0, hi = 0, cells = dates.map(function(d){ return D.per.map(function(q){ var pd = q.perDay.find(function(x){ return x.date === d; }); return pd ? pd.s : null; }); });
+    cells.forEach(function(row){ row.forEach(function(s){ if (!s) return; var up = 0, dn = 0; CAUSE.forEach(function(c){ var v = s.cause[c[0]]; if (v > 0) up += v; else dn += v; }); hi = Math.max(hi, up); lo = Math.min(lo, dn); }); });
     var ax = yAxis(lo, hi), Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
-    var g = '<g stroke="' + C.b + '">' + ax.ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"' + (v === 0 ? ' stroke="' + C.bs + '"' : '') + '/>'; }).join('') + '</g>';
-    g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ax.ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + fmtTick(v) + '</text>'; }).join('') + '</g>';
-    var n = perDay.length, slot = (R - L) / n, bw = Math.min(60, slot * 0.6), every = Math.ceil(n / 6);
-    perDay.forEach(function(p, i){
-      var cx = L + slot * (i + 0.5), up = 0, dn = 0;
-      CAUSE.forEach(function(c){ var v = p.s.cause[c[0]]; if (!v) return;
-        var a = v > 0 ? up : dn, b = a + v; if (v > 0) up = b; else dn = b;
-        var y1 = Y(Math.max(a, b)), y2 = Y(Math.min(a, b));
-        g += '<rect x="' + (cx - bw / 2).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0.6, y2 - y1).toFixed(1) + '" fill="' + c[1] + '"/>'; });
-      if (i % every === 0 || i === n - 1) g += '<text x="' + cx.toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(p.date) + (n <= 3 ? ' ' + YC.r2(p.s.gap) : '') + '</text>';
+    var g = grid(ax, Y, L, R, false);
+    var n = dates.length, m = D.per.length, slot = (R - L) / n, bw = Math.min(60 / m, slot * 0.6 / m), every = Math.ceil(n / 6);
+    dates.forEach(function(d, i){
+      var cx0 = L + slot * (i + 0.5) - bw * m / 2;
+      cells[i].forEach(function(s, j){ if (!s) return; var x = cx0 + j * bw, up = 0, dn = 0;
+        CAUSE.forEach(function(c){ var v = s.cause[c[0]]; if (!v) return;
+          var a = v > 0 ? up : dn, b = a + v; if (v > 0) up = b; else dn = b;
+          var y1 = Y(Math.max(a, b)), y2 = Y(Math.min(a, b));
+          g += '<rect x="' + (x + (m > 1 ? 1 : 0)).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + (bw - (m > 1 ? 2 : 0)).toFixed(1) + '" height="' + Math.max(0.6, y2 - y1).toFixed(1) + '" fill="' + c[1] + '"/>'; });
+        if (m > 1) g += '<rect x="' + (x + 1).toFixed(1) + '" y="' + (B + 2) + '" width="' + (bw - 2).toFixed(1) + '" height="2" fill="' + D.per[j].color + '"/>';
+      });
+      var tot = cells[i].filter(Boolean);
+      if (i % every === 0 || i === n - 1) g += '<text x="' + (L + slot * (i + 0.5)).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(d) + (n <= 3 && m === 1 && tot[0] ? ' ' + YC.r2(tot[0].gap) : '') + '</text>';
     });
-    $('ch-gap').innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Gap per day by cause">' + g + '</svg>';
+    $('ch-gap').innerHTML = svgWrap(g, 'Gap per day by cause', H);
   }
 
-  function renderDays(){
-    var h = '<div class="row head"><span>Day</span><span class="r">Caller</span><span class="r">Copy</span><span class="r">Net $</span><span class="r">Calls</span></div>';
-    days.forEach(function(d){
-      var dc = dayCalls(d.date), t = YC.dayStats(dc);
-      var tag = t.devs ? '<span class="tag dev">' + t.taken + '/' + dc.length + ' · ' + t.devs + ' dev</span>' : t.missed ? '<span class="tag miss">' + t.taken + '/' + dc.length + ' · ' + t.missed + ' miss</span>' : '<span class="tag">' + t.taken + '/' + dc.length + '</span>';
-      h += '<button class="row' + (d.date === openDate ? ' open' : '') + '" data-date="' + d.date + '"><span class="d">' + fmtDate(d.date) + '<small>Day ' + (d.day_no || '?') + (d.state ? ' · ' + esc(d.state) : '') + '</small></span>' +
-        '<span class="r num gold">' + YC.r2(t.yR) + '</span><span class="r num ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + '</span><span class="r num ' + ((d.commissions != null ? t.cUsd : t.cUsd) < 0 ? 'neg' : 'pos') + '">' + YC.usd(t.cUsd) + '</span><span class="r">' + tag + '</span></button>';
+  function renderDevChart(D){
+    var H = 140, L = 34, R = 310, T = 12, B = 118, dates = D.dates;
+    var counts = dates.map(function(d){ return D.per.map(function(q){ var o = {}; q.calls.filter(function(k){ return k.date === d; }).forEach(function(k){ k.deviations.forEach(function(v){ var t = v.tag || 'none'; o[t] = (o[t] || 0) + 1; }); }); return o; }); });
+    var mx = 1, used = {};
+    counts.forEach(function(row){ row.forEach(function(o){ var s = 0; Object.keys(o).forEach(function(k){ s += o[k]; used[k] = 1; }); mx = Math.max(mx, s); }); });
+    if (!dates.length){ $('ch-dev').innerHTML = '<p class="note">No days in range.</p>'; $('lg-dev').innerHTML = ''; return; }
+    var hiT = Math.max(2, mx), Y = function(v){ return B - v / hiT * (B - T); }, ticks = []; for (var v = 0; v <= hiT; v += Math.max(1, Math.ceil(hiT / 4))) ticks.push(v);
+    var g = '<g stroke="' + C.b + '">' + ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/>'; }).join('') + '</g><g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + v + '</text>'; }).join('') + '</g>';
+    var n = dates.length, m = D.per.length, slot = (R - L) / n, bw = Math.min(40 / m, slot * 0.6 / m), every = Math.ceil(n / 6), order = ['none'].concat(TAGS);
+    dates.forEach(function(d, i){
+      var cx0 = L + slot * (i + 0.5) - bw * m / 2;
+      counts[i].forEach(function(o, j){ var acc = 0, x = cx0 + j * bw;
+        order.forEach(function(t){ var c = o[t]; if (!c) return; g += '<rect x="' + (x + (m > 1 ? 1 : 0)).toFixed(1) + '" y="' + Y(acc + c).toFixed(1) + '" width="' + (bw - (m > 1 ? 2 : 0)).toFixed(1) + '" height="' + (Y(acc) - Y(acc + c)).toFixed(1) + '" fill="' + TAGC[t] + '"/>'; acc += c; });
+        if (m > 1) g += '<rect x="' + (x + 1).toFixed(1) + '" y="' + (B + 2) + '" width="' + (bw - 2).toFixed(1) + '" height="2" fill="' + D.per[j].color + '"/>';
+      });
+      if (i % every === 0 || i === n - 1) g += '<text x="' + (L + slot * (i + 0.5)).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(d) + '</text>';
     });
+    $('ch-dev').innerHTML = svgWrap(g, 'Deviations by tag per day', H);
+    var ks = order.filter(function(t){ return used[t]; });
+    $('lg-dev').innerHTML = ks.length ? ks.map(function(t){ return '<span style="color:' + TAGC[t] + '"><i class="b"></i>' + (t === 'none' ? 'no tag' : t) + '</span>'; }).join('') : '<span>no deviations in range</span>';
+  }
+
+  function renderHold(D){
+    var H = 150, L = 34, R = 310, T = 14, B = 128, pts = [];
+    D.per.forEach(function(q){ q.calls.forEach(function(k){ if (!k.copy || k.copy.hold_s == null) return; var s = YC.callStats(k); if (s.cR == null) return; pts.push({ x:k.copy.hold_s / 60, y:YC.rd(s.cR), c:q.color, dev:k.deviations.length > 0, lab:+k.date.slice(8) + '/' + k.n }); }); });
+    if (!pts.length){ $('ch-hold').innerHTML = '<p class="note">No copied trades with a hold time in range.</p>'; $('lg-hold').innerHTML = ''; return; }
+    var ax = yAxis(Math.min.apply(null, pts.map(function(p){ return p.y; })), Math.max.apply(null, pts.map(function(p){ return p.y; })), 1);
+    var xmax = Math.max(5, Math.ceil(Math.max.apply(null, pts.map(function(p){ return p.x; })) / 5) * 5);
+    var X = function(v){ return L + 6 + v / xmax * (R - L - 6); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
+    var g = grid(ax, Y, L, R, true), xs = niceStep(xmax) < 1 ? 1 : niceStep(xmax);
+    for (var v = 0; v <= xmax + 1e-9; v += xs) g += '<text x="' + X(v).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + v + 'm</text>';
+    pts.forEach(function(p){ var col = p.y > 0 ? C.win : p.y < 0 ? C.loss : C.muted;
+      g += '<circle cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="4" fill="' + col + '" fill-opacity=".85" stroke="' + (D.per.length > 1 ? p.c : (p.dev ? C.warn : C.bg)) + '" stroke-width="' + (p.dev || D.per.length > 1 ? 1.6 : 1) + '"><title>' + p.lab + ' · ' + p.x.toFixed(1) + 'm · ' + YC.r2(p.y) + 'R</title></circle>'; });
+    $('ch-hold').innerHTML = svgWrap(g, 'Hold time in minutes vs copy R', H);
+    $('lg-hold').innerHTML = '<span class="pos"><i class="b"></i>win</span><span class="neg"><i class="b"></i>loss</span>' + (D.per.length > 1 ? D.per.map(function(q){ return '<span style="color:' + q.color + '">○ ' + esc(q.p) + '</span>'; }).join('') : '<span class="warn">○ had a deviation</span>');
+  }
+
+  /* calendar: weekdays from the first copy day to 4 weeks after, colour = copy R */
+  function renderCal(D){
+    var q0 = D.per[0], all = []; D.per.forEach(function(q){ all = all.concat(personDates(q.p)); });
+    all.sort(); if (!all.length){ $('cal').innerHTML = '<p class="note">No days yet.</p>'; $('cal-note').innerHTML = ''; return; }
+    var start = new Date(all[0] + 'T12:00:00Z'); start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
+    var end = new Date(all[0] + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 30); var lastD = new Date(all[all.length - 1] + 'T12:00:00Z'); if (lastD > end) end = lastD;
+    var h = '<div class="cal">' + ['Mon','Tue','Wed','Thu','Fri'].map(function(d){ return '<span class="h">' + d + '</span>'; }).join('');
+    for (var d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)){
+      var dw = d.getUTCDay(); if (dw === 0 || dw === 6) continue;
+      var ds = d.toISOString().slice(0,10), stats = D.per.map(function(q){ var dc = callsFor(q.p, personDates(q.p).indexOf(ds) >= 0 ? [ds] : []); return dc.length || dayRow(ds, q.p) ? YC.dayStats(dc) : null; });
+      var s = stats[0], has = stats.some(Boolean);
+      if (!has){ h += '<button class="e" disabled>' + d.getUTCDate() + '</button>'; continue; }
+      var r = s ? s.cR : stats.find(Boolean).cR, a = Math.min(1, Math.abs(r) / 2) * 0.55 + 0.12, bg = r > 0 ? 'rgba(74,222,128,' + a.toFixed(2) + ')' : r < 0 ? 'rgba(248,113,113,' + a.toFixed(2) + ')' : C.s2;
+      h += '<button data-d="' + ds + '" class="' + (calSel === ds ? 'sel' : '') + '" style="background:' + bg + ';color:var(--text)">' + d.getUTCDate() + '<small>' + stats.map(function(x){ return x ? YC.r2(x.cR) : '·'; }).join(' ') + '</small></button>';
+    }
+    $('cal').innerHTML = h + '</div>';
+    $('cal').querySelectorAll('button[data-d]').forEach(function(b){ b.addEventListener('click', function(){ calSel = calSel === b.dataset.d ? null : b.dataset.d; renderCal(D); }); });
+    if (!calSel){ $('cal-note').innerHTML = '<p class="note">Tap a day for its state note.</p>'; return; }
+    $('cal-note').innerHTML = D.per.map(function(q){ var row = dayRow(calSel, q.p); return '<div style="margin-top:6px"><h2 style="margin:0 0 4px">' + fmtDate(calSel) + (D.per.length > 1 ? ' · ' + esc(q.p) : '') + '</h2><p class="state">' + (row && row.state ? esc(row.state) : '<span class="xs">No state note.</span>') + '</p></div>'; }).join('') +
+      '<p class="note" style="margin-top:8px"><a href="#" id="cal-open">Open this day in Days</a></p>';
+    $('cal-open').addEventListener('click', function(e){ e.preventDefault(); openDate = calSel; renderDays(); show('days'); });
+  }
+
+  /* review (Instructions §6) — follows the range and copier filters */
+  var lastReview = null;
+  function renderReview(D){
+    var pc = function(x){ return x == null ? '—' : Math.round(x * 100) + '%'; }, f2 = function(x){ return x == null ? '—' : x.toFixed(2); };
+    var revs = D.per.map(function(q){ return { q:q, r:YC.review(q.calls) }; });
+    var y = YC.review(D.callerCalls).y;
+    var label = range === 'month' ? 'Month' : range === 'week' ? 'Week' : 'Day';
+    $('rv-title').textContent = label + ' review';
+    var cols = [['Caller', C.gold]].concat(revs.map(function(x){ return [D.per.length > 1 ? x.q.p : 'Copy', x.q.color]; }));
+    var line = function(name, a, b){ return '<b>' + name + '</b><span>' + a + '</span>' + b.map(function(v){ return '<span>' + v + '</span>'; }).join(''); };
+    var h = '<div class="rv" style="--cols:' + cols.length + '"><span></span>' + cols.map(function(c){ return '<span class="hd" style="color:' + c[1] + '">' + esc(c[0]) + '</span>'; }).join('');
+    h += line('Calls / taken', y.n, revs.map(function(x){ return x.r.c.n; }));
+    h += line('Win rate', pc(y.wr), revs.map(function(x){ return pc(x.r.c.wr); }));
+    h += line('Avg planned R', f2(y.avgPlan), revs.map(function(x){ return f2(x.r.c.avgPlan); }));
+    h += line('Realised R', YC.r2(y.real), revs.map(function(x){ return YC.r2(x.r.c.real); }));
+    h += line('Expectancy R', y.exp == null ? '—' : YC.r2(y.exp), revs.map(function(x){ return x.r.c.exp == null ? '—' : YC.r2(x.r.c.exp); }));
+    h += line('R missed', '', revs.map(function(x){ return YC.r2(x.r.missedR); }));
+    h += line('R lost on dev. calls', '', revs.map(function(x){ return YC.r2(x.r.devR); }));
+    h += line('Max drawdown R', '', revs.map(function(x){ return x.r.dd ? '−' + x.r.dd.toFixed(2) : '0.00'; }));
+    h += line('Max drawdown $', '', revs.map(function(x){ return x.r.ddUsd ? '−' + Math.round(x.r.ddUsd) : '0'; }));
+    h += line('Avg hold', '', revs.map(function(x){ return x.r.c.avgHold == null ? '—' : YC.hms(Math.round(x.r.c.avgHold)); }));
+    h += line('Deviations', '', revs.map(function(x){ var k = Object.keys(x.r.tags); return k.length ? k.map(function(t){ return (t === 'none' ? 'no tag' : t) + ' ' + x.r.tags[t]; }).join(' · ') : '0'; }));
+    $('review').innerHTML = h + '</div>';
+    lastReview = { label:label, D:D, y:y, revs:revs };
+  }
+  $('b-review').addEventListener('click', function(){
+    if (!lastReview) return;
+    var R = lastReview, D = R.D, f2 = function(x){ return x == null ? '—' : x.toFixed(2); }, pc = function(x){ return x == null ? '—' : Math.round(x * 100) + '%'; };
+    var span = D.dates.length ? (D.dates[0] === D.dates[D.dates.length - 1] ? D.dates[0] : D.dates[0] + ' to ' + D.dates[D.dates.length - 1]) : '—';
+    var md = '# TrackLog · ' + R.label + ' review\n\n' + span + ' · ' + D.dates.length + ' days · exported ' + new Date().toISOString().slice(0,16).replace('T', ' ') + ' UTC\n\n';
+    var heads = ['', 'Caller'].concat(R.revs.map(function(x){ return D.per.length > 1 ? x.q.p : 'Copy'; }));
+    md += '| ' + heads.join(' | ') + ' |\n|' + heads.map(function(){ return '---'; }).join('|') + '|\n';
+    var row = function(n, a, b){ md += '| ' + n + ' | ' + a + ' | ' + b.join(' | ') + ' |\n'; };
+    row('Calls / taken', R.y.n, R.revs.map(function(x){ return x.r.c.n; }));
+    row('Win rate', pc(R.y.wr), R.revs.map(function(x){ return pc(x.r.c.wr); }));
+    row('Avg planned R', f2(R.y.avgPlan), R.revs.map(function(x){ return f2(x.r.c.avgPlan); }));
+    row('Realised R', YC.r2(R.y.real), R.revs.map(function(x){ return YC.r2(x.r.c.real); }));
+    row('Expectancy R', R.y.exp == null ? '—' : YC.r2(R.y.exp), R.revs.map(function(x){ return x.r.c.exp == null ? '—' : YC.r2(x.r.c.exp); }));
+    row('R missed', '', R.revs.map(function(x){ return YC.r2(x.r.missedR); }));
+    row('R lost on deviation calls', '', R.revs.map(function(x){ return YC.r2(x.r.devR); }));
+    row('Max drawdown R', '', R.revs.map(function(x){ return '−' + f2(x.r.dd); }));
+    row('Max drawdown $', '', R.revs.map(function(x){ return '−' + Math.round(x.r.ddUsd); }));
+    row('Deviations', '', R.revs.map(function(x){ var k = Object.keys(x.r.tags); return k.length ? k.map(function(t){ return (t === 'none' ? 'no tag' : t) + ' ' + x.r.tags[t]; }).join(', ') : '0'; }));
+    D.per.forEach(function(q){
+      md += '\n## ' + (D.per.length > 1 ? q.p : 'Copy') + ' · by day\n\n| Day | Caller R | Copy R | Gap | Net $ | State |\n|---|---|---|---|---|---|\n';
+      q.perDay.forEach(function(p){ md += '| ' + fmtDate(p.date) + ' | ' + YC.r2(p.s.yR) + ' | ' + YC.r2(p.s.cR) + ' | ' + YC.r2(p.s.gap) + ' | ' + YC.usd(p.s.cUsd) + ' | ' + (p.row && p.row.state ? p.row.state.replace(/\|/g, '/').replace(/\n/g, ' ') : '') + ' |\n'; });
+    });
+    var blob = new Blob([md], {type:'text/markdown'}), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'tracklog-' + R.label.toLowerCase() + '-review-' + (D.dates[D.dates.length - 1] || 'empty') + '.md'; document.body.appendChild(a); a.click(); a.remove();
+  });
+
+  /* ===== DAYS ===== */
+  function renderDays(){
+    var ps = sel(), multi = ps.length > 1, dates = rangeDatesAll(ps);
+    var h = '<div class="row head"><span>Day</span><span class="r">Caller</span><span class="r">Copy</span><span class="r">Net $</span><span class="r">Calls</span></div>';
+    dates.forEach(function(d){
+      var st = ps.map(function(p){ var has = personDates(p).indexOf(d) >= 0, dc = has ? callsFor(p, [d]) : []; return { p:p, has:has, dc:dc, t:YC.dayStats(dc), row:dayRow(d, p) }; });
+      var any = st.find(function(x){ return x.has; }), t0 = YC.dayStats(calls.filter(function(c){ return c.date === d; }).map(function(c){ return callObj(c, any.p); }));
+      var row0 = any.row;
+      var tag = st.map(function(x){ if (!x.has) return '<span class="tag">—</span>'; var t = x.t, n = x.dc.length; if (multi) return '<span class="tag' + (t.devs ? ' dev' : t.missed ? ' miss' : '') + '">' + t.taken + '/' + n + '</span>'; return t.devs ? '<span class="tag dev">' + t.taken + '/' + n + ' · ' + t.devs + ' dev</span>' : t.missed ? '<span class="tag miss">' + t.taken + '/' + n + ' · ' + t.missed + ' miss</span>' : '<span class="tag">' + t.taken + '/' + n + '</span>'; }).join(multi ? '<br>' : '');
+      var cR = st.map(function(x){ return x.has ? '<span style="color:' + (x.t.cR < 0 ? C.loss : multi ? colorOf(x.p) : C.win) + '">' + YC.r2(x.t.cR) + '</span>' : '<span class="xs">—</span>'; }).join(multi ? '<br>' : '');
+      var usd = st.map(function(x){ return x.has ? '<span class="' + (x.t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(x.t.cUsd) + '</span>' : '<span class="xs">—</span>'; }).join(multi ? '<br>' : '');
+      h += '<button class="row' + (d === openDate ? ' open' : '') + '" data-date="' + d + '"><span class="d">' + fmtDate(d) + '<small>Day ' + ((row0 && row0.day_no) || '?') + (!multi && row0 && row0.state ? ' · ' + esc(row0.state) : '') + '</small></span>' +
+        '<span class="r num gold">' + YC.r2(t0.yR) + '</span><span class="r num">' + cR + '</span><span class="r num">' + usd + '</span><span class="r">' + tag + '</span></button>';
+    });
+    if (!dates.length) h += '<div class="row" style="cursor:default"><span class="d xs">No days imported yet.</span></div>';
     $('day-rows').innerHTML = h;
     $('day-rows').querySelectorAll('button.row').forEach(function(b){ b.addEventListener('click', function(){ openDate = (openDate === b.dataset.date) ? null : b.dataset.date; renderDays(); }); });
     renderDayView();
   }
+  function rangeDatesAll(ps){ var o = {}; ps.forEach(function(p){ personDates(p).forEach(function(d){ o[d] = 1; }); }); return Object.keys(o).sort().reverse(); }
 
   function sideKv(s, dir, other){
     var pl = YC.planR(s), slp = YC.slPts(s), tpp = YC.tpPts(s);
     var h = '<div class="kv"><b>Entry</b><span>' + YC.px(s.entry) + (other && s.entry !== other.entry ? ' <em class="' + ((s.entry - other.entry) * YC.sign(dir) < 0 ? 'pos' : 'neg') + '">' + YC.r2(s.entry - other.entry) + '</em>' : '') + '</span>' +
       '<b>SL</b><span' + (other && s.sl !== other.sl ? ' class="neg"' : '') + '>' + YC.px(s.sl) + ' <em>(' + (slp == null ? '—' : slp.toFixed(2)) + ')</em></span>' +
       '<b>TP</b><span>' + YC.px(s.tp) + (tpp != null ? ' <em>(' + tpp.toFixed(2) + ')</em>' : '') + '</span>' +
-      '<b>Plan R</b><span>' + (pl == null ? '—' : pl.toFixed(2)) + '</span><b>Risk</b><span>' + (YC.riskUsd(s) == null ? '—' : '$' + YC.riskUsd(s).toFixed(0)) + '</span></div>';
+      '<b>Plan R</b><span>' + (pl == null ? '—' : pl.toFixed(2)) + '</span><b>Risk</b><span>' + (YC.riskUsd(s) == null ? '—' : '$' + YC.riskUsd(s).toFixed(0)) + '</span>' +
+      (s.lag_s != null ? '<b>Lag</b><span>' + s.lag_s + 's' + (s.lag_pts != null ? ' · ' + YC.r2(s.lag_pts) + ' pts' : '') + '</span>' : '') + '</div>';
     var r = YC.realR(s, dir), p = YC.pts(s, dir);
     h += '<div class="exits">' + (s.exits || []).map(function(e){ return '<div><span>' + (e.t ? e.t + ' · ' : '') + YC.px(e.px) + ' × ' + e.qty + '</span><span>' + YC.r2(YC.sign(dir) * (e.px - s.entry)) + '</span></div>'; }).join('') +
-      '<div style="margin-top:3px;color:var(--text)"><span>' + (s.hold_s != null ? YC.hms(s.hold_s) : '') + '</span><span class="' + (r < 0 ? 'neg' : 'pos') + '">' + (s.net_usd != null ? 'net ' + YC.usd(s.net_usd) + ' · ' : s.net_usd_est != null ? 'est ' + YC.usd(s.net_usd_est) + ' · ' : '') + YC.r2(p) + ' pts · ' + YC.r2(r) + 'R</span></div></div>';
+      (p == null ? '<div><span class="xs">no exits yet</span></div>' : '<div style="margin-top:3px;color:var(--text)"><span>' + (s.hold_s != null ? YC.hms(s.hold_s) : '') + '</span><span class="' + (r < 0 ? 'neg' : 'pos') + '">' + (s.net_usd != null ? 'net ' + YC.usd(s.net_usd) + ' · ' : s.net_usd_est != null ? 'est ' + YC.usd(s.net_usd_est) + ' · ' : '') + YC.r2(p) + ' pts · ' + YC.r2(r) + 'R</span></div>') + '</div>';
     return h;
   }
 
   function renderDayView(){
     var el = $('day-view');
     if (!openDate){ el.innerHTML = ''; return; }
-    var d = days.find(function(x){ return x.date === openDate; }), dc = dayCalls(openDate), t = YC.dayStats(dc);
-    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(d.date) + ' · Day ' + (d.day_no || '?') + '</span><span class="meta num">' +
-      (d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + '</span></div>';
-    h += '<div class="tiles"><div class="tile"><div class="l">Caller</div><div class="v gold">' + YC.r2(t.yR) + 'R</div><div class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</div></div><div class="tile"><div class="l">Copy</div><div class="v ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + 'R</div><div class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts · ' + YC.usd(t.cUsd) + '</div></div><div class="tile"><div class="l">Gap</div><div class="v ' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</div><div class="s">miss ' + YC.r2(t.cause.missed) + ' · stop ' + YC.r2(t.cause.stop_size) + ' · fills ' + YC.r2(t.cause.fills) + ' · mgmt ' + YC.r2(t.cause.mgmt) + '</div></div></div>';
-    dc.forEach(function(k){
-      h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">#' + k.n + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' · ' + (k.time_et || '').slice(0,5) + ' ET / ' + bkk(k.time_et) + ' BKK</span><span class="tag' + (k.missed ? ' miss' : (k.copy && k.copy.status === 'deviation') ? ' dev' : '') + '">' + (k.missed ? 'Missed ' + esc(k.missed) : esc(k.source || '')) + '</span></div>';
-      h += '<div class="side"><div><div class="who y">Caller · ' + k.yush.qty + ' ' + esc(k.yush.contract) + '</div>' + sideKv(k.yush, k.dir, null) + '</div>';
-      h += k.copy ? '<div><div class="who c">Copy · ' + k.copy.qty + ' ' + esc(k.copy.contract) + '</div>' + sideKv(k.copy, k.dir, k.yush) + (k.copy.note ? '<p class="note" style="margin-top:6px">' + esc(k.copy.note) + '</p>' : '') + '</div>'
-                   : '<div><div class="who c">Copy</div><p class="note" style="color:var(--muted)">' + esc(k.note || 'Missed.') + '</p></div>';
+    var ps = sel().filter(function(p){ return personDates(p).indexOf(openDate) >= 0; });
+    if (!ps.length){ el.innerHTML = ''; return; }
+    var multi = ps.length > 1, base = calls.filter(function(c){ return c.date === openDate; });
+    var per = ps.map(function(p){ var dc = base.map(function(c){ return callObj(c, p); }); return { p:p, row:dayRow(openDate, p), dc:dc, t:YC.dayStats(dc) }; });
+    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(openDate) + ' · Day ' + ((per[0].row && per[0].row.day_no) || '?') + '</span></div>';
+    per.forEach(function(x){ var d = x.row, t = x.t;
+      h += (multi ? '<h2 style="margin:0;color:' + colorOf(x.p) + '">' + esc(x.p) + '</h2>' : '') + '<div class="day-top" style="margin-top:-8px"><span class="meta num">' + (d && d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d && d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d && d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + '</span></div>';
+      h += '<div class="tiles"><div class="tile"><div class="l">Caller</div><div class="v gold">' + YC.r2(t.yR) + 'R</div><div class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</div></div><div class="tile"><div class="l">Copy</div><div class="v ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + 'R</div><div class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts · ' + YC.usd(t.cUsd) + '</div></div><div class="tile"><div class="l">Gap</div><div class="v ' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</div><div class="s">miss ' + YC.r2(t.cause.missed) + ' · stop ' + YC.r2(t.cause.stop_size) + ' · fills ' + YC.r2(t.cause.fills) + ' · mgmt ' + YC.r2(t.cause.mgmt) + '</div></div></div>';
+    });
+    base.forEach(function(c, i){
+      var k0 = per[0].dc[i];
+      h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">#' + k0.n + ' · ' + (k0.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k0.inst) + ' · ' + (k0.time_et || '').slice(0,5) + ' ET / ' + YC.bkkOf(k0.date, k0.time_et) + ' BKK</span><span class="tag">' + esc(k0.source || '') + (k0.stamped_at ? ' · stamped' : '') + '</span></div>';
+      h += '<div class="side"><div><div class="who y">Caller · ' + k0.yush.qty + ' ' + esc(k0.yush.contract) + '</div>' + sideKv(k0.yush, k0.dir, null) + '</div>';
+      per.forEach(function(x){ var k = x.dc[i], nm = multi ? esc(x.p) : 'Copy';
+        h += k.copy ? '<div><div class="who c" style="color:' + colorOf(x.p) + '">' + nm + ' · ' + k.copy.qty + ' ' + esc(k.copy.contract) + (k.copy.status === 'deviation' ? ' · <span class="warn">dev</span>' : '') + '</div>' + sideKv(k.copy, k.dir, k.yush) + (k.copy.note ? '<p class="note" style="margin-top:6px">' + esc(k.copy.note) + '</p>' : '') + '</div>'
+                    : '<div><div class="who c" style="color:' + colorOf(x.p) + '">' + nm + ' · <span class="cyan">missed ' + esc(k.missed) + '</span></div><p class="note" style="color:var(--muted)">' + esc(k.note || 'Missed.') + '</p></div>';
+      });
       h += '</div>';
-      if (k.deviations.length){ h += '<div class="devs" style="margin-top:8px">' + k.deviations.map(function(v){ return '<div class="dev"><span class="k' + (v.tag ? '' : ' none') + '">' + (v.tag ? esc(v.tag) : 'no tag') + '</span><div><p>' + esc(v.what) + '</p><small>' + esc(v.why || '') + (v.r_effect != null ? ' · ' + YC.r2(+v.r_effect) + 'R' : '') + (v.usd_effect != null ? ' · ' + YC.usd(+v.usd_effect) : '') + '</small></div></div>'; }).join('') + '</div>'; }
+      per.forEach(function(x){ var k = x.dc[i]; if (k.deviations.length){ h += '<div class="devs" style="margin-top:8px">' + k.deviations.map(function(v){ return '<div class="dev"><span class="k' + (v.tag ? '' : ' none') + '">' + (multi ? esc(x.p) + ' · ' : '') + (v.tag ? esc(v.tag) : 'no tag') + '</span><div><p>' + esc(v.what) + '</p><small>' + esc(v.why || '') + (v.r_effect != null ? ' · ' + YC.r2(+v.r_effect) + 'R' : '') + (v.usd_effect != null ? ' · ' + YC.usd(+v.usd_effect) : '') + '</small></div></div>'; }).join('') + '</div>'; } });
       h += '</div>';
     });
-    if (d.state) h += '<div><h2>State</h2><p class="state">' + esc(d.state) + '</p></div>';
-    if (d.notion_url) h += '<p class="note"><a href="' + esc(d.notion_url) + '" target="_blank" rel="noopener">Notion day page</a></p>';
+    per.forEach(function(x){ if (x.row && x.row.state) h += '<div><h2>State' + (multi ? ' · ' + esc(x.p) : '') + '</h2><p class="state">' + esc(x.row.state) + '</p></div>'; });
+    per.forEach(function(x){ if (x.row && x.row.notion_url) h += '<p class="note"><a href="' + esc(x.row.notion_url) + '" target="_blank" rel="noopener">Notion day page' + (multi ? ' · ' + esc(x.p) : '') + '</a></p>'; });
     el.innerHTML = h + '</div>';
   }
 
-  function renderSettings(){
-    var s = settings || {};
-    var rows = [['Signed in', me.email], ['Version', YC_VERSION], ['Size rule', s.size_rule || '—'], ['DLL', s.dll_usd != null ? '−$' + s.dll_usd + ' / day, net' : '—'],
-      ['$ per point', Object.keys(YC.mult).map(function(k){ return k + ' ' + YC.mult[k]; }).join(' · ')], ['ET offset', s.et_offset_rule || '—'], ['Trade date', 'US session date (ET)'], ['Days stored', String(days.length)], ['Calls stored', String(calls.length)]];
-    $('set-rows').innerHTML = rows.map(function(r){ return '<div><span>' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
+  /* ===== LOG CALL (Batch 3) ===== */
+  var stampMs = null, stampTimer = null;
+  var lcIds = ['lc-inst','lc-dir','lc-src','lc-e','lc-sl','lc-tp','lc-q','lc-c'];
+  function lcContracts(){ var i = $('lc-inst').value, cur = $('lc-c').value, o = i === 'ES' ? ['MES','ES'] : ['MNQ','NQ']; $('lc-c').innerHTML = o.map(function(x){ return '<option' + (x === cur ? ' selected' : '') + '>' + x + '</option>'; }).join(''); }
+  function etNow(ms){ return YC.tzParts(ms, 'America/New_York'); }
+  function stampText(){ if (!stampMs) return 'tap any field to stamp'; var e = etNow(stampMs), b = YC.tzParts(stampMs, 'Asia/Bangkok'); return e.time + ' ET · ' + b.time + ' BKK'; }
+  function stamp(){ if (stampMs) return; stampMs = Date.now(); $('lc-stamp').textContent = stampText(); $('lc-stamp').style.color = 'var(--accent)'; }
+  lcIds.forEach(function(id){ var el = $(id); ['focus','pointerdown','input','change'].forEach(function(ev){ el.addEventListener(ev, stamp); }); el.addEventListener('input', lcCalc); el.addEventListener('change', lcCalc); });
+  $('lc-inst').addEventListener('change', function(){ lcContracts(); lcCalc(); });
+  function num(id){ var v = $(id).value.trim().replace(',', '.'); return v === '' ? null : +v; }
+  function lcRead(){ return { inst:$('lc-inst').value, dir:$('lc-dir').value, source:$('lc-src').value, entry:num('lc-e'), sl:num('lc-sl'), tp:num('lc-tp'), qty:num('lc-q') == null ? null : Math.round(num('lc-q')), contract:$('lc-c').value }; }
+  function lcCalc(){
+    var x = lcRead(), s = { entry:x.entry, sl:x.sl, tp:x.tp, qty:x.qty, contract:x.contract }, pl = YC.planR(s), hs = YC.halfSize(x.qty, x.contract);
+    var risk = hs && YC.slPts(s) != null ? YC.slPts(s) * hs.qty * (YC.mult[hs.contract] || 0) : null;
+    var bad = (x.entry != null && x.sl != null && ((x.dir === 'long' && x.sl >= x.entry) || (x.dir === 'short' && x.sl <= x.entry)));
+    $('lc-calc').innerHTML = 'Plan R ' + (pl == null ? '—' : pl.toFixed(2)) + ' · half size ' + (hs ? hs.qty + ' ' + hs.contract : '—') + ' · risk ' + (risk == null ? '—' : '$' + risk.toFixed(0)) + (bad ? ' · <span class="neg">SL on the wrong side for ' + x.dir + '</span>' : '');
   }
+  $('lc-reset').addEventListener('click', function(){ ['lc-e','lc-sl','lc-tp','lc-q'].forEach(function(id){ $(id).value = ''; }); stampMs = null; $('lc-stamp').textContent = stampText(); $('lc-stamp').style.color = ''; lcCalc(); msg('lc-msg', ''); });
+  function lcSave(missType){
+    var x = lcRead();
+    if (x.entry == null || x.sl == null){ msg('lc-msg', 'His entry and SL are needed.', 'err'); return; }
+    if (!stampMs) stampMs = Date.now();
+    var e = etNow(stampMs), date = e.date;
+    var n = calls.filter(function(c){ return c.date === date; }).reduce(function(m, c){ return Math.max(m, c.n); }, 0) + 1;
+    var row = { date:date, n:n, time_et:e.time, stamped_at:new Date(stampMs).toISOString(), source:x.source, inst:x.inst, dir:x.dir, y_entry:x.entry, y_sl:x.sl, y_tp:x.tp, y_qty:x.qty, y_contract:x.contract, y_exits:[] };
+    $('lc-save').disabled = $('lc-miss').disabled = true; msg('lc-msg', 'Saving…');
+    sb.from('yc_calls').insert(row).select('id').then(function(r){ if (r.error) throw r.error;
+      if (!missType) return r;
+      return sb.from('yc_copies').insert({ call_id:r.data[0].id, copier:me.email, status:'missed', missed:missType }).then(function(q){ if (q.error) throw q.error; return r; });
+    }).then(function(){ return load(); }).then(function(){
+      msg('lc-msg', 'Saved #' + n + ' · ' + shortD(date) + ' · ' + e.time + ' ET' + (missType ? ' · missed ' + missType : '') + '. Claude uses #' + n + ' for this call in the day file.', 'ok');
+      ['lc-e','lc-sl','lc-tp','lc-q'].forEach(function(id){ $(id).value = ''; }); stampMs = null; $('lc-stamp').textContent = stampText(); $('lc-stamp').style.color = ''; lcCalc();
+      renderAll();
+    }).catch(function(err){ msg('lc-msg', 'Save failed: ' + (err.message || err), 'err'); }).then(function(){ $('lc-save').disabled = $('lc-miss').disabled = false; });
+  }
+  $('lc-save').addEventListener('click', function(){ lcSave(null); });
+  $('lc-miss').addEventListener('click', function(){ lcSave($('lc-m').value); });
+  function renderLog(){
+    lcContracts(); lcCalc();
+    var today = etNow(Date.now()).date, logged = calls.filter(function(c){ return c.stamped_at; }).sort(function(a, b){ return a.stamped_at < b.stamped_at ? 1 : -1; });
+    var dayShown = logged.length && logged[0].date !== today ? logged[0].date : today, list = logged.filter(function(c){ return c.date === dayShown; });
+    $('lc-day').textContent = shortD(dayShown) + ' ET';
+    $('lc-list').innerHTML = list.length ? list.map(function(c){
+      var mine = copies.find(function(x){ return x.call_id === c.id && personOf(x.copier) === myName; }), others = copies.some(function(x){ return x.call_id === c.id && personOf(x.copier) !== myName; });
+      return '<div><span>#' + c.n + ' · ' + (c.time_et || '').slice(0,8) + ' · ' + (c.dir === 'short' ? 'S' : 'L') + ' ' + esc(c.inst) + ' ' + (+c.y_entry) + ' / ' + (+c.y_sl) + (c.y_tp != null ? ' / ' + (+c.y_tp) : '') + (c.y_qty ? ' · ' + c.y_qty + ' ' + esc(c.y_contract) : '') + (mine && mine.status === 'missed' ? ' · <span class="cyan">' + esc(mine.missed || 'missed') + '</span>' : mine ? ' · <span class="pos">imported</span>' : '') + '</span>' +
+        (!others && !(mine && mine.status !== 'missed') ? '<button data-del="' + c.id + '">Delete</button>' : '') + '</div>';
+    }).join('') : '<span class="xs">Nothing logged ' + (dayShown === today ? 'today' : 'that day') + '.</span>';
+    $('lc-list').querySelectorAll('button[data-del]').forEach(function(b){ b.addEventListener('click', function(){
+      if (b.dataset.armed !== '1'){ b.dataset.armed = '1'; b.textContent = 'Tap again'; return; }
+      sb.from('yc_calls').delete().eq('id', b.dataset.del).then(function(r){ if (r.error) throw r.error; return load(); }).then(renderAll).catch(function(err){ msg('lc-msg', 'Delete failed: ' + (err.message || err), 'err'); });
+    }); });
+  }
+
+  /* ===== SETTINGS ===== */
+  function renderSettings(){
+    var s = settingsOf(myName) || {}, m = s.mult || YC.mult;
+    $('st-size').value = s.size_rule || ''; $('st-dll').value = s.dll_usd != null ? s.dll_usd : ''; $('st-et').value = s.et_offset_rule || '';
+    ['NQ','MNQ','ES','MES'].forEach(function(k){ $('st-' + k).value = m[k] != null ? m[k] : ''; });
+    var rows = [['Signed in', me.email + ' (' + myName + ')'], ['Version', YC_VERSION], ['Trade date', 'US session date (ET)'], ['Days stored', String(days.length)], ['Calls stored', String(calls.length)]];
+    $('set-rows').innerHTML = rows.map(function(r){ return '<div><span>' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
+    $('set-mem').innerHTML = members.map(function(x){ return '<div><span>' + esc(x.name || '—') + ' · ' + esc(x.role || 'copier') + '</span><span>' + esc(x.email) + '</span></div>'; }).join('');
+    $('set-rules').innerHTML = rules.length ? rules.map(function(r){ return '<div><span>' + esc(r.date || '') + ' · ' + esc(r.rule || '') + '</span><span>' + esc(r.old || '—') + ' → ' + esc(r.new || '—') + (r.why ? '<br><small>' + esc(r.why) + '</small>' : '') + '</span></div>'; }).join('') : '<div><span class="xs">None yet. Changes are logged in Notion until Claude adds them here.</span><span></span></div>';
+  }
+  $('st-save').addEventListener('click', function(){
+    var mult = {}; ['NQ','MNQ','ES','MES'].forEach(function(k){ var v = num('st-' + k); if (v != null) mult[k] = v; });
+    var dll = num('st-dll');
+    if (dll == null || dll <= 0){ msg('set-msg', 'DLL must be a positive number.', 'err'); return; }
+    var row = { copier:me.email, size_rule:$('st-size').value.trim() || null, dll_usd:dll, mult:mult, et_offset_rule:$('st-et').value.trim() || null };
+    sb.from('yc_settings').upsert(row, {onConflict:'copier'}).then(function(r){ if (r.error) throw r.error; return load(); }).then(function(){ var st = settingsOf(myName); if (st && st.mult) YC.mult = st.mult; renderAll(); msg('set-msg', 'Settings saved.', 'ok'); })
+      .catch(function(e){ msg('set-msg', 'Save failed: ' + (e.message || e), 'err'); });
+  });
   $('b-export').addEventListener('click', function(){
-    var out = days.map(function(d){ return { schema:'yc-day-1', date:d.date, day_no:d.day_no, copier:d.copier, account:d.account, balance_start:d.balance_start, balance_eod:d.balance_eod, commissions:d.commissions, state:d.state, notion_url:d.notion_url, calls:dayCalls(d.date) }; });
+    var mine = personDates(myName);
+    var out = mine.map(function(date){ var d = dayRow(date, myName); return { schema:'yc-day-1', date:date, day_no:d.day_no, copier:d.copier, account:d.account, balance_start:d.balance_start == null ? null : +d.balance_start, balance_eod:d.balance_eod == null ? null : +d.balance_eod, commissions:d.commissions == null ? null : +d.commissions, state:d.state, notion_url:d.notion_url,
+      calls:callsFor(myName, [date]).map(function(k){ var o = { n:k.n, time_et:k.time_et, stamped_at:k.stamped_at, source:k.source, inst:k.inst, dir:k.dir, yush:k.yush, copy:k.copy, deviations:k.deviations.map(function(v){ return { tag:v.tag, what:v.what, why:v.why, r_effect:v.r_effect == null ? null : +v.r_effect, usd_effect:v.usd_effect == null ? null : +v.usd_effect }; }) }; if (!k.copy){ o.missed = k.missed; o.note = k.note; } return o; }) }; });
     var blob = new Blob([JSON.stringify(out, null, 1)], {type:'application/json'}), a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = 'tracklog-export-' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); a.remove();
     msg('set-msg', 'Exported ' + out.length + ' days.', 'ok');
   });
 
-  /* import */
+  /* ===== IMPORT ===== */
   $('l-file').addEventListener('change', function(){
     var f = this.files && this.files[0]; if (!f) return;
     var r = new FileReader(); r.onload = function(){ $('l-json').value = r.result; preview(); }; r.readAsText(f);
@@ -506,38 +870,49 @@ if (typeof module !== 'undefined') module.exports = YC;
     var errs = YC.validate(j);
     if (errs.length){ msg('l-msg', errs.join(' · '), 'err'); return; }
     j.copier = me.email; /* always the signed-in user, whatever the file says */
-    var t = YC.dayStats(j.calls), exists = days.some(function(d){ return d.date === j.date && d.copier === j.copier; });
-    $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · ' + esc(j.copier) + (exists ? ' · <span class="warn">replaces existing day</span>' : '') + '</div>' +
+    var t = YC.dayStats(j.calls), exists = !!dayRow(j.date, myName);
+    var warn = [];
+    j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; }); if (c && c.stamped_at && (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl)) warn.push('#' + k.n + ' differs from the call logged live (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ')'); });
+    $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · ' + esc(myName) + (exists ? ' · <span class="warn">replaces your existing day</span>' : '') + '</div>' +
       '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations</div>' +
       '<div>Caller ' + YC.r2(t.yR) + 'R · Copy ' + YC.r2(t.cR) + 'R · gap ' + YC.r2(t.gap) + 'R · net ' + YC.usd(t.cUsd) + '</div>' +
-      '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + '</div>';
+      '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + '</div>' +
+      warn.map(function(w){ return '<div class="warn">' + esc(w) + '</div>'; }).join('');
     msg('l-msg', 'Valid. Check the numbers, then Save day.', 'ok');
     pending = j; $('l-save').disabled = false;
   }
   $('l-save').addEventListener('click', function(){
     if (!pending) return; var j = pending; $('l-save').disabled = true; msg('l-msg', 'Saving…');
-    var dayRow = { date:j.date, copier:j.copier, day_no:j.day_no, account:j.account, balance_start:j.balance_start, balance_eod:j.balance_eod, commissions:j.commissions, state:j.state, notion_url:j.notion_url, imported_at:new Date().toISOString(), source_file:'yc-day-1' };
-    sb.from('yc_days').upsert(dayRow, {onConflict:'date,copier'}).then(function(r){ if (r.error) throw r.error;
-      var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est, missed:k.copy ? null : (k.missed || null), note:k.note || null }; });
-      return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n');
+    var mine = emailsOf(myName), others = mine.filter(function(e){ return e !== me.email; });
+    var dayRow0 = { date:j.date, copier:me.email, day_no:j.day_no, account:j.account, balance_start:j.balance_start, balance_eod:j.balance_eod, commissions:j.commissions, state:j.state, notion_url:j.notion_url, imported_at:new Date().toISOString(), source_file:'yc-day-1' };
+    var ids = {}, stamps = {};
+    (others.length ? sb.from('yc_days').delete().eq('date', j.date).in('copier', others) : Promise.resolve({})).then(function(r){ if (r.error) throw r.error;
+      return sb.from('yc_days').upsert(dayRow0, {onConflict:'date,copier'});
     }).then(function(r){ if (r.error) throw r.error;
-      var ids = {}; r.data.forEach(function(x){ ids[x.n] = x.id; });
-      var callIds = Object.keys(ids).map(function(n){ return ids[n]; });
-      return sb.from('yc_copies').delete().eq('copier', j.copier).in('call_id', callIds).then(function(d){ if (d.error) throw d.error; return ids; });
-    }).then(function(ids){
-      var copyRows = j.calls.filter(function(k){ return k.copy; }).map(function(k){ var c = k.copy; return { call_id:ids[k.n], copier:j.copier, c_entry:c.entry, c_sl:c.sl, c_tp:c.tp, c_qty:c.qty, c_contract:c.contract, c_exits:c.exits || [], c_net_usd:c.net_usd, lag_s:c.lag_s, lag_pts:c.lag_pts, hold_s:c.hold_s, status:c.status || 'copied', note:c.note || null, _n:k.n }; });
+      /* caller fields only: the live stamp, miss types and notes are per copier and are not overwritten */
+      var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est == null ? null : k.yush.net_usd_est }; });
+      return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n,stamped_at');
+    }).then(function(r){ if (r.error) throw r.error;
+      r.data.forEach(function(x){ ids[x.n] = x.id; stamps[x.n] = x.stamped_at; });
+      return sb.from('yc_copies').delete().in('copier', mine).in('call_id', Object.keys(ids).map(function(n){ return ids[n]; }));
+    }).then(function(d){ if (d.error) throw d.error;
+      var copyRows = j.calls.map(function(k){ var c = k.copy;
+        if (!c) return { call_id:ids[k.n], copier:me.email, c_entry:null, c_sl:null, c_tp:null, c_qty:null, c_contract:null, c_exits:[], c_net_usd:null, lag_s:null, lag_pts:null, hold_s:null, status:'missed', missed:k.missed, note:k.note || null };
+        var lag = c.lag_s;
+        if (lag == null && c.t_entry && stamps[k.n]) lag = Math.round((YC.etToMs(j.date, c.t_entry) - Date.parse(stamps[k.n])) / 1000);
+        return { call_id:ids[k.n], copier:me.email, c_entry:c.entry, c_sl:c.sl, c_tp:c.tp, c_qty:c.qty, c_contract:c.contract, c_exits:c.exits || [], c_net_usd:c.net_usd, lag_s:lag == null ? null : lag, lag_pts:c.lag_pts == null ? null : c.lag_pts, hold_s:c.hold_s == null ? null : c.hold_s, status:c.status || 'copied', missed:null, note:c.note || null };
+      });
       if (!copyRows.length) return {};
-      var clean = copyRows.map(function(x){ var y = Object.assign({}, x); delete y._n; return y; });
-      return sb.from('yc_copies').insert(clean).select('id,call_id').then(function(r){ if (r.error) throw r.error;
+      return sb.from('yc_copies').insert(copyRows).select('id,call_id').then(function(r){ if (r.error) throw r.error;
         var byCall = {}; r.data.forEach(function(x){ byCall[x.call_id] = x.id; });
         var devRows = [];
-        j.calls.forEach(function(k){ if (k.copy && k.deviations) k.deviations.forEach(function(v){ devRows.push({ copy_id:byCall[ids[k.n]], tag:v.tag || null, what:v.what, why:v.why || null, r_effect:v.r_effect, usd_effect:v.usd_effect }); }); });
+        j.calls.forEach(function(k){ if (k.copy && k.deviations) k.deviations.forEach(function(v){ devRows.push({ copy_id:byCall[ids[k.n]], tag:v.tag || null, what:v.what, why:v.why || null, r_effect:v.r_effect == null ? null : v.r_effect, usd_effect:v.usd_effect == null ? null : v.usd_effect }); }); });
         return devRows.length ? sb.from('yc_deviations').insert(devRows) : {};
       });
     }).then(function(r){ if (r && r.error) throw r.error;
       return load();
     }).then(function(){ renderAll(); pending = null; $('l-json').value = ''; $('l-out').innerHTML = ''; msg('l-msg', 'Saved ' + fmtDate(j.date) + '. See Days.', 'ok'); })
-    .catch(function(e){ msg('l-msg', 'Save failed: ' + (e.message || e) + '. Nothing to undo by hand; re-import the same file after fixing.', 'err'); $('l-save').disabled = false; });
+    .catch(function(e){ msg('l-msg', 'Save failed: ' + (e.message || e) + '. Re-import the same file after fixing.', 'err'); $('l-save').disabled = false; });
   });
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
