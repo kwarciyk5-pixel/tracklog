@@ -1,0 +1,410 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#08090a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TrackLog</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#08090a;--surface:#101113;--surface-2:#16181b;--border:#1f2126;--border-strong:#2a2d33;
+  --text:#e6e6e8;--muted:#8a8f98;--dim:#5c6068;
+  --accent:#c9a96e;--accent-dim:#8a7448;--accent-glow:rgba(201,169,110,.12);
+  --win:#4ade80;--loss:#f87171;--warn:#f59e0b;--cy:#22d3ee;
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 var(--sans);-webkit-font-smoothing:antialiased;padding:0 16px;padding-block:calc(10px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:720px;margin:0 auto;display:grid;gap:16px}
+h1{font-size:17px;font-weight:600;margin:0}
+h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+.hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr .sub{color:var(--muted);font-size:12px}
+.pill{font-size:11px;color:var(--accent);border:1px solid var(--accent-dim);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.num,.kv span,.exits,.tile .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pos{color:var(--win)}.neg{color:var(--loss)}.gold{color:var(--accent)}.cyan{color:var(--cy)}.warn{color:var(--warn)}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;position:sticky;top:env(safe-area-inset-top,0px);z-index:2}
+.tabs button{background:var(--surface);color:var(--muted);border:0;padding:10px 6px;font:500 12.5px var(--sans);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--surface-2);color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+.tabs button:focus-visible,.btn:focus-visible,.f input:focus-visible,.f select:focus-visible,.f textarea:focus-visible{outline:2px solid var(--cy);outline-offset:1px}
+.tab[hidden]{display:none}.tab{display:grid;gap:16px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+@media(max-width:560px){.tiles{grid-template-columns:repeat(2,1fr)}}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 11px 8px;min-width:0;display:grid;gap:4px;align-content:start}
+.tile .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.tile .v{font-size:19px;font-weight:500;line-height:1.1}
+.tile .s{font-size:11px;color:var(--muted)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:0}
+.note{font-size:11.5px;color:var(--dim);margin:0}
+.rows{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.row{display:grid;grid-template-columns:1.3fr .7fr .7fr .7fr .9fr;gap:8px;align-items:center;background:var(--surface);padding:10px 12px;font-size:13px;min-width:0;border:0;color:inherit;text-align:left;width:100%;font-family:inherit;cursor:pointer}
+.row.head{background:var(--surface-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);cursor:default}
+.row.open{background:var(--accent-glow);border-left:2px solid var(--accent)}
+.row>span{min-width:0}
+.row .d{font-weight:500;overflow:hidden}.row .d small{display:block;color:var(--dim);font-size:11px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .r{text-align:right}
+.tag{font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
+.tag.dev{color:var(--warn);border-color:rgba(245,158,11,.4)}.tag.miss{color:var(--cy);border-color:rgba(34,211,238,.35)}
+.day-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.day-top .t{font-size:15px;font-weight:600}.day-top .meta{font-size:12px;color:var(--muted)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12.5px}
+.kv b{font-weight:500;color:var(--muted)}.kv span{text-align:right}.kv em{color:var(--dim);font-style:normal}
+.side{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.side>div{background:var(--surface);padding:10px 12px;min-width:0}
+.side .who{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.side .who.y{color:var(--accent)}.side .who.c{color:var(--cy)}
+.exits{margin-top:8px;border-top:1px dashed var(--border-strong);padding-top:6px;font-size:12px;color:var(--muted)}
+.exits div{display:flex;justify-content:space-between;gap:4px 8px;flex-wrap:wrap}
+.exits div span:last-child{text-align:right;margin-left:auto}
+.devs{display:grid;gap:8px}
+.dev{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:9px 11px;border:1px solid var(--border);border-left:2px solid var(--warn);border-radius:6px;background:var(--surface);font-size:12.5px}
+.dev .k{font-family:var(--mono);color:var(--warn);font-size:11px;white-space:nowrap;padding-top:2px}.dev .k.none{color:var(--muted)}
+.dev p{margin:0}.dev small{color:var(--muted);display:block;margin-top:2px}
+.state{font-size:13px;border-left:2px solid var(--accent-dim);padding-left:10px;margin:0}
+.form{display:grid;gap:10px}
+.f{display:grid;gap:4px}
+.f label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim)}
+.f input,.f select,.f textarea{background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);border-radius:6px;padding:9px 10px;font:13px var(--mono);width:100%}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);border-radius:6px;padding:11px 12px;font:500 13px var(--sans);cursor:pointer;text-align:left}
+.btn.p{background:var(--accent);color:#1a1408;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn small{display:block;font-weight:400;font-size:11px;opacity:.75;margin-top:1px}
+.set{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.set div{display:flex;justify-content:space-between;gap:10px;background:var(--surface);padding:10px 12px;font-size:13px}
+.set div span:last-child{font-family:var(--mono);color:var(--muted);text-align:right;word-break:break-word}
+.msg{font-size:12.5px;padding:8px 10px;border-radius:6px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--muted)}
+.msg.ok{border-color:rgba(74,222,128,.4);color:var(--win)}.msg.err{border-color:rgba(248,113,113,.4);color:var(--loss)}
+.login{display:grid;gap:14px;justify-items:start;padding:24px 0}
+.login p{margin:0;color:var(--muted);max-width:42ch}
+.prev{font-family:var(--mono);font-size:12px;color:var(--muted);display:grid;gap:3px}
+.prev b{color:var(--text);font-weight:500}
+.spacer{height:4px}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div><h1>TrackLog</h1><div class="sub" id="sub">Copy record &middot; in R</div></div>
+    <span class="pill" id="pill">&hellip;</span>
+  </div>
+
+  <div id="login" class="login" hidden>
+    <p>Sign in with the Google account on the members list. Nothing here is readable without it.</p>
+    <button class="btn p" id="b-login" style="flex:0">Sign in with Google</button>
+    <div class="msg err" id="login-err" hidden></div>
+  </div>
+
+  <div id="app" hidden>
+    <div class="tabs" role="tablist" style="margin-bottom:16px">
+      <button role="tab" id="t-dash" aria-selected="true" data-tab="dash">Dashboard</button>
+      <button role="tab" id="t-days" aria-selected="false" data-tab="days">Days</button>
+      <button role="tab" id="t-log" aria-selected="false" data-tab="log">Log</button>
+      <button role="tab" id="t-set" aria-selected="false" data-tab="set">Settings</button>
+    </div>
+
+    <section class="tab" id="tab-dash">
+      <div class="tiles" id="dash-tiles"></div>
+      <p class="note">Batch 1: totals only. Charts and the six visual tiles come in Batch 2.</p>
+    </section>
+
+    <section class="tab" id="tab-days" hidden>
+      <div class="rows" id="day-rows"></div>
+      <div id="day-view"></div>
+    </section>
+
+    <section class="tab" id="tab-log" hidden>
+      <div class="card form">
+        <h2 style="margin:0">Import day &middot; JSON</h2>
+        <p class="note" style="color:var(--muted)">One file per day, in the <span class="num">yc-day-1</span> shape. Re-importing a date replaces that day.</p>
+        <div class="f"><label for="l-file">File</label><input type="file" id="l-file" accept="application/json,.json"></div>
+        <div class="f"><label for="l-json">or paste</label><textarea id="l-json" rows="4" placeholder="{ &quot;schema&quot;: &quot;yc-day-1&quot;, &hellip; }"></textarea></div>
+        <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save day</button></div>
+        <div class="prev" id="l-out"></div>
+        <div class="msg" id="l-msg" hidden></div>
+      </div>
+      <div class="card">
+        <h2>Log call</h2>
+        <p class="note">Batch 3. Stamps his call live so entry lag is measured.</p>
+      </div>
+    </section>
+
+    <section class="tab" id="tab-set" hidden>
+      <div class="set" id="set-rows"></div>
+      <div class="btnrow"><button class="btn" id="b-export">Export all<small>JSON of every day</small></button><button class="btn" id="b-logout">Sign out</button></div>
+      <div class="msg" id="set-msg" hidden></div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* ===== CALC (pure; tested headless) ===== */
+var YC_VERSION = 'yc-v1';
+var YC = {
+  mult: {NQ:20, MNQ:2, ES:50, MES:5},
+  sign: function(dir){ return dir === 'short' ? -1 : 1; },
+  slPts: function(s){ return (s && s.entry != null && s.sl != null) ? Math.abs(s.entry - s.sl) : null; },
+  tpPts: function(s){ return (s && s.entry != null && s.tp != null) ? Math.abs(s.tp - s.entry) : null; },
+  planR: function(s){ var a = YC.slPts(s), b = YC.tpPts(s); return (a && b != null) ? b / a : null; },
+  pts: function(s, dir){
+    if (!s || !s.exits || !s.exits.length) return null;
+    var q = 0, sum = 0, sg = YC.sign(dir);
+    s.exits.forEach(function(e){ q += e.qty; sum += sg * (e.px - s.entry) * e.qty; });
+    return q ? sum / q : null;
+  },
+  realR: function(s, dir){ var a = YC.slPts(s), p = YC.pts(s, dir); return (a && p != null) ? p / a : null; },
+  riskUsd: function(s){ var a = YC.slPts(s); return (a != null && s.qty) ? a * s.qty * (YC.mult[s.contract] || 0) : null; },
+  gapCause: function(call){
+    if (!call.copy) return 'missed';
+    if (call.copy.sl !== call.yush.sl) return 'stop_size';
+    if (call.copy.entry !== call.yush.entry) return 'fills';
+    return 'mgmt';
+  },
+  callStats: function(call){
+    var y = call.yush, c = call.copy, d = call.dir;
+    var o = { yR: YC.realR(y, d), yPts: YC.pts(y, d), yPlan: YC.planR(y), yRisk: YC.riskUsd(y),
+              cR: c ? YC.realR(c, d) : null, cPts: c ? YC.pts(c, d) : null, cPlan: c ? YC.planR(c) : null, cRisk: c ? YC.riskUsd(c) : null };
+    o.gap = (o.yR != null) ? ((o.cR == null ? 0 : o.cR) - o.yR) : null;
+    o.cause = YC.gapCause(call);
+    return o;
+  },
+  dayStats: function(calls){
+    var t = { yR:0, yPts:0, yW:0, yL:0, cR:0, cPts:0, cW:0, cL:0, cUsd:0, taken:0, missed:0, devs:0, gap:0, cause:{missed:0, stop_size:0, fills:0, mgmt:0} };
+    calls.forEach(function(k){
+      var s = YC.callStats(k);
+      if (s.yR != null){ t.yR += s.yR; t.yPts += s.yPts; if (s.yR > 0) t.yW++; else if (s.yR < 0) t.yL++; }
+      if (k.copy){ t.taken++; if (s.cR != null){ t.cR += s.cR; t.cPts += s.cPts; if (s.cR > 0) t.cW++; else if (s.cR < 0) t.cL++; } t.cUsd += (k.copy.net_usd || 0); }
+      else t.missed++;
+      t.devs += (k.deviations || []).length;
+      if (s.gap != null){ t.gap += s.gap; t.cause[s.cause] += s.gap; }
+    });
+    return t;
+  },
+  r2: function(x){ return x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2); },
+  usd: function(x){ return x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toLocaleString('en-US', {maximumFractionDigits:2}); },
+  px: function(x){ return x == null ? '—' : (+x).toFixed(2); },
+  hms: function(s){ if (s == null) return '—'; var m = Math.floor(s/60), r = s % 60; return m + 'm' + (r < 10 ? '0' : '') + r + 's'; },
+  validate: function(j){
+    var e = [];
+    if (!j || typeof j !== 'object') return ['not an object'];
+    if (j.schema !== 'yc-day-1') e.push('schema must be yc-day-1');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(j.date || '')) e.push('date must be YYYY-MM-DD');
+    if (!Array.isArray(j.calls)) e.push('calls must be an array');
+    else j.calls.forEach(function(k, i){
+      var p = 'calls[' + i + '] ';
+      if (typeof k.n !== 'number') e.push(p + 'n missing');
+      if (!k.yush || typeof k.yush.entry !== 'number' || typeof k.yush.sl !== 'number') e.push(p + 'yush.entry/sl missing');
+      if (k.dir !== 'long' && k.dir !== 'short') e.push(p + 'dir must be long/short');
+      if (k.copy){ if (typeof k.copy.entry !== 'number' || typeof k.copy.sl !== 'number') e.push(p + 'copy.entry/sl missing');
+        if (!Array.isArray(k.copy.exits)) e.push(p + 'copy.exits must be an array'); }
+      else if (!k.missed) e.push(p + 'copy null needs missed M1/M2/M3');
+      ['entry','sl','tp'].forEach(function(f){ if (k.yush && k.yush[f] != null && typeof k.yush[f] === 'string') e.push(p + 'yush.' + f + ' is a string'); });
+    });
+    return e;
+  }
+};
+if (typeof module !== 'undefined') module.exports = YC;
+</script>
+<script>
+/* ===== APP ===== */
+(function(){
+  var SB_URL = 'https://xljsiznknzrepvbwuiax.supabase.co';
+  var SB_KEY = 'sb_publishable__bBgcqi4VfhIryjgI5w0VQ_hUHsambk';
+  var sb = supabase.createClient(SB_URL, SB_KEY);
+  var $ = function(id){ return document.getElementById(id); };
+  var me = null, days = [], calls = [], copies = [], devs = [], settings = null, openDate = null, pending = null;
+  var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
+  var fmtDate = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][x.getUTCMonth()] + ' (' + ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][x.getUTCDay()] + ')'; };
+  var bkk = function(t){ if (!t) return ''; var h = +t.slice(0,2) + 11; return (h % 24 < 10 ? '0' : '') + (h % 24) + t.slice(2,5); };
+  function msg(id, text, cls){ var el = $(id); el.textContent = text; el.className = 'msg' + (cls ? ' ' + cls : ''); el.hidden = !text; }
+
+  /* tabs */
+  var tabs = document.querySelectorAll('.tabs button'), panels = {dash:'tab-dash', days:'tab-days', log:'tab-log', set:'tab-set'};
+  function show(k){ tabs.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.tab === k); }); Object.keys(panels).forEach(function(p){ $(panels[p]).hidden = (p !== k); }); try { localStorage.setItem('yc_tab', k); } catch(e){} }
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
+
+  /* auth */
+  $('b-login').addEventListener('click', function(){
+    sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } }).then(function(r){ if (r.error) msg('login-err', r.error.message, 'err'); });
+  });
+  $('b-logout').addEventListener('click', function(){ sb.auth.signOut().then(function(){ location.reload(); }); });
+  sb.auth.onAuthStateChange(function(ev, session){ if (session && !me){ me = session.user; boot(); } });
+  sb.auth.getSession().then(function(r){
+    if (r.data.session){ me = r.data.session.user; boot(); }
+    else { $('login').hidden = false; $('pill').textContent = 'signed out'; }
+  });
+
+  /* data */
+  function load(){
+    return Promise.all([
+      sb.from('yc_days').select('*').order('date', {ascending:false}),
+      sb.from('yc_calls').select('*').order('date').order('n'),
+      sb.from('yc_copies').select('*'),
+      sb.from('yc_deviations').select('*'),
+      sb.from('yc_settings').select('*').eq('copier', me.email).maybeSingle()
+    ]).then(function(r){
+      var err = r.find(function(x){ return x.error; });
+      if (err) throw err.error;
+      days = r[0].data; calls = r[1].data; copies = r[2].data; devs = r[3].data; settings = r[4].data;
+    });
+  }
+  /* shape a DB call into the JSON-call shape the calc layer reads */
+  function callObj(c){
+    var cp = copies.find(function(x){ return x.call_id === c.id && x.copier === me.email; });
+    return { n:c.n, date:c.date, time_et:c.time_et, source:c.source, inst:c.inst, dir:c.dir, missed:c.missed, note:c.note,
+      yush:{ entry:+c.y_entry, sl:+c.y_sl, tp:c.y_tp == null ? null : +c.y_tp, qty:c.y_qty, contract:c.y_contract, exits:c.y_exits || [], net_usd_est:c.y_net_usd_est == null ? null : +c.y_net_usd_est },
+      copy: cp ? { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note } : null,
+      deviations: cp ? devs.filter(function(d){ return d.copy_id === cp.id; }) : [] };
+  }
+  function dayCalls(date){ return calls.filter(function(c){ return c.date === date; }).map(callObj); }
+
+  function boot(){
+    $('login').hidden = true;
+    $('pill').textContent = YC_VERSION;
+    load().then(function(){
+      if (settings && settings.mult) YC.mult = settings.mult;
+      $('app').hidden = false;
+      var t = 'dash'; try { t = localStorage.getItem('yc_tab') || 'dash'; } catch(e){}
+      show(panels[t] ? t : 'dash');
+      renderAll();
+    }).catch(function(e){ $('login').hidden = false; msg('login-err', 'Signed in as ' + me.email + ' but not on the members list, or: ' + (e.message || e), 'err'); $('b-login').hidden = true; });
+  }
+
+  function renderAll(){ renderDash(); renderDays(); renderSettings(); }
+
+  function renderDash(){
+    var all = calls.map(callObj), t = YC.dayStats(all);
+    var last = days[0];
+    var tiles = [
+      ['R · Caller vs Copy', '<span class="gold">' + YC.r2(t.yR) + '</span> <span class="s">/</span> <span class="cyan">' + YC.r2(t.cR) + '</span>', all.length + ' calls · ' + t.taken + ' taken'],
+      ['Gap · month', '<span class="' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</span>', 'miss ' + YC.r2(t.cause.missed) + ' · stop/size ' + YC.r2(t.cause.stop_size)],
+      ['Calls copied', t.taken + '<span class="s"> / ' + all.length + '</span>', t.missed + ' missed · ' + t.devs + ' deviations'],
+      ['Copy net $', '<span class="' + (t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(t.cUsd) + '</span>', days.length + ' days'],
+      ['Balance', last && last.balance_eod != null ? (+last.balance_eod).toLocaleString('en-US') : '—', last ? 'EOD ' + fmtDate(last.date) : ''],
+      ['Caller $ est.', '<span class="gold">' + YC.usd(all.reduce(function(a, k){ return a + (k.yush.net_usd_est || 0); }, 0)) + '</span>', 'gross, from his shown exits']
+    ];
+    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x[0] + '</div><div class="v">' + x[1] + '</div><div class="s">' + x[2] + '</div></div>'; }).join('');
+  }
+
+  function renderDays(){
+    var h = '<div class="row head"><span>Day</span><span class="r">Caller</span><span class="r">Copy</span><span class="r">Net $</span><span class="r">Calls</span></div>';
+    days.forEach(function(d){
+      var dc = dayCalls(d.date), t = YC.dayStats(dc);
+      var tag = t.devs ? '<span class="tag dev">' + t.taken + '/' + dc.length + ' · ' + t.devs + ' dev</span>' : t.missed ? '<span class="tag miss">' + t.taken + '/' + dc.length + ' · ' + t.missed + ' miss</span>' : '<span class="tag">' + t.taken + '/' + dc.length + '</span>';
+      h += '<button class="row' + (d.date === openDate ? ' open' : '') + '" data-date="' + d.date + '"><span class="d">' + fmtDate(d.date) + '<small>Day ' + (d.day_no || '?') + (d.state ? ' · ' + esc(d.state) : '') + '</small></span>' +
+        '<span class="r num gold">' + YC.r2(t.yR) + '</span><span class="r num ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + '</span><span class="r num ' + ((d.commissions != null ? t.cUsd : t.cUsd) < 0 ? 'neg' : 'pos') + '">' + YC.usd(t.cUsd) + '</span><span class="r">' + tag + '</span></button>';
+    });
+    $('day-rows').innerHTML = h;
+    $('day-rows').querySelectorAll('button.row').forEach(function(b){ b.addEventListener('click', function(){ openDate = (openDate === b.dataset.date) ? null : b.dataset.date; renderDays(); }); });
+    renderDayView();
+  }
+
+  function sideKv(s, dir, other){
+    var pl = YC.planR(s), slp = YC.slPts(s), tpp = YC.tpPts(s);
+    var h = '<div class="kv"><b>Entry</b><span>' + YC.px(s.entry) + (other && s.entry !== other.entry ? ' <em class="' + ((s.entry - other.entry) * YC.sign(dir) < 0 ? 'pos' : 'neg') + '">' + YC.r2(s.entry - other.entry) + '</em>' : '') + '</span>' +
+      '<b>SL</b><span' + (other && s.sl !== other.sl ? ' class="neg"' : '') + '>' + YC.px(s.sl) + ' <em>(' + (slp == null ? '—' : slp.toFixed(2)) + ')</em></span>' +
+      '<b>TP</b><span>' + YC.px(s.tp) + (tpp != null ? ' <em>(' + tpp.toFixed(2) + ')</em>' : '') + '</span>' +
+      '<b>Plan R</b><span>' + (pl == null ? '—' : pl.toFixed(2)) + '</span><b>Risk</b><span>' + (YC.riskUsd(s) == null ? '—' : '$' + YC.riskUsd(s).toFixed(0)) + '</span></div>';
+    var r = YC.realR(s, dir), p = YC.pts(s, dir);
+    h += '<div class="exits">' + (s.exits || []).map(function(e){ return '<div><span>' + (e.t ? e.t + ' · ' : '') + YC.px(e.px) + ' × ' + e.qty + '</span><span>' + YC.r2(YC.sign(dir) * (e.px - s.entry)) + '</span></div>'; }).join('') +
+      '<div style="margin-top:3px;color:var(--text)"><span>' + (s.hold_s != null ? YC.hms(s.hold_s) : '') + '</span><span class="' + (r < 0 ? 'neg' : 'pos') + '">' + (s.net_usd != null ? 'net ' + YC.usd(s.net_usd) + ' · ' : s.net_usd_est != null ? 'est ' + YC.usd(s.net_usd_est) + ' · ' : '') + YC.r2(p) + ' pts · ' + YC.r2(r) + 'R</span></div></div>';
+    return h;
+  }
+
+  function renderDayView(){
+    var el = $('day-view');
+    if (!openDate){ el.innerHTML = ''; return; }
+    var d = days.find(function(x){ return x.date === openDate; }), dc = dayCalls(openDate), t = YC.dayStats(dc);
+    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(d.date) + ' · Day ' + (d.day_no || '?') + '</span><span class="meta num">' +
+      (d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + '</span></div>';
+    h += '<div class="tiles"><div class="tile"><div class="l">Caller</div><div class="v gold">' + YC.r2(t.yR) + 'R</div><div class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</div></div><div class="tile"><div class="l">Copy</div><div class="v ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + 'R</div><div class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts · ' + YC.usd(t.cUsd) + '</div></div><div class="tile"><div class="l">Gap</div><div class="v ' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</div><div class="s">miss ' + YC.r2(t.cause.missed) + ' · stop ' + YC.r2(t.cause.stop_size) + ' · fills ' + YC.r2(t.cause.fills) + ' · mgmt ' + YC.r2(t.cause.mgmt) + '</div></div></div>';
+    dc.forEach(function(k){
+      h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">#' + k.n + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' · ' + (k.time_et || '').slice(0,5) + ' ET / ' + bkk(k.time_et) + ' BKK</span><span class="tag' + (k.missed ? ' miss' : (k.copy && k.copy.status === 'deviation') ? ' dev' : '') + '">' + (k.missed ? 'Missed ' + esc(k.missed) : esc(k.source || '')) + '</span></div>';
+      h += '<div class="side"><div><div class="who y">Caller · ' + k.yush.qty + ' ' + esc(k.yush.contract) + '</div>' + sideKv(k.yush, k.dir, null) + '</div>';
+      h += k.copy ? '<div><div class="who c">Copy · ' + k.copy.qty + ' ' + esc(k.copy.contract) + '</div>' + sideKv(k.copy, k.dir, k.yush) + (k.copy.note ? '<p class="note" style="margin-top:6px">' + esc(k.copy.note) + '</p>' : '') + '</div>'
+                   : '<div><div class="who c">Copy</div><p class="note" style="color:var(--muted)">' + esc(k.note || 'Missed.') + '</p></div>';
+      h += '</div>';
+      if (k.deviations.length){ h += '<div class="devs" style="margin-top:8px">' + k.deviations.map(function(v){ return '<div class="dev"><span class="k' + (v.tag ? '' : ' none') + '">' + (v.tag ? esc(v.tag) : 'no tag') + '</span><div><p>' + esc(v.what) + '</p><small>' + esc(v.why || '') + (v.r_effect != null ? ' · ' + YC.r2(+v.r_effect) + 'R' : '') + (v.usd_effect != null ? ' · ' + YC.usd(+v.usd_effect) : '') + '</small></div></div>'; }).join('') + '</div>'; }
+      h += '</div>';
+    });
+    if (d.state) h += '<div><h2>State</h2><p class="state">' + esc(d.state) + '</p></div>';
+    if (d.notion_url) h += '<p class="note"><a href="' + esc(d.notion_url) + '" target="_blank" rel="noopener">Notion day page</a></p>';
+    el.innerHTML = h + '</div>';
+  }
+
+  function renderSettings(){
+    var s = settings || {};
+    var rows = [['Signed in', me.email], ['Version', YC_VERSION], ['Size rule', s.size_rule || '—'], ['DLL', s.dll_usd != null ? '−$' + s.dll_usd + ' / day, net' : '—'],
+      ['$ per point', Object.keys(YC.mult).map(function(k){ return k + ' ' + YC.mult[k]; }).join(' · ')], ['ET offset', s.et_offset_rule || '—'], ['Trade date', 'US session date (ET)'], ['Days stored', String(days.length)], ['Calls stored', String(calls.length)]];
+    $('set-rows').innerHTML = rows.map(function(r){ return '<div><span>' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
+  }
+  $('b-export').addEventListener('click', function(){
+    var out = days.map(function(d){ return { schema:'yc-day-1', date:d.date, day_no:d.day_no, copier:d.copier, account:d.account, balance_start:d.balance_start, balance_eod:d.balance_eod, commissions:d.commissions, state:d.state, notion_url:d.notion_url, calls:dayCalls(d.date) }; });
+    var blob = new Blob([JSON.stringify(out, null, 1)], {type:'application/json'}), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'tracklog-export-' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); a.remove();
+    msg('set-msg', 'Exported ' + out.length + ' days.', 'ok');
+  });
+
+  /* import */
+  $('l-file').addEventListener('change', function(){
+    var f = this.files && this.files[0]; if (!f) return;
+    var r = new FileReader(); r.onload = function(){ $('l-json').value = r.result; preview(); }; r.readAsText(f);
+  });
+  $('l-prev').addEventListener('click', preview);
+  function preview(){
+    pending = null; $('l-save').disabled = true; $('l-out').innerHTML = '';
+    var j; try { j = JSON.parse($('l-json').value); } catch(e){ msg('l-msg', 'Not valid JSON: ' + e.message, 'err'); return; }
+    var errs = YC.validate(j);
+    if (errs.length){ msg('l-msg', errs.join(' · '), 'err'); return; }
+    if (!j.copier) j.copier = me.email;
+    var t = YC.dayStats(j.calls), exists = days.some(function(d){ return d.date === j.date && d.copier === j.copier; });
+    $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · ' + esc(j.copier) + (exists ? ' · <span class="warn">replaces existing day</span>' : '') + '</div>' +
+      '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations</div>' +
+      '<div>Caller ' + YC.r2(t.yR) + 'R · Copy ' + YC.r2(t.cR) + 'R · gap ' + YC.r2(t.gap) + 'R · net ' + YC.usd(t.cUsd) + '</div>' +
+      '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + '</div>';
+    msg('l-msg', 'Valid. Check the numbers, then Save day.', 'ok');
+    pending = j; $('l-save').disabled = false;
+  }
+  $('l-save').addEventListener('click', function(){
+    if (!pending) return; var j = pending; $('l-save').disabled = true; msg('l-msg', 'Saving…');
+    var dayRow = { date:j.date, copier:j.copier, day_no:j.day_no, account:j.account, balance_start:j.balance_start, balance_eod:j.balance_eod, commissions:j.commissions, state:j.state, notion_url:j.notion_url, imported_at:new Date().toISOString(), source_file:'yc-day-1' };
+    sb.from('yc_days').upsert(dayRow, {onConflict:'date,copier'}).then(function(r){ if (r.error) throw r.error;
+      var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est, missed:k.copy ? null : (k.missed || null), note:k.note || null }; });
+      return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n');
+    }).then(function(r){ if (r.error) throw r.error;
+      var ids = {}; r.data.forEach(function(x){ ids[x.n] = x.id; });
+      var callIds = Object.keys(ids).map(function(n){ return ids[n]; });
+      return sb.from('yc_copies').delete().eq('copier', j.copier).in('call_id', callIds).then(function(d){ if (d.error) throw d.error; return ids; });
+    }).then(function(ids){
+      var copyRows = j.calls.filter(function(k){ return k.copy; }).map(function(k){ var c = k.copy; return { call_id:ids[k.n], copier:j.copier, c_entry:c.entry, c_sl:c.sl, c_tp:c.tp, c_qty:c.qty, c_contract:c.contract, c_exits:c.exits || [], c_net_usd:c.net_usd, lag_s:c.lag_s, lag_pts:c.lag_pts, hold_s:c.hold_s, status:c.status || 'copied', note:c.note || null, _n:k.n }; });
+      if (!copyRows.length) return {};
+      var clean = copyRows.map(function(x){ var y = Object.assign({}, x); delete y._n; return y; });
+      return sb.from('yc_copies').insert(clean).select('id,call_id').then(function(r){ if (r.error) throw r.error;
+        var byCall = {}; r.data.forEach(function(x){ byCall[x.call_id] = x.id; });
+        var devRows = [];
+        j.calls.forEach(function(k){ if (k.copy && k.deviations) k.deviations.forEach(function(v){ devRows.push({ copy_id:byCall[ids[k.n]], tag:v.tag || null, what:v.what, why:v.why || null, r_effect:v.r_effect, usd_effect:v.usd_effect }); }); });
+        return devRows.length ? sb.from('yc_deviations').insert(devRows) : {};
+      });
+    }).then(function(r){ if (r && r.error) throw r.error;
+      return load();
+    }).then(function(){ renderAll(); pending = null; $('l-json').value = ''; $('l-out').innerHTML = ''; msg('l-msg', 'Saved ' + fmtDate(j.date) + '. See Days.', 'ok'); })
+    .catch(function(e){ msg('l-msg', 'Save failed: ' + (e.message || e) + '. Nothing to undo by hand; re-import the same file after fixing.', 'err'); $('l-save').disabled = false; });
+  });
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+})();
+</script>
+</body>
+</html>

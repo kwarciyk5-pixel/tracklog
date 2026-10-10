@@ -1,0 +1,16 @@
+{ "schema": "yc-day-1", "date": "2026-10-09", "day_no": 2, "copier": "thettant.star@gmail.com", "account": "IQDEV50K-190792",
+  "balance_start": 49058, "balance_eod": 49341, "commissions": 7.50,
+  "state": "Calm. No pressure in premarket prep, and full clarity reading the footprint and levels from the cash open.",
+  "notion_url": "https://app.notion.com/p/3f47f92e66288189aad8c44f155d81a2",
+  "calls": [
+    { "n": 1, "time_et": "10:21:16", "source": "live", "inst": "NQ", "dir": "long",
+      "yush": { "entry": 31042.25, "sl": 31025.5, "tp": 31070, "qty": 1, "contract": "NQ", "exits": [ { "px": 31070, "qty": 1 } ], "net_usd_est": 555 },
+      "copy": { "entry": 31041.5, "sl": 31021, "tp": 31070, "qty": 5, "contract": "MNQ",
+                "exits": [ { "t": "10:30:39", "px": 31070, "qty": 4 }, { "t": "10:30:50", "px": 31072.75, "qty": 1 } ],
+                "net_usd": 283, "lag_s": null, "lag_pts": -0.75, "hold_s": 574, "status": "deviation",
+                "note": "Half size (1 NQ → 5 MNQ)." },
+      "deviations": [
+        { "tag": null, "what": "Stop wider: 31021 vs his 31025.50 (+3.75 pts)", "why": "To cover the POC and ZGamma Flow; plan was to exit when he got stopped.", "r_effect": -0.31, "usd_effect": null },
+        { "tag": "P12", "what": "Runner past his TP: 1 lot aimed at 31076, closed by hand at 31072.75", "why": "Trailing toward a few ticks below MBO / ZG; closed on the thought \"this is a copy, I shouldn't be managing\".", "r_effect": null, "usd_effect": 5.5 }
+      ] }
+  ] }
