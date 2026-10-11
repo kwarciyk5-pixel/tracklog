@@ -17,7 +17,7 @@
   --bg:#08090a;--surface:#101113;--surface-2:#16181b;--border:#1f2126;--border-strong:#2a2d33;
   --text:#e6e6e8;--muted:#8a8f98;--dim:#5c6068;
   --accent:#c9a96e;--accent-dim:#8a7448;--accent-glow:rgba(201,169,110,.12);
-  --win:#4ade80;--loss:#f87171;--warn:#f59e0b;--cy:#22d3ee;
+  --win:#4ade80;--loss:#f87171;--warn:#f59e0b;--cy:#22d3ee;--vi:#a78bfa;
   --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace;
   color-scheme:dark;
 }
@@ -31,62 +31,72 @@ h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
 .hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .hdr .sub{color:var(--muted);font-size:12px}
 .pill{font-size:11px;color:var(--accent);border:1px solid var(--accent-dim);border-radius:999px;padding:2px 9px;white-space:nowrap}
-.num,.kv span,.exits,.tile .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.pos{color:var(--win)}.neg{color:var(--loss)}.gold{color:var(--accent)}.cyan{color:var(--cy)}.warn{color:var(--warn)}
+.num,.kv span,.exits,.tile .v,.strip .v{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pos{color:var(--win)}.neg{color:var(--loss)}.gold{color:var(--accent)}.cyan{color:var(--cy)}.warn{color:var(--warn)}.vio{color:var(--vi)}.mut{color:var(--muted)}
 .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden;position:sticky;top:env(safe-area-inset-top,0px);z-index:2}
 .tabs button{background:var(--surface);color:var(--muted);border:0;padding:10px 6px;font:500 12.5px var(--sans);cursor:pointer}
 .tabs button[aria-selected="true"]{background:var(--surface-2);color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
 .tabs button:focus-visible,.btn:focus-visible,.f input:focus-visible,.f select:focus-visible,.f textarea:focus-visible{outline:2px solid var(--cy);outline-offset:1px}
-.tab[hidden]{display:none}.tab{display:grid;gap:16px}
-.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-@media(max-width:560px){.tiles{grid-template-columns:repeat(2,1fr)}}
-.tile{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 11px 8px;min-width:0;display:grid;gap:4px;align-content:start}
+.tab{display:grid;gap:16px}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.strip>div{background:var(--surface);padding:10px 11px;min-width:0;display:grid;gap:2px}
+.strip .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.strip .v{font-size:20px;font-weight:500;line-height:1.15}
+.strip .s{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:560px){.strip{grid-template-columns:repeat(2,1fr)}}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:420px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 11px 9px;min-width:0;display:grid;gap:5px;align-content:start}
 .tile .l{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
 .tile .v{font-size:19px;font-weight:500;line-height:1.1}
-.tile .s{font-size:11px;color:var(--muted)}
+.tile .s{font-size:11px;color:var(--muted);line-height:1.45}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px;min-width:0}
 .note{font-size:11.5px;color:var(--dim);margin:0}
 .tile svg,.card svg{width:100%;height:auto;display:block}
-.tile svg{margin-top:2px}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:560px){.two{grid-template-columns:1fr}}
+[data-tip]{cursor:pointer}
 .legend{display:flex;gap:6px 14px;font-size:11px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:2px;vertical-align:middle;margin-right:5px;background:currentColor}
 .legend i.b{height:8px;width:8px;border-radius:2px}
-.seg{display:inline-grid;grid-auto-flow:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.seg{display:inline-grid;grid-auto-flow:column;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:6px;overflow:hidden;justify-self:start}
 .seg button{background:var(--surface);color:var(--muted);border:0;padding:6px 12px;font:500 12px var(--sans);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--accent)}
 .seg button:focus-visible{outline:2px solid var(--cy);outline-offset:-2px}
-.dash-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.dash-top .meta{font-size:12px;color:var(--muted)}
-.pp{display:grid;gap:3px}.pp+.pp{margin-top:6px;padding-top:6px;border-top:1px dashed var(--border-strong)}
-.pp .who{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
-.pp .v2{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:500;line-height:1.1}
-.cal{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.seg.big{display:grid;grid-auto-columns:1fr;width:100%}
+.seg.big button{padding:11px 8px;font-size:13px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.top .meta{font-size:12px;color:var(--muted)}
+.cal{display:grid;grid-template-columns:repeat(5,1fr) 1.15fr;gap:4px}
 .cal .h{font-size:10px;color:var(--dim);text-align:center;letter-spacing:.06em}
-.cal button{aspect-ratio:1.5;border:1px solid var(--border);border-radius:5px;background:var(--surface-2);color:var(--muted);font:11px var(--mono);padding:2px;display:grid;place-items:center;cursor:pointer;min-width:0}
-.cal button.e{opacity:.35;cursor:default}
-.cal button.sel{outline:2px solid var(--accent);outline-offset:1px}
-.cal button small{display:block;font-size:9.5px;line-height:1}
+.cal .c{border:1px solid var(--border);border-radius:5px;background:var(--surface-2);color:var(--dim);font:10.5px/1.25 var(--mono);padding:4px 3px;display:grid;align-content:space-between;justify-items:center;min-height:52px;min-width:0;cursor:pointer;gap:2px}
+.cal .c.e{opacity:.4;cursor:default}
+.cal .c.sel{outline:2px solid var(--accent);outline-offset:1px}
+.cal .c b{font-weight:500;font-size:10px;color:var(--muted)}
+.cal .c span{display:block;font-size:10px;color:var(--text);white-space:nowrap}
+.cal .c.wk{background:var(--surface);border-style:dashed;cursor:default}
+.cal .c.wk b{color:var(--accent)}
 .rv{display:grid;grid-template-columns:auto repeat(var(--cols,2),1fr);gap:4px 10px;font-size:12.5px;align-items:baseline}
 .rv b{font-weight:500;color:var(--muted)}.rv span{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .rv .hd{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-family:var(--sans)}
-.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.rv .sep{grid-column:1/-1;height:1px;background:var(--border);margin:3px 0}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:380px){.g3{grid-template-columns:1fr 1fr}}
 .stamp{font-family:var(--mono);font-size:12px;color:var(--muted)}
 .logged{display:grid;gap:6px}
 .logged div{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-family:var(--mono);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:7px 9px;background:var(--surface-2)}
-.logged button{background:none;border:1px solid var(--border-strong);color:var(--muted);border-radius:5px;padding:3px 8px;font:11px var(--sans);cursor:pointer}
+.logged button{background:none;border:1px solid var(--border-strong);color:var(--muted);border-radius:5px;padding:3px 8px;font:11px var(--sans);cursor:pointer;flex:none}
 .xs{font-size:11px;color:var(--dim)}
 .rows{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.row{display:grid;grid-template-columns:1.3fr .7fr .7fr .7fr .9fr;gap:8px;align-items:center;background:var(--surface);padding:10px 12px;font-size:13px;min-width:0;border:0;color:inherit;text-align:left;width:100%;font-family:inherit;cursor:pointer}
+.row{display:grid;grid-template-columns:minmax(0,1.4fr) .6fr .6fr .7fr minmax(78px,.9fr);gap:8px;align-items:center;background:var(--surface);padding:10px 12px;font-size:13px;min-width:0;border:0;color:inherit;text-align:left;width:100%;font-family:inherit;cursor:pointer}
 .row.head{background:var(--surface-2);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);cursor:default}
-.row.open{background:var(--accent-glow);border-left:2px solid var(--accent)}
+.row.open{background:var(--accent-glow);box-shadow:inset 2px 0 0 var(--accent)}
 .row>span{min-width:0}
 .row .d{font-weight:500;overflow:hidden}.row .d small{display:block;color:var(--dim);font-size:11px;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .r{text-align:right}
-.tag{font-size:10px;padding:1px 5px;border-radius:4px;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap}
-.tag.dev{color:var(--warn);border-color:rgba(245,158,11,.4)}.tag.miss{color:var(--cy);border-color:rgba(34,211,238,.35)}
-.day-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.badges{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.tag{display:inline-block;font:500 10px/1.5 var(--mono);padding:0 6px;border-radius:4px;border:1px solid var(--border-strong);color:var(--muted);white-space:nowrap;background:none}
+.tag.t-dev{color:var(--warn);border-color:rgba(245,158,11,.4)}.tag.t-miss{color:var(--cy);border-color:rgba(34,211,238,.35)}.tag.t-ext{color:var(--vi);border-color:rgba(167,139,250,.4)}.tag.t-wait{color:var(--accent);border-color:var(--accent-dim)}
+.chip{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.day-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .day-top .t{font-size:15px;font-weight:600}.day-top .meta{font-size:12px;color:var(--muted)}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:12.5px}
 .kv b{font-weight:500;color:var(--muted)}.kv span{text-align:right}.kv em{color:var(--dim);font-style:normal}
@@ -99,35 +109,49 @@ h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
 .exits div span:last-child{text-align:right;margin-left:auto}
 .devs{display:grid;gap:8px}
 .dev{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:9px 11px;border:1px solid var(--border);border-left:2px solid var(--warn);border-radius:6px;background:var(--surface);font-size:12.5px}
-.dev .k{font-family:var(--mono);color:var(--warn);font-size:11px;white-space:nowrap;padding-top:2px}.dev .k.none{color:var(--muted)}
+.dev .k{font-size:11px;white-space:nowrap;padding-top:2px;font-weight:500}
 .dev p{margin:0}.dev small{color:var(--muted);display:block;margin-top:2px}
 .state{font-size:13px;border-left:2px solid var(--accent-dim);padding-left:10px;margin:0}
 .form{display:grid;gap:10px}
-.f{display:grid;gap:4px}
+.f{display:grid;gap:4px;min-width:0}
 .f label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--dim)}
-.f input,.f select,.f textarea{background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);border-radius:6px;padding:9px 10px;font:13px var(--mono);width:100%}
+.f input,.f select,.f textarea,.sel{background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);border-radius:6px;padding:9px 10px;font:13px var(--mono);width:100%;min-width:0}
+.f input[type=date],.f input[type=time]{min-height:38px}
+.check{display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--muted)}
+.check input{width:16px;height:16px;accent-color:var(--accent)}
 .btnrow{display:flex;gap:8px;flex-wrap:wrap}
 .btn{flex:1;min-width:120px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);border-radius:6px;padding:11px 12px;font:500 13px var(--sans);cursor:pointer;text-align:left}
+.btn.sm{flex:none;min-width:0;padding:7px 11px;font-size:12px;text-align:center}
 .btn.p{background:var(--accent);color:#1a1408;border-color:var(--accent)}
 .btn:disabled{opacity:.5;cursor:default}
 .btn small{display:block;font-weight:400;font-size:11px;opacity:.75;margin-top:1px}
 .set{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.set div{display:flex;justify-content:space-between;gap:10px;background:var(--surface);padding:10px 12px;font-size:13px}
-.set div span:last-child{font-family:var(--mono);color:var(--muted);text-align:right;word-break:break-word}
+.set>div{display:flex;justify-content:space-between;gap:10px;background:var(--surface);padding:10px 12px;font-size:13px}
+.set>div>span:last-child{font-family:var(--mono);color:var(--muted);text-align:right;word-break:break-word}
+.set.guide>div{display:block}
+.set.guide>div>span{display:block}
+.set.guide>div>span:last-child{font-family:var(--sans);text-align:left;font-size:12px;margin:2px 0 0 15px}
 .msg{font-size:12.5px;padding:8px 10px;border-radius:6px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--muted)}
 .msg.ok{border-color:rgba(74,222,128,.4);color:var(--win)}.msg.err{border-color:rgba(248,113,113,.4);color:var(--loss)}
 .login{display:grid;gap:14px;justify-items:start;padding:24px 0}
 .login p{margin:0;color:var(--muted);max-width:42ch}
 .prev{font-family:var(--mono);font-size:12px;color:var(--muted);display:grid;gap:3px}
 .prev b{color:var(--text);font-weight:500}
-.spacer{height:4px}
+.need{display:grid;gap:8px;border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:6px;padding:10px;background:var(--surface-2)}
+.need .h{font:12px var(--mono);color:var(--text)}
+.sw{display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid var(--border-strong);border-radius:999px;padding:4px 10px 4px 5px;color:var(--muted);font:12px var(--sans);cursor:pointer}
+.sw i{width:26px;height:14px;border-radius:7px;background:var(--border-strong);position:relative;display:inline-block}
+.sw i:after{content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:left .15s}
+.sw[aria-pressed="true"]{color:var(--accent);border-color:var(--accent-dim)}
+.sw[aria-pressed="true"] i{background:var(--accent-dim)}.sw[aria-pressed="true"] i:after{left:14px;background:var(--accent)}
+.tip{position:fixed;z-index:20;max-width:240px;background:#1c1e22;border:1px solid var(--border-strong);border-radius:6px;padding:7px 9px;font:11.5px/1.45 var(--mono);color:var(--text);box-shadow:0 6px 20px rgba(0,0,0,.5);pointer-events:none;white-space:pre-line}
 a{color:var(--accent)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="hdr">
-    <div><h1>TrackLog</h1><div class="sub" id="sub">Copy record &middot; in R</div></div>
+    <div><h1>TrackLog</h1><div class="sub">Copy record &middot; in R</div></div>
     <span class="pill" id="pill">&hellip;</span>
   </div>
 
@@ -139,95 +163,132 @@ a{color:var(--accent)}
 
   <div id="app" hidden>
     <div class="tabs" role="tablist" style="margin-bottom:16px">
-      <button role="tab" id="t-dash" aria-selected="true" data-tab="dash">Dashboard</button>
-      <button role="tab" id="t-days" aria-selected="false" data-tab="days">Days</button>
-      <button role="tab" id="t-log" aria-selected="false" data-tab="log">Log</button>
-      <button role="tab" id="t-set" aria-selected="false" data-tab="set">Settings</button>
+      <button role="tab" aria-selected="true" data-tab="dash">Dashboard</button>
+      <button role="tab" aria-selected="false" data-tab="days">Days</button>
+      <button role="tab" aria-selected="false" data-tab="log">Log</button>
+      <button role="tab" aria-selected="false" data-tab="set">Settings</button>
     </div>
 
     <section class="tab" id="tab-dash">
-      <div class="dash-top"><div class="seg" id="dash-range" role="group" aria-label="Range"><button data-r="month" aria-pressed="true">Month</button><button data-r="week" aria-pressed="false">Week</button><button data-r="day" aria-pressed="false">Day</button></div><div class="seg who-seg" role="group" aria-label="Copier" hidden></div><span class="meta" id="dash-meta"></span></div>
+      <div class="top"><div class="seg" id="dash-range" role="group" aria-label="Range"><button data-r="month" aria-pressed="true">Month</button><button data-r="week" aria-pressed="false">Week</button><button data-r="day" aria-pressed="false">Day</button></div><span class="meta" id="dash-meta"></span></div>
+      <div class="strip" id="dash-strip"></div>
       <div class="tiles" id="dash-tiles"></div>
-      <div class="two">
-        <div class="card"><h2>Equity curve &middot; cumulative R per call</h2><div id="ch-eq"></div><div class="legend" id="lg-eq"></div></div>
-        <div class="card"><h2>Gap per day &middot; R, by cause</h2><div id="ch-gap"></div><div class="legend"><span class="cyan"><i class="b"></i>missed</span><span class="warn"><i class="b"></i>stop / size</span><span class="pos"><i class="b"></i>fills</span><span style="color:var(--muted)"><i class="b"></i>mgmt</span></div></div>
-      </div>
-      <div class="two">
-        <div class="card"><h2>Deviations by tag &middot; per day</h2><div id="ch-dev"></div><div class="legend" id="lg-dev"></div></div>
-        <div class="card"><h2>Hold time vs result &middot; copy R</h2><div id="ch-hold"></div><div class="legend" id="lg-hold"></div></div>
-      </div>
-      <div class="card"><h2>Calendar &middot; copy R and state</h2><div id="cal"></div><div id="cal-note" style="margin-top:10px"></div></div>
-      <div class="card"><div class="day-top" style="margin-bottom:8px"><h2 style="margin:0" id="rv-title">Review</h2><button class="btn" id="b-review" style="flex:0;min-width:0;padding:6px 10px;font-size:12px">Export</button></div><div id="review"></div></div>
-      <p class="note">Each call&rsquo;s R is rounded to 2 dp before summing, as on the day pages. Caller $ is estimated from his shown exits, net of IQ commissions (MNQ $1.50, NQ $4 per contract round turn).</p>
+      <div class="card"><h2>Equity curve &middot; cumulative R</h2><div id="ch-eq"></div><div class="legend" id="lg-eq"></div></div>
+      <div class="card"><h2>Gap per day &middot; R, by cause</h2><div id="ch-gap"></div><div class="legend" id="lg-gap"></div></div>
+      <div class="card"><h2>Deviations by tag &middot; per day</h2><div id="ch-dev"></div><div class="legend" id="lg-dev"></div></div>
+      <div class="card"><h2>Hold time vs result &middot; copy R</h2><div id="ch-hold"></div><div class="legend" id="lg-hold"></div></div>
+      <div class="card"><div class="top" style="margin-bottom:10px"><h2 style="margin:0">Calendar</h2><div class="seg" id="cal-side" role="group" aria-label="Side"><button data-s="copy" aria-pressed="true">Copy</button><button data-s="caller" aria-pressed="false">Caller</button></div></div><div id="cal"></div><div id="cal-note" style="margin-top:10px"></div></div>
+      <div class="card"><div class="top" style="margin-bottom:8px"><h2 style="margin:0" id="rv-title">Review</h2><button class="btn sm" id="b-review">Export .md</button></div><div id="review"></div></div>
+      <p class="note">Tap any bar, dot or day for details. Each call&rsquo;s R is rounded to 2 dp before summing. Caller $ is estimated from his shown exits, net of IQ commissions (MNQ $1.50, NQ $4 per contract round turn).</p>
     </section>
 
     <section class="tab" id="tab-days" hidden>
-      <div class="seg who-seg" role="group" aria-label="Copier" hidden style="justify-self:start"></div>
       <div class="rows" id="day-rows"></div>
       <div id="day-view"></div>
     </section>
 
     <section class="tab" id="tab-log" hidden>
-      <div class="card" id="lc-viewer" hidden><h2>Calls</h2><p class="note" style="color:var(--muted)">The caller&rsquo;s calls are filled in by the admin each day. Use <b>Day template</b> below to get a day&rsquo;s calls, have your Claude fill in your side from your trade export, then import the result.</p></div>
-      <div class="card form" id="logcall">
-        <div class="day-top"><h2 style="margin:0">Log call</h2><span class="stamp" id="lc-stamp">tap any field to stamp</span></div>
+      <div class="card" id="needs" hidden></div>
+      <div class="seg big" id="log-mode" role="group" aria-label="How to add"><button data-m="import" aria-pressed="true">Import a day file</button><button data-m="call" aria-pressed="false" id="m-call">Log a call yourself</button></div>
+
+      <div class="card form" id="imp">
+        <h2 style="margin:0">Import a day file</h2>
+        <p class="note" style="color:var(--muted)">Give your trade export and the <b>TrackLog import format</b> file to your Claude. It returns a <span class="num">.json</span> file for the day. Pick it here, check the preview, then Save. Re-importing a date replaces that day for you. Only you see your days.</p>
+        <div class="f"><label for="l-file">Day file</label><input type="file" id="l-file" accept="application/json,.json"></div>
+        <div class="f"><label for="l-json">or paste</label><textarea id="l-json" rows="3" placeholder="{ &quot;schema&quot;: &quot;yc-day-1&quot;, &hellip; }"></textarea></div>
+        <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save day</button></div>
+        <div class="prev" id="l-out"></div>
+        <div class="msg" id="l-msg" hidden></div>
+        <div class="f" style="margin-top:8px;border-top:1px dashed var(--border-strong);padding-top:12px"><label for="tp-date">Day template &middot; the caller&rsquo;s calls, your side empty (optional)</label>
+          <select id="tp-date" class="sel"></select>
+          <div class="btnrow"><button class="btn sm" id="tp-share">Share</button><button class="btn sm" id="tp-copy">Copy</button><button class="btn sm" id="tp-dl">Download</button></div>
+          <p class="note">Not needed if the calls aren&rsquo;t in yet: import your trades on their own and link them to the calls later.</p>
+        </div>
+      </div>
+
+      <div class="card form" id="logcall" hidden>
+        <div class="day-top"><h2 style="margin:0">Log a call</h2><span class="stamp" id="lc-stamp">time fills at first tap</span></div>
+        <div class="g2">
+          <div class="f"><label for="lc-date">Date (ET)</label><input type="date" id="lc-date"></div>
+          <div class="f"><label for="lc-time">Time (ET)</label><input type="time" id="lc-time" step="1"></div>
+        </div>
         <div class="g3">
-          <div class="f"><label for="lc-inst">Inst</label><select id="lc-inst"><option>NQ</option><option>ES</option></select></div>
-          <div class="f"><label for="lc-dir">Dir</label><select id="lc-dir"><option value="long">Long</option><option value="short">Short</option></select></div>
+          <div class="f"><label for="lc-inst">Instrument</label><select id="lc-inst"><option>NQ</option><option>ES</option></select></div>
+          <div class="f"><label for="lc-dir">Direction</label><select id="lc-dir"><option value="long">Long</option><option value="short">Short</option></select></div>
           <div class="f"><label for="lc-src">Source</label><select id="lc-src"><option value="live">Live</option><option value="discord">Discord</option></select></div>
         </div>
         <div class="g3">
           <div class="f"><label for="lc-e">His entry</label><input id="lc-e" inputmode="decimal" autocomplete="off"></div>
-          <div class="f"><label for="lc-sl">His SL</label><input id="lc-sl" inputmode="decimal" autocomplete="off"></div>
-          <div class="f"><label for="lc-tp">His TP</label><input id="lc-tp" inputmode="decimal" autocomplete="off"></div>
+          <div class="f"><label for="lc-sl">His stop</label><input id="lc-sl" inputmode="decimal" autocomplete="off"></div>
+          <div class="f"><label for="lc-tp">His target</label><input id="lc-tp" inputmode="decimal" autocomplete="off"></div>
         </div>
-        <div class="g3">
-          <div class="f"><label for="lc-q">His size</label><input id="lc-q" inputmode="numeric" autocomplete="off"></div>
+        <div class="g2">
+          <div class="f"><label for="lc-q">His position size</label><input id="lc-q" inputmode="numeric" autocomplete="off"></div>
           <div class="f"><label for="lc-c">Contract</label><select id="lc-c"></select></div>
-          <div class="f"><label for="lc-m">If missed</label><select id="lc-m"><option>M1</option><option>M2</option><option>M3</option></select></div>
         </div>
-        <div class="stamp" id="lc-calc">Plan R — · half size — · risk —</div>
-        <div class="btnrow"><button class="btn p" id="lc-save">Save call<small>time stamped at first tap</small></button><button class="btn" id="lc-miss">Mark missed<small>saves the call + your miss</small></button></div>
-        <button class="btn" id="lc-reset" style="flex:0;min-width:0;padding:6px 10px;font-size:12px;justify-self:start">Clear form</button>
+        <div class="stamp" id="lc-calc">Plan R — · your size — · risk —</div>
+        <button class="btn p" id="lc-save">Save call</button>
+        <details style="border:1px solid var(--border);border-radius:6px;padding:8px 10px"><summary class="xs" style="cursor:pointer">I missed this call</summary>
+          <div class="form" style="margin-top:10px">
+            <div class="f"><label for="lc-m">Why</label><select id="lc-m"></select></div>
+            <div class="f" id="lc-why-f" hidden><label for="lc-why">Reason (needed for M3)</label><input id="lc-why" autocomplete="off"></div>
+            <label class="check"><input type="checkbox" id="lc-pay"> Payout pressure &mdash; skipped to protect a target or payout</label>
+            <button class="btn" id="lc-miss">Save call as missed</button>
+          </div>
+        </details>
+        <button class="btn sm" id="lc-reset" style="justify-self:start">Clear form</button>
         <div class="msg" id="lc-msg" hidden></div>
         <div><h2>Logged &middot; <span id="lc-day"></span></h2><div class="logged" id="lc-list"></div></div>
       </div>
-      <div class="card form">
-        <h2 style="margin:0">Import day &middot; JSON</h2>
-        <p class="note" style="color:var(--muted)">One file per day, in the <span class="num">yc-day-1</span> shape. Re-importing a date replaces that day for you. Only you can see your days. Calls you logged live keep their stamp; lag is worked out from it when the file has <span class="num">copy.t_entry</span>.</p>
-        <div class="f"><label for="l-file">File</label><input type="file" id="l-file" accept="application/json,.json"></div>
-        <div class="f"><label for="l-json">or paste</label><textarea id="l-json" rows="4" placeholder="{ &quot;schema&quot;: &quot;yc-day-1&quot;, &hellip; }"></textarea></div>
-        <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save day</button></div>
-        <div class="f" style="margin-top:6px"><label for="tp-date">Day template &middot; the caller&rsquo;s calls, your side empty</label><div class="btnrow"><select id="tp-date" style="flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);border-radius:6px;padding:9px 10px;font:13px var(--mono)"></select><button class="btn" id="tp-copy" style="flex:0;min-width:0">Copy</button><button class="btn" id="tp-dl" style="flex:0;min-width:0">Download</button></div></div>
-        <div class="prev" id="l-out"></div>
-        <div class="msg" id="l-msg" hidden></div>
-      </div>
-
     </section>
 
     <section class="tab" id="tab-set" hidden>
       <div class="card form">
         <h2 style="margin:0">Your settings</h2>
-        <div class="g2"><div class="f"><label for="st-size">Size rule</label><input id="st-size"></div><div class="f"><label for="st-dll">DLL $ / day, net</label><input id="st-dll" inputmode="decimal"></div></div>
-        <div class="g4"><div class="f"><label for="st-NQ">NQ $/pt</label><input id="st-NQ" inputmode="decimal"></div><div class="f"><label for="st-MNQ">MNQ</label><input id="st-MNQ" inputmode="decimal"></div><div class="f"><label for="st-ES">ES</label><input id="st-ES" inputmode="decimal"></div><div class="f"><label for="st-MES">MES</label><input id="st-MES" inputmode="decimal"></div></div>
-        <div class="f"><label for="st-et">ET offset rule</label><input id="st-et"></div>
+        <div class="form">
+          <div class="f"><label for="st-size">Your size</label><select id="st-size"><option value="30">30% of his position size</option><option value="50">50% of his position size</option><option value="100">100% of his position size</option><option value="x">Other %&hellip;</option></select></div>
+          <div class="f"><label for="st-dll">Daily loss limit $, net</label><input id="st-dll" inputmode="decimal"></div>
+        </div>
+        <div class="f" id="st-pct-f" hidden><label for="st-pct">% of his position size</label><input id="st-pct" inputmode="decimal"></div>
+        <p class="note">Your size % fills the suggested size and is saved on each day you import, so changing it later never changes past days.</p>
         <div class="btnrow"><button class="btn p" id="st-save">Save settings</button></div>
+        <div class="msg" id="set-msg" hidden></div>
       </div>
-      <div><h2>App</h2><div class="set" id="set-rows"></div></div>
-      <div><h2>Members</h2><div class="set" id="set-mem"></div></div>
+      <div><h2>Deviation tags</h2><div class="set guide" id="set-tags"></div></div>
+      <div><h2>Missed calls</h2><div class="set guide" id="set-miss"></div></div>
       <div><h2>Rule changes</h2><div class="set" id="set-rules"></div></div>
+      <div><h2>App</h2><div class="set" id="set-rows"></div></div>
       <div class="btnrow"><button class="btn" id="b-export">Export all<small>JSON of every day</small></button><button class="btn" id="b-logout">Sign out</button></div>
-      <div class="msg" id="set-msg" hidden></div>
     </section>
   </div>
 </div>
+<div class="tip" id="tip" hidden></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v5';
+var YC_VERSION = 'yc-v6';
 var YC = {
-  mult: {NQ:20, MNQ:2, ES:50, MES:5},
+  mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
+  /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
+  TAGS: [
+    {k:'early',   l:'Early entry',           m:'In before his entry or his trigger.',                          c:'#f87171'},
+    {k:'chased',  l:'Chased',                m:'In late, at a worse price than his entry.',                     c:'#fb923c'},
+    {k:'size',    l:'Bigger size / added',   m:'Above your own size rule, or added to the position.',           c:'#f472b6'},
+    {k:'stop',    l:'Stop changed',          m:'Stop wider, tighter or moved when he didn’t move his.',     c:'#f59e0b'},
+    {k:'cut',     l:'Cut early',             m:'Out before his exit or his target.',                            c:'#facc15'},
+    {k:'held',    l:'Held past target',      m:'Stayed in after he exited or his target was hit.',              c:'#a3e635'},
+    {k:'against', l:'Against the call',      m:'Took the opposite direction.',                                  c:'#e879f9'},
+    {k:'revenge', l:'Revenge / extra trade', m:'Re-entry right after a stop, or a trade he never called.',      c:'#ef4444'},
+    {k:'payout',  l:'Payout pressure',       m:'Skipped, cut or froze to protect a profit target or payout.',   c:'#2dd4bf'},
+    {k:'tech',    l:'Technical',             m:'Platform, connection, lag or fill problem.',                    c:'#60a5fa'},
+    {k:'dll',     l:'DLL exit',              m:'Forced out by your daily loss limit.',                          c:'#c084fc'},
+    {k:'other',   l:'Other',                 m:'Anything else. The reason says what.',                         c:'#8a8f98'}
+  ],
+  LEGACY: {P18:'size', P5:'revenge', P14:'cut', P12:'held', T:'tech', DLL:'dll'},
+  MISS: [['M1','M1 — I missed it (late, away)'], ['M2','M2 — Called outside his live stream'], ['M3','M3 — Other (reason needed)']],
+  tag: function(k){ return YC.TAGS.find(function(t){ return t.k === k; }) || YC.TAGS[YC.TAGS.length - 1]; },
+  normTag: function(k){ if (k == null || k === '') return null; return YC.LEGACY[k] || k; },
   sign: function(dir){ return dir === 'short' ? -1 : 1; },
   slPts: function(s){ return (s && s.entry != null && s.sl != null) ? Math.abs(s.entry - s.sl) : null; },
   tpPts: function(s){ return (s && s.entry != null && s.tp != null) ? Math.abs(s.tp - s.entry) : null; },
@@ -241,12 +302,25 @@ var YC = {
   realR: function(s, dir){ var a = YC.slPts(s), p = YC.pts(s, dir); return (a && p != null) ? p / a : null; },
   riskUsd: function(s){ var a = YC.slPts(s); return (a != null && s.qty) ? a * s.qty * (YC.mult[s.contract] || 0) : null; },
   rd: function(x){ return x == null ? null : Math.round(x * 100 + (x >= 0 ? 1e-9 : -1e-9)) / 100; },
-  /* Gap per call, split into parts (Batch 2, Iris 11 Oct). R per call is rounded to 2 dp before summing, as on the day pages.
-     gap = copy R - caller R; missed = whole gap; stop/size = copy R - copy R on his stop; fills = entry difference / his stop; mgmt = the rest. */
+  micros: function(qty, contract){ return qty == null ? null : (contract === 'NQ' || contract === 'ES') ? qty * 10 : qty; },
+  /* your size = pct of his position size, in micros, rounded down */
+  sizeFor: function(qty, contract, pct){
+    if (!qty || pct == null) return null;
+    var micro = {NQ:'MNQ', ES:'MES'}[contract] || contract;
+    return { qty: Math.floor(YC.micros(qty, contract) * pct / 100 + 1e-9), contract: micro };
+  },
+  /* green on a broken rule: a deviation call that still ended green (Technical and DLL are not rule breaks) */
+  isGreen: function(k){
+    if (!k.copy) return false;
+    var broke = (k.deviations || []).some(function(v){ var t = YC.normTag(v.tag); return t !== 'tech' && t !== 'dll'; });
+    var r = YC.realR(k.copy, k.dir);
+    return broke && r != null && r > 0;
+  },
+  /* Gap per call. gap = copy R - caller R; missed = whole gap; stop/size = copy R - copy R on his stop; fills = entry difference / his stop; mgmt = the rest. */
   gapParts: function(call){
     var y = call.yush, c = call.copy, d = call.dir, rd = YC.rd;
-    var yR = rd(YC.realR(y, d)), z = {missed:0, stop_size:0, fills:0, mgmt:0};
-    if (yR == null) return {gap:null, parts:z};
+    var yR = rd(YC.realR(y, d)), z = {missed:0, stop_size:0, fills:0, mgmt:0, extra:0};
+    if (yR == null || call.waiting) return {gap:null, parts:z};
     if (!c){ z.missed = -yR; return {gap:-yR, parts:z}; }
     var cR = rd(YC.realR(c, d)); if (cR == null) return {gap:null, parts:z};
     var gap = rd(cR - yR), ySl = YC.slPts(y), cPts = YC.pts(c, d);
@@ -262,18 +336,28 @@ var YC = {
     var g = YC.gapParts(call); o.gap = g.gap; o.parts = g.parts;
     return o;
   },
-  dayStats: function(calls){
-    var t = { yR:0, yPts:0, yW:0, yL:0, cR:0, cPts:0, cW:0, cL:0, cUsd:0, yUsd:0, taken:0, missed:0, devs:0, gap:0, cause:{missed:0, stop_size:0, fills:0, mgmt:0}, low:0 }, run = 0, rd = YC.rd;
-    calls.forEach(function(k){
-      var s = YC.callStats(k);
+  /* calls: the caller's calls with this copier's side; trades: extra (not called) and pending (not linked yet) trades */
+  dayStats: function(calls, trades){
+    var t = { yR:0, yPts:0, yW:0, yL:0, cR:0, cPts:0, cW:0, cL:0, cUsd:0, yUsd:0, n:0, taken:0, missed:0, waiting:0, devs:0, green:0, extras:0, pending:0, extraR:0,
+              gap:0, cause:{missed:0, stop_size:0, fills:0, mgmt:0, extra:0} }, rd = YC.rd;
+    var addCopy = function(c, dir){ var r = YC.realR(c, dir); if (r != null){ t.cR += rd(r); t.cPts += YC.pts(c, dir); if (r > 0) t.cW++; else if (r < 0) t.cL++; } t.cUsd += (c.net_usd || 0); return r; };
+    (calls || []).forEach(function(k){
+      var s = YC.callStats(k); t.n++;
       if (s.yR != null){ t.yR += rd(s.yR); t.yPts += s.yPts; if (s.yR > 0) t.yW++; else if (s.yR < 0) t.yL++; }
       t.yUsd += (k.yush.net_usd_est || 0);
-      if (k.copy){ t.taken++; if (s.cR != null){ t.cR += rd(s.cR); t.cPts += s.cPts; if (s.cR > 0) t.cW++; else if (s.cR < 0) t.cL++; } t.cUsd += (k.copy.net_usd || 0); run += (k.copy.net_usd || 0); if (run < t.low) t.low = run; }
-      else t.missed++;
+      if (k.waiting){ t.waiting++; return; }
+      if (k.copy){ t.taken++; addCopy(k.copy, k.dir); } else t.missed++;
       t.devs += (k.deviations || []).length;
-      if (s.gap != null){ t.gap += s.gap; Object.keys(t.cause).forEach(function(c){ t.cause[c] += s.parts[c]; }); }
+      if (YC.isGreen(k)) t.green++;
+      if (s.gap != null){ t.gap += s.gap; ['missed','stop_size','fills','mgmt'].forEach(function(c){ t.cause[c] += s.parts[c]; }); }
     });
-    ['yR','cR','gap'].forEach(function(f){ t[f] = rd(t[f]); }); Object.keys(t.cause).forEach(function(c){ t.cause[c] = rd(t.cause[c]); });
+    (trades || []).forEach(function(k){
+      var r = addCopy(k.copy, k.dir);
+      t.devs += (k.deviations || []).length;
+      if (k.kind === 'extra'){ t.extras++; if (r != null){ t.extraR += rd(r); t.cause.extra += rd(r); t.gap += rd(r); } }
+      else t.pending++;
+    });
+    ['yR','cR','gap','extraR'].forEach(function(f){ t[f] = rd(t[f]); }); Object.keys(t.cause).forEach(function(c){ t.cause[c] = rd(t.cause[c]); });
     return t;
   },
   r2: function(x){ return x == null ? '—' : (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2); },
@@ -281,48 +365,78 @@ var YC = {
   px: function(x){ return x == null ? '—' : (+x).toFixed(2); },
   hms: function(s){ if (s == null) return '—'; var m = Math.floor(s/60), r = s % 60; return m + 'm' + (r < 10 ? '0' : '') + r + 's'; },
   validate: function(j){
-    var e = [];
+    var e = [], codes = YC.TAGS.map(function(t){ return t.k; });
     if (!j || typeof j !== 'object') return ['not an object'];
     if (j.schema !== 'yc-day-1') e.push('schema must be yc-day-1');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(j.date || '')) e.push('date must be YYYY-MM-DD');
-    if (!Array.isArray(j.calls)) e.push('calls must be an array');
-    else j.calls.forEach(function(k, i){
+    if (j.calls != null && !Array.isArray(j.calls)) e.push('calls must be an array');
+    ['trades','extras'].forEach(function(f){ if (j[f] != null && !Array.isArray(j[f])) e.push(f + ' must be an array'); });
+    if (!(j.calls || []).length && !(j.trades || []).length && !(j.extras || []).length) e.push('no calls, trades or extras in the file');
+    if (j.size_pct != null && typeof j.size_pct !== 'number') e.push('size_pct must be a number');
+    var devCheck = function(p, list, needTag){ (list || []).forEach(function(v, i){ var t = YC.normTag(v.tag);
+      if (t != null && codes.indexOf(t) < 0) e.push(p + 'deviations[' + i + '].tag "' + v.tag + '" is not a TrackLog tag');
+      if (needTag && t == null) e.push(p + 'deviations[' + i + '] needs a tag'); }); };
+    var sideCheck = function(p, c){
+      if (typeof c.entry !== 'number' || typeof c.sl !== 'number') e.push(p + 'entry/sl missing or not numbers');
+      if (!Array.isArray(c.exits)) e.push(p + 'exits must be an array');
+      if (c.t_entry != null && !/^\d{2}:\d{2}:\d{2}$/.test(c.t_entry)) e.push(p + 't_entry must be HH:MM:SS');
+    };
+    (Array.isArray(j.calls) ? j.calls : []).forEach(function(k, i){
       var p = 'calls[' + i + '] ';
       if (typeof k.n !== 'number') e.push(p + 'n missing');
       if (!k.yush || typeof k.yush.entry !== 'number' || typeof k.yush.sl !== 'number') e.push(p + 'yush.entry/sl missing');
       if (k.dir !== 'long' && k.dir !== 'short') e.push(p + 'dir must be long/short');
-      if (k.copy){ if (typeof k.copy.entry !== 'number' || typeof k.copy.sl !== 'number') e.push(p + 'copy.entry/sl missing');
-        if (!Array.isArray(k.copy.exits)) e.push(p + 'copy.exits must be an array'); }
-      else if (!k.missed) e.push(p + 'copy null needs missed M1/M2/M3');
-      if (k.copy && k.copy.t_entry != null && !/^\d{2}:\d{2}:\d{2}$/.test(k.copy.t_entry)) e.push(p + 'copy.t_entry must be HH:MM:SS');
-      ['entry','sl','tp'].forEach(function(f){ if (k.yush && k.yush[f] != null && typeof k.yush[f] === 'string') e.push(p + 'yush.' + f + ' is a string'); });
+      if (k.copy) sideCheck(p + 'copy.', k.copy);
+      else if (['M1','M2','M3'].indexOf(k.missed) < 0) e.push(p + 'copy null needs missed M1/M2/M3');
+      else if (k.missed === 'M3' && !k.note) e.push(p + 'M3 needs a reason in note');
+      if (k.miss_tag != null && ['payout','tech','other'].indexOf(k.miss_tag) < 0) e.push(p + 'miss_tag must be payout/tech/other');
+      devCheck(p, k.deviations, false);
     });
+    ['trades','extras'].forEach(function(f){ (Array.isArray(j[f]) ? j[f] : []).forEach(function(k, i){
+      var p = f + '[' + i + '] ';
+      if (k.dir !== 'long' && k.dir !== 'short') e.push(p + 'dir must be long/short');
+      if (['NQ','ES'].indexOf(k.inst) < 0) e.push(p + 'inst must be NQ or ES');
+      sideCheck(p, k);
+      devCheck(p, k.deviations, false);
+      if (f === 'extras' && !(k.deviations || []).length) e.push(p + 'an extra trade needs a deviation with a tag (why it was taken)');
+      if (f === 'extras') devCheck(p, k.deviations, true);
+    }); });
     return e;
   },
-  /* review for one copier over a set of calls (Instructions §6) */
-  review: function(calls){
-    var rd = YC.rd, o = { calls:calls.length, y:{n:0,w:0,l:0,plan:0,real:0}, c:{n:0,w:0,l:0,plan:0,real:0,hold:0,holdN:0}, missedR:0, devR:0, devCalls:0, tags:{}, dd:0, ddUsd:0 };
+  /* review for one copier over a set of calls + trades (Instructions §6) */
+  review: function(calls, trades){
+    var rd = YC.rd, o = { calls:calls.length, y:{n:0,w:0,l:0,plan:0,real:0}, c:{n:0,w:0,l:0,plan:0,real:0,hold:0,holdN:0}, missedR:0, devR:0, devCalls:0, tags:{}, dd:0, ddUsd:0, green:0, extras:0, extraR:0 };
     var cum = 0, peak = 0, usd = 0, peakU = 0;
+    var take = function(c, dir, r){ o.c.n++; o.c.real += rd(r); var pl = YC.planR(c); if (pl != null) o.c.plan += pl; if (r > 0) o.c.w++; else if (r < 0) o.c.l++;
+      if (c.hold_s != null){ o.c.hold += c.hold_s; o.c.holdN++; }
+      cum += rd(r); if (cum > peak) peak = cum; if (peak - cum > o.dd) o.dd = peak - cum;
+      usd += (c.net_usd || 0); if (usd > peakU) peakU = usd; if (peakU - usd > o.ddUsd) o.ddUsd = peakU - usd; };
+    var tagsOf = function(list){ (list || []).forEach(function(v){ var t = YC.normTag(v.tag) || 'other'; o.tags[t] = (o.tags[t] || 0) + 1; }); };
     calls.forEach(function(k){
       var s = YC.callStats(k);
       if (s.yR != null){ o.y.n++; o.y.real += rd(s.yR); if (s.yPlan != null) o.y.plan += s.yPlan; if (s.yR > 0) o.y.w++; else if (s.yR < 0) o.y.l++; }
-      if (k.copy && s.cR != null){ o.c.n++; o.c.real += rd(s.cR); if (s.cPlan != null) o.c.plan += s.cPlan; if (s.cR > 0) o.c.w++; else if (s.cR < 0) o.c.l++;
-        if (k.copy.hold_s != null){ o.c.hold += k.copy.hold_s; o.c.holdN++; }
-        cum += rd(s.cR); if (cum > peak) peak = cum; if (peak - cum > o.dd) o.dd = peak - cum;
-        usd += (k.copy.net_usd || 0); if (usd > peakU) peakU = usd; if (peakU - usd > o.ddUsd) o.ddUsd = peakU - usd; }
+      if (k.waiting) return;
+      if (k.copy && s.cR != null) take(k.copy, k.dir, s.cR);
       if (!k.copy && s.gap != null) o.missedR += s.gap;
-      if ((k.deviations || []).length){ o.devCalls++; if (s.gap != null) o.devR += s.gap; k.deviations.forEach(function(v){ var t = v.tag || 'none'; o.tags[t] = (o.tags[t] || 0) + 1; }); }
+      if ((k.deviations || []).length){ o.devCalls++; if (s.gap != null) o.devR += s.gap; tagsOf(k.deviations); }
+      if (YC.isGreen(k)) o.green++;
     });
+    (trades || []).forEach(function(k){ var r = YC.realR(k.copy, k.dir); if (r != null) take(k.copy, k.dir, r); tagsOf(k.deviations);
+      if (k.kind === 'extra'){ o.extras++; if (r != null) o.extraR += rd(r); } });
     ['y','c'].forEach(function(f){ var x = o[f]; x.wr = x.n ? x.w / x.n : null; x.avgPlan = x.n ? x.plan / x.n : null; x.exp = x.n ? x.real / x.n : null; x.real = rd(x.real); });
     o.c.avgHold = o.c.holdN ? o.c.hold / o.c.holdN : null;
-    o.missedR = rd(o.missedR); o.devR = rd(o.devR); o.dd = rd(o.dd);
+    o.missedR = rd(o.missedR); o.devR = rd(o.devR); o.dd = rd(o.dd); o.extraR = rd(o.extraR);
     return o;
   },
-  /* half of his size, in micros, rounded down (copy rule 1) */
-  halfSize: function(qty, contract){
-    if (!qty) return null;
-    var micro = {NQ:'MNQ', ES:'MES'}[contract], q = micro ? qty * 10 : qty;
-    return { qty: Math.floor(q / 2), contract: micro || contract };
+  /* suggest the call a pending trade belongs to: same direction and instrument first, then nearest time, then nearest price */
+  suggest: function(trade, cands){
+    var sec = function(t){ if (!t) return null; var p = t.split(':'); return +p[0] * 3600 + +p[1] * 60 + +(p[2] || 0); };
+    var ts = sec(trade.t_entry);
+    var sc = cands.map(function(c){ var d = (c.dir === trade.dir ? 0 : 1e9) + (c.inst === trade.inst ? 0 : 1e8);
+      var cs = sec(c.time_et), dt = (ts != null && cs != null) ? Math.abs(ts - cs) : 5e6, dp = Math.abs((trade.entry || 0) - (+c.y_entry || 0));
+      return { c:c, score:d + dt * 10 + dp }; });
+    sc.sort(function(a, b){ return a.score - b.score; });
+    return sc.map(function(x){ return x.c; });
   },
   /* ET <-> UTC without fixed offsets */
   tzParts: function(ms, tz){
@@ -345,20 +459,38 @@ if (typeof module !== 'undefined') module.exports = YC;
   var SB_KEY = 'sb_publishable__bBgcqi4VfhIryjgI5w0VQ_hUHsambk';
   var sb = supabase.createClient(SB_URL, SB_KEY);
   var $ = function(id){ return document.getElementById(id); };
-  var me = null, members = [], days = [], calls = [], copies = [], devs = [], settingsAll = [], rules = [], openDate = null, pending = null;
-  var myName = null, people = [], who = 'me', isAdmin = false;
+  var me = null, members = [], days = [], calls = [], copies = [], devs = [], settings = null, rules = [], openDate = null, pending = null, isAdmin = false;
   var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
   var fmtDate = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + MON[x.getUTCMonth()] + ' (' + DOW[x.getUTCDay()] + ')'; };
   var shortD = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + MON[x.getUTCMonth()]; };
   function msg(id, text, cls){ var el = $(id); el.textContent = text; el.className = 'msg' + (cls ? ' ' + cls : ''); el.hidden = !text; }
   var C = { gold:'#c9a96e', cy:'#22d3ee', vi:'#a78bfa', win:'#4ade80', loss:'#f87171', warn:'#f59e0b', muted:'#8a8f98', dim:'#5c6068', s2:'#16181b', b:'#1f2126', bs:'#2a2d33', bg:'#08090a' };
-  var CAUSE = [['missed', C.cy], ['stop_size', C.warn], ['fills', C.win], ['mgmt', C.muted]];
-  var TAGS = ['P18','P5','P14','P12','T','DLL'], TAGC = {P18:'#f87171', P5:'#fb923c', P14:'#f59e0b', P12:'#facc15', T:'#60a5fa', DLL:'#e879f9', none:'#8a8f98'};
+  var CAUSE = [['missed', C.cy, 'missed calls'], ['stop_size', C.warn, 'stop / size'], ['fills', C.win, 'fills'], ['mgmt', C.muted, 'management'], ['extra', C.vi, 'extra trades']];
+  var tagLabel = function(k){ return YC.tag(YC.normTag(k) || 'other').l; }, tagColor = function(k){ return YC.tag(YC.normTag(k) || 'other').c; };
+  var missLabel = function(m){ var x = YC.MISS.find(function(z){ return z[0] === m; }); return x ? x[1] : (m || 'no side yet'); };
+  var pctOf = function(){ return settings && settings.size_pct != null ? +settings.size_pct : 50; };
+
+  /* ===== tooltip: hover on desktop, tap on phones ===== */
+  var tip = $('tip'), tipOn = null;
+  function showTip(el, x, y){
+    tip.textContent = el.getAttribute('data-tip'); tip.hidden = false; tipOn = el;
+    var r = tip.getBoundingClientRect(), W = window.innerWidth, H = window.innerHeight;
+    var left = Math.min(Math.max(8, x - r.width / 2), W - r.width - 8), top = y - r.height - 14; if (top < 8) top = y + 16; if (top + r.height > H - 8) top = H - r.height - 8;
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function hideTip(){ tip.hidden = true; tipOn = null; }
+  document.addEventListener('pointerover', function(e){ if (e.pointerType !== 'mouse') return; var t = e.target.closest && e.target.closest('[data-tip]'); if (t) showTip(t, e.clientX, e.clientY); else if (tipOn) hideTip(); });
+  document.addEventListener('pointermove', function(e){ if (e.pointerType === 'mouse' && tipOn) showTip(tipOn, e.clientX, e.clientY); });
+  document.addEventListener('click', function(e){ var t = e.target.closest && e.target.closest('[data-tip]');
+    if (t && t.tagName !== 'BUTTON') showTip(t, e.clientX, e.clientY);
+    else if (!t) hideTip(); });
+  window.addEventListener('scroll', function(){ if (tipOn) hideTip(); }, {passive:true});
+  var dt = function(s){ return ' data-tip="' + esc(s) + '"'; };
 
   /* tabs */
   var tabs = document.querySelectorAll('.tabs button'), panels = {dash:'tab-dash', days:'tab-days', log:'tab-log', set:'tab-set'};
-  function show(k){ tabs.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.tab === k); }); Object.keys(panels).forEach(function(p){ $(panels[p]).hidden = (p !== k); }); try { localStorage.setItem('yc_tab', k); } catch(e){} }
+  function show(k){ tabs.forEach(function(b){ b.setAttribute('aria-selected', b.dataset.tab === k); }); Object.keys(panels).forEach(function(p){ $(panels[p]).hidden = (p !== k); }); hideTip(); try { localStorage.setItem('yc_tab', k); } catch(e){} }
   tabs.forEach(function(b){ b.addEventListener('click', function(){ show(b.dataset.tab); }); });
 
   /* auth */
@@ -385,86 +517,76 @@ if (typeof module !== 'undefined') module.exports = YC;
     ]).then(function(r){
       var err = r.find(function(x){ return x.error; });
       if (err) throw err.error;
-      members = r[0].data || []; days = r[1].data || []; calls = r[2].data || []; copies = r[3].data || []; devs = r[4].data || []; settingsAll = r[5].data || []; rules = r[6].data || [];
-      if (!members.some(function(m){ return m.email === me.email; })) throw new Error('not a member');
-      /* a person = one member name; one person may sign in with more than one Gmail */
-      myName = personOf(me.email);
-      /* one email = one user: each person sees only their own side (enforced by the database) */
-      people = [myName]; who = 'me';
-      var mrow = members.find(function(m){ return m.email === me.email; }); isAdmin = !!mrow && mrow.role === 'admin';
-      if (who !== 'me' && who !== 'both' && people.indexOf(who) < 0) who = 'me';
+      var em = me.email.toLowerCase(), mine = function(x){ return String(x.copier).toLowerCase() === em; };
+      members = r[0].data || []; days = (r[1].data || []).filter(mine); calls = r[2].data || []; copies = (r[3].data || []).filter(mine); devs = r[4].data || [];
+      settings = (r[5].data || []).find(mine) || null; rules = r[6].data || [];
+      var mrow = members.find(function(m){ return String(m.email).toLowerCase() === em; });
+      if (!mrow) throw new Error('not a member');
+      isAdmin = mrow.role === 'admin';
     });
   }
-  function personOf(email){ if (email !== me.email) return email; var m = members.find(function(x){ return x.email === email; }); return (m && m.name) || email; }
-  function emailsOf(person){ return person === myName ? [me.email] : []; }
-  function sel(){ return who === 'both' ? people.slice() : [who === 'me' ? myName : who]; }
-  function colorOf(person){ var i = people.indexOf(person); return i <= 0 ? C.cy : C.vi; }
-  function settingsOf(person){ var em = emailsOf(person); return (person === myName && settingsAll.find(function(s){ return s.copier === me.email; })) || settingsAll.find(function(s){ return em.indexOf(s.copier) >= 0; }) || null; }
-  function dayRow(date, person){ return days.find(function(d){ return d.date === date && personOf(d.copier) === person; }) || null; }
-  function personDates(person){ var o = {}; days.forEach(function(d){ if (personOf(d.copier) === person) o[d.date] = 1; }); return Object.keys(o).sort(); }
+  function dayRow(date){ return days.find(function(d){ return d.date === date; }) || null; }
+  function myDates(){ return days.map(function(d){ return d.date; }).sort(); }
+  function devsOf(copyId){ return devs.filter(function(d){ return d.copy_id === copyId; }); }
+  function sideOf(cp){ return { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note, t_entry:cp.t_entry ? String(cp.t_entry).slice(0,8) : null }; }
 
-  /* shape a DB call into the JSON-call shape the calc layer reads, for one person */
-  function callObj(c, person){
-    var cp = copies.find(function(x){ return x.call_id === c.id && personOf(x.copier) === person; });
-    var o = { id:c.id, n:c.n, date:c.date, time_et:c.time_et, stamped_at:c.stamped_at, source:c.source, inst:c.inst, dir:c.dir, missed:null, note:c.note,
+  /* a DB call -> the JSON call shape the calc reads, with my side */
+  function callObj(c){
+    var cp = copies.find(function(x){ return x.call_id === c.id; });
+    var o = { id:c.id, n:c.n, date:c.date, time_et:c.time_et, stamped_at:c.stamped_at, source:c.source, inst:c.inst, dir:c.dir, missed:null, missTag:null, note:c.note, waiting:false,
       yush:{ entry:+c.y_entry, sl:+c.y_sl, tp:c.y_tp == null ? null : +c.y_tp, qty:c.y_qty, contract:c.y_contract, exits:c.y_exits || [], net_usd_est:c.y_net_usd_est == null ? null : +c.y_net_usd_est },
       copy:null, deviations:[] };
-    if (cp && cp.status !== 'missed'){
-      o.copy = { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note };
-      o.deviations = devs.filter(function(d){ return d.copy_id === cp.id; });
-    } else {
-      o.missed = (cp && cp.missed) || c.missed || '—';
-      if (cp && cp.note) o.note = cp.note;
-    }
+    if (cp && cp.status !== 'missed'){ o.copy = sideOf(cp); o.copyId = cp.id; o.deviations = devsOf(cp.id); }
+    else if (cp){ o.missed = cp.missed || 'M3'; o.missTag = cp.miss_tag; o.copyId = cp.id; if (cp.note) o.note = cp.note; }
+    else if (isAdmin && c.missed){ o.missed = c.missed; }  /* the 8-Oct record keeps its miss on the call */
+    else o.waiting = true;  /* no side yet: link a trade or mark it missed */
     return o;
   }
-  function callsFor(person, dates){ var inD = {}; dates.forEach(function(d){ inD[d] = 1; }); return calls.filter(function(c){ return inD[c.date]; }).map(function(c){ return callObj(c, person); }); }
+  /* my extra and pending trades on a date */
+  function tradesOn(d){
+    return copies.filter(function(x){ return x.date === d && (x.status === 'extra' || (!x.call_id && x.status !== 'missed')); }).map(function(x){
+      return { id:x.id, kind:x.status === 'extra' ? 'extra' : 'pending', date:x.date, inst:x.inst, dir:x.dir, t_entry:x.t_entry ? String(x.t_entry).slice(0,8) : null, copy:sideOf(x), deviations:devsOf(x.id) };
+    }).sort(function(a, b){ return (a.t_entry || '99') < (b.t_entry || '99') ? -1 : 1; });
+  }
+  function callsOn(d){ return calls.filter(function(c){ return c.date === d; }).map(callObj); }
+  function datesIn(list){ var o = {}; list.forEach(function(d){ o[d] = 1; }); return o; }
 
   function boot(){
     $('login').hidden = true;
     $('pill').textContent = YC_VERSION;
-    try { who = localStorage.getItem('yc_who') || 'me'; } catch(e){}
     load().then(function(){
-      var st = settingsOf(myName); if (st && st.mult) YC.mult = st.mult;
       $('app').hidden = false;
       var t = 'dash'; try { t = localStorage.getItem('yc_tab') || 'dash'; } catch(e){}
       show(panels[t] ? t : 'dash');
       renderAll();
     }).catch(function(e){ $('login').hidden = false; msg('login-err', 'Signed in as ' + me.email + ' but not on the members list, or: ' + (e.message || e), 'err'); $('b-login').hidden = true; });
   }
-
-  function renderAll(){ renderWho(); renderDash(); renderDays(); renderLog(); renderSettings(); }
-
-  /* copier switch (shown once a second person exists) */
-  function renderWho(){
-    var opts = [['me', myName]].concat(people.slice(1).map(function(p){ return [p, p]; }));
-    if (people.length > 1) opts.push(['both', 'Both']);
-    document.querySelectorAll('.who-seg').forEach(function(g){
-      g.hidden = people.length < 2;
-      g.innerHTML = opts.map(function(o){ return '<button data-w="' + esc(o[0]) + '" aria-pressed="' + (who === o[0]) + '">' + esc(o[1]) + '</button>'; }).join('');
-      g.querySelectorAll('button').forEach(function(b){ b.addEventListener('click', function(){ who = b.dataset.w; try { localStorage.setItem('yc_who', who); } catch(e){} renderWho(); renderDash(); renderDays(); }); });
-    });
-  }
+  function renderAll(){ renderDash(); renderDays(); renderLog(); renderSettings(); }
 
   /* ===== DASHBOARD ===== */
   var range = 'month'; try { range = localStorage.getItem('yc_range') || 'month'; } catch(e){}
-  var calSel = null;
+  var calSel = null, calSide = 'copy';
   document.querySelectorAll('#dash-range button').forEach(function(b){ b.addEventListener('click', function(){ range = b.dataset.r; try { localStorage.setItem('yc_range', range); } catch(e){} renderDash(); }); });
-  function rangeDates(persons){
-    var o = {}; persons.forEach(function(p){ personDates(p).forEach(function(d){ o[d] = 1; }); });
-    var ds = Object.keys(o).sort(); if (!ds.length) return [];
+  document.querySelectorAll('#cal-side button').forEach(function(b){ b.addEventListener('click', function(){ calSide = b.dataset.s; document.querySelectorAll('#cal-side button').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); renderCal(); }); });
+  function rangeDates(){
+    var ds = myDates(); if (!ds.length) return [];
     var last = ds[ds.length - 1];
     if (range === 'day') return [last];
-    if (range === 'week'){ var x = new Date(last + 'T12:00:00Z'), dow = (x.getUTCDay() + 6) % 7; x.setUTCDate(x.getUTCDate() - dow); var mon = x.toISOString().slice(0,10); return ds.filter(function(d){ return d >= mon && d <= last; }); }
-    return ds;
+    if (range === 'week'){ var x = new Date(last + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - (x.getUTCDay() + 6) % 7); var mon = x.toISOString().slice(0,10); return ds.filter(function(d){ return d >= mon; }); }
+    var m = last.slice(0,7); return ds.filter(function(d){ return d.slice(0,7) === m; });
+  }
+  function dataset(){
+    var dates = rangeDates();
+    var perDay = dates.map(function(d){ var dc = callsOn(d), tr = tradesOn(d); return { date:d, calls:dc, trades:tr, s:YC.dayStats(dc, tr), row:dayRow(d) }; });
+    var allC = [], allT = []; perDay.forEach(function(p){ allC = allC.concat(p.calls); allT = allT.concat(p.trades); });
+    return { dates:dates, perDay:perDay, calls:allC, trades:allT, t:YC.dayStats(allC, allT) };
   }
   function bar(w, frac, color){ return '<rect x="0" y="0" width="' + w + '" height="8" rx="2" fill="' + C.s2 + '"/>' + (frac > 0 ? '<rect x="0" y="0" width="' + Math.max(1, w * Math.min(1, frac)).toFixed(1) + '" height="8" rx="2" fill="' + color + '"/>' : ''); }
   function blocks(items){
     var n = items.length; if (!n) return '<svg viewBox="0 0 120 14"><rect x="0" y="2" width="120" height="10" rx="2" fill="' + C.s2 + '"/></svg>';
     var gap = n > 20 ? 1 : 3, w = (120 - gap * (n - 1)) / n;
     return '<svg viewBox="0 0 120 14">' + items.map(function(it, i){ var x = (i * (w + gap)).toFixed(2);
-      return '<rect x="' + x + '" y="2" width="' + w.toFixed(2) + '" height="10" rx="' + Math.min(2, w / 3).toFixed(1) + '" fill="' + (it.fill || 'none') + '"' + (it.stroke ? ' stroke="' + it.stroke + '" stroke-width=".8"' + (it.dash ? ' stroke-dasharray="2 1.5"' : '') : '') + '/>' +
-        (it.label && w > 22 ? '<text x="' + (+x + w / 2).toFixed(2) + '" y="10.2" font-size="6.5" fill="' + C.bg + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + it.label + '</text>' : ''); }).join('') + '</svg>';
+      return '<rect x="' + x + '" y="2" width="' + w.toFixed(2) + '" height="10" rx="' + Math.min(2, w / 3).toFixed(1) + '" fill="' + (it.fill || C.bg) + '"' + (it.stroke ? ' stroke="' + it.stroke + '" stroke-width=".8"' + (it.dash ? ' stroke-dasharray="2 1.5"' : '') : '') + (it.tip ? dt(it.tip) : '') + '/>'; }).join('') + '</svg>';
   }
   function niceStep(span){ var raw = span / 4, p = Math.pow(10, Math.floor(Math.log10(raw))), m = raw / p; return (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * p; }
   function yAxis(lo, hi, minSpan){
@@ -479,419 +601,473 @@ if (typeof module !== 'undefined') module.exports = YC;
       '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ax.ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + fmtTick(v) + '</text>'; }).join('') + '</g>';
   }
   function svgWrap(inner, label, H){ return '<svg viewBox="0 0 320 ' + (H || 150) + '" role="img" aria-label="' + label + '">' + inner + '</svg>'; }
-
-  /* per-person dataset for the current range */
-  function dataset(){
-    var ps = sel(), dates = rangeDates(ps);
-    var per = ps.map(function(p){
-      var pd = personDates(p).filter(function(d){ return dates.indexOf(d) >= 0; });
-      var list = callsFor(p, pd);
-      return { p:p, color:colorOf(p), dates:pd, calls:list, t:YC.dayStats(list),
-        perDay: pd.map(function(d){ var dc = list.filter(function(k){ return k.date === d; }); return { date:d, s:YC.dayStats(dc), row:dayRow(d, p), calls:dc }; }) };
-    });
-    var callerCalls = calls.filter(function(c){ return dates.indexOf(c.date) >= 0; }).map(function(c){ return callObj(c, ps[0]); });
-    return { ps:ps, dates:dates, per:per, caller:YC.dayStats(callerCalls), callerCalls:callerCalls };
-  }
+  var cls = function(x){ return x == null ? '' : x < 0 ? 'neg' : x > 0 ? 'pos' : ''; };
 
   function renderDash(){
     document.querySelectorAll('#dash-range button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.r === range); });
-    var D = dataset(), multi = D.per.length > 1, dates = D.dates;
+    var D = dataset(), T = D.t, dates = D.dates;
     $('dash-meta').textContent = dates.length ? (dates.length === 1 ? shortD(dates[0]) : shortD(dates[0]) + ' – ' + shortD(dates[dates.length - 1])) + ' · ' + dates.length + (dates.length === 1 ? ' day' : ' days') : 'no days imported';
-    var T = D.caller, tiles = [];
-    var wrapP = function(x, fn){ return D.per.map(function(q){ var r = fn(q); return multi ? '<div class="pp"><span class="who" style="color:' + q.color + '">' + esc(q.p) + '</span><span class="v2">' + r.v + '</span>' + r.svg + '<span class="s">' + r.s + '</span></div>' : null; }).join(''); };
+    var comm = D.perDay.reduce(function(a, p){ return a + (p.row && p.row.commissions != null ? +p.row.commissions : 0); }, 0);
 
-    /* 1 · R Caller vs Copy */
-    var mx = Math.max.apply(null, [Math.abs(T.yR), 0.01].concat(D.per.map(function(q){ return Math.abs(q.t.cR); })));
-    var rows = [[T.yR, T.yR < 0 ? C.loss : C.gold]].concat(D.per.map(function(q){ return [q.t.cR, q.t.cR < 0 ? C.loss : q.color]; }));
-    tiles.push({ l:'R · Caller vs Copy', v:'<span class="gold">' + YC.r2(T.yR) + '</span>' + D.per.map(function(q){ return ' <span class="s">/</span> <span style="color:' + (q.t.cR < 0 ? C.loss : q.color) + '">' + YC.r2(q.t.cR) + '</span>'; }).join(''),
-      svg:'<svg viewBox="0 0 120 ' + (rows.length * 12 + 2) + '">' + rows.map(function(r, i){ return '<g transform="translate(0,' + (3 + i * 12) + ')">' + bar(120, Math.abs(r[0]) / mx, r[1]) + '</g>'; }).join('') + '</svg>',
-      s: D.callerCalls.length + ' calls · ' + D.per.map(function(q){ return (multi ? esc(q.p) + ' ' : '') + q.t.taken + ' taken'; }).join(' · ') + ' · W/L ' + T.yW + '/' + T.yL + D.per.map(function(q){ return ' vs ' + q.t.cW + '/' + q.t.cL; }).join('') });
+    /* headline strip */
+    $('dash-strip').innerHTML =
+      '<div' + dt('Caller: his realised R on every call in range, each against his own stop.\n' + T.yW + ' wins · ' + T.yL + ' losses · ' + YC.r2(T.yPts) + ' pts') + '><span class="l">Caller R</span><span class="v gold">' + YC.r2(T.yR) + '</span><span class="s">' + T.n + ' calls · ' + T.yW + 'W ' + T.yL + 'L</span></div>' +
+      '<div' + dt('Copy: your realised R, each trade against your own stop. Extra and not-yet-linked trades included.\n' + T.cW + ' wins · ' + T.cL + ' losses · ' + YC.r2(T.cPts) + ' pts') + '><span class="l">Copy R</span><span class="v ' + (T.cR < 0 ? 'neg' : 'cyan') + '">' + YC.r2(T.cR) + '</span><span class="s">' + T.taken + ' taken · ' + T.cW + 'W ' + T.cL + 'L</span></div>' +
+      '<div' + dt('Gap = copy R − caller R on the calls, plus extra trades.\nmissed ' + YC.r2(T.cause.missed) + ' · stop/size ' + YC.r2(T.cause.stop_size) + ' · fills ' + YC.r2(T.cause.fills) + ' · mgmt ' + YC.r2(T.cause.mgmt) + ' · extra ' + YC.r2(T.cause.extra)) + '><span class="l">Gap</span><span class="v ' + cls(T.gap) + '">' + YC.r2(T.gap) + 'R</span><span class="s">' + (T.waiting ? T.waiting + ' calls waiting' : 'copy vs caller') + '</span></div>' +
+      '<div' + dt('Your net $ after commissions.\nCommissions ' + comm.toFixed(2) + '\nCaller est. ' + YC.usd(T.yUsd) + ' (from his shown exits, net of IQ commissions)') + '><span class="l">Copy net $</span><span class="v ' + cls(T.cUsd) + '">' + YC.usd(T.cUsd) + '</span><span class="s">Caller est. ' + YC.usd(T.yUsd) + '</span></div>';
 
-    /* 2 · Gap split by cause */
-    var gapOne = function(q){ var t = q.t, absSum = CAUSE.reduce(function(a, c){ return a + Math.abs(t.cause[c[0]]); }, 0), xx = 0, gs = '<rect x="0" y="1" width="120" height="8" rx="2" fill="' + C.s2 + '"/>';
-      CAUSE.forEach(function(c){ var v = Math.abs(t.cause[c[0]]); if (!v || !absSum) return; var w = 120 * v / absSum; gs += '<rect x="' + xx.toFixed(2) + '" y="1" width="' + Math.max(1, w).toFixed(2) + '" height="8" fill="' + c[1] + '"/>'; xx += w; });
-      return { v:'<span class="' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</span>', svg:'<svg viewBox="0 0 120 10">' + gs + '</svg>',
-        s:'<span class="cyan">miss ' + YC.r2(t.cause.missed) + '</span> · <span class="warn">stop ' + YC.r2(t.cause.stop_size) + '</span> · <span class="pos">fills ' + YC.r2(t.cause.fills) + '</span> · mgmt ' + YC.r2(t.cause.mgmt) }; };
-    tiles.push(multi ? { l:'Gap · ' + range, multi:wrapP(0, gapOne) } : Object.assign({ l:'Gap · ' + range }, gapOne(D.per[0])));
+    var tiles = [];
+    /* gap by cause */
+    var absSum = CAUSE.reduce(function(a, c){ return a + Math.abs(T.cause[c[0]]); }, 0), xx = 0, gs = '<rect x="0" y="1" width="120" height="9" rx="2" fill="' + C.s2 + '"/>';
+    CAUSE.forEach(function(c){ var v = Math.abs(T.cause[c[0]]); if (!v || !absSum) return; var w = 120 * v / absSum; gs += '<rect x="' + xx.toFixed(2) + '" y="1" width="' + Math.max(1, w).toFixed(2) + '" height="9" fill="' + c[1] + '"' + dt(c[2] + ': ' + YC.r2(T.cause[c[0]]) + 'R') + '/>'; xx += w; });
+    tiles.push({ l:'Where the gap comes from', v:'<span class="' + cls(T.gap) + '">' + YC.r2(T.gap) + 'R</span>', svg:'<svg viewBox="0 0 120 11">' + gs + '</svg>',
+      s:CAUSE.filter(function(c){ return T.cause[c[0]]; }).map(function(c){ return '<span style="color:' + c[1] + '">' + c[2] + ' ' + YC.r2(T.cause[c[0]]) + '</span>'; }).join(' · ') || 'no gap' });
+    /* calls + deviations */
+    var items = D.calls.map(function(k){ var lab = shortD(k.date) + ' #' + k.n + ' ' + (k.dir === 'short' ? 'short' : 'long') + ' ' + k.inst + '\n';
+      if (k.waiting) return {stroke:C.gold, dash:1, tip:lab + 'waiting for your side'};
+      if (!k.copy) return {stroke:C.cy, dash:1, tip:lab + 'missed · ' + missLabel(k.missed)};
+      var r = YC.realR(k.copy, k.dir), d = k.deviations.map(function(v){ return tagLabel(v.tag); });
+      return { fill:d.length ? C.warn : C.win, tip:lab + (d.length ? 'deviation: ' + d.join(', ') : 'copied') + ' · ' + YC.r2(r) + 'R' + (YC.isGreen(k) ? '\nGreen on a broken rule' : '') }; })
+      .concat(D.trades.map(function(k){ return { fill:k.kind === 'extra' ? C.vi : C.bs, tip:shortD(k.date) + ' ' + (k.kind === 'extra' ? 'extra trade' : 'not linked yet') + ' · ' + YC.r2(YC.realR(k.copy, k.dir)) + 'R' }; }));
+    var tagCnt = {}; D.calls.concat(D.trades).forEach(function(k){ (k.deviations || []).forEach(function(v){ var t = YC.normTag(v.tag) || 'other'; tagCnt[t] = (tagCnt[t] || 0) + 1; }); });
+    tiles.push({ l:'Calls copied', v:T.taken + '<span class="s"> / ' + T.n + '</span>', svg:blocks(items),
+      s:'<span class="pos">■</span> copied · <span class="cyan">◌</span> missed ' + T.missed + ' · <span class="warn">■</span> deviation' + (T.extras ? ' · <span class="vio">■</span> extra ' + T.extras : '') +
+        (Object.keys(tagCnt).length ? '<br>' + Object.keys(tagCnt).map(function(t){ return '<span style="color:' + tagColor(t) + '">' + tagLabel(t) + ' ' + tagCnt[t] + '</span>'; }).join(' · ') : '') +
+        (T.green ? '<br><span class="neg">' + T.green + ' green on a broken rule</span>' : '') });
+    /* net $ sparkline */
+    var cum = 0, pts = [0].concat(D.perDay.map(function(p){ cum += p.s.cUsd; return cum; })), lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts), sp = (hi - lo) || 1;
+    var py = function(v){ return (26 - (v - lo) / sp * 22).toFixed(1); }, pxx = function(i){ return (pts.length === 1 ? 116 : 3 + i * 113 / (pts.length - 1)).toFixed(1); }, lc = cum < 0 ? C.loss : C.win;
+    tiles.push({ l:'Copy net $ by day', v:'<span class="' + cls(T.cUsd) + '">' + YC.usd(T.cUsd) + '</span>',
+      svg:'<svg viewBox="0 0 120 30"><line x1="0" x2="120" y1="' + py(0) + '" y2="' + py(0) + '" stroke="' + C.bs + '" stroke-dasharray="2 2"/><polyline fill="none" stroke="' + lc + '" stroke-width="2" stroke-linejoin="round" points="' + pts.map(function(v, i){ return pxx(i) + ',' + py(v); }).join(' ') + '"/>' +
+        D.perDay.map(function(p, i){ return '<circle cx="' + pxx(i + 1) + '" cy="' + py(pts[i + 1]) + '" r="3.5" fill="' + (p.s.cUsd < 0 ? C.loss : C.win) + '"' + dt(fmtDate(p.date) + '\nday ' + YC.usd(p.s.cUsd) + ' · total ' + YC.usd(pts[i + 1])) + '/>'; }).join('') + '</svg>',
+      s:'commissions ' + comm.toFixed(2) });
+    /* DLL room: needs day_low from the day file */
+    var dll = settings && settings.dll_usd != null ? +settings.dll_usd : 600;
+    var lows = D.perDay.filter(function(p){ return p.row && p.row.day_low != null; });
+    if (!lows.length) tiles.push({ l:'DLL room · worst day', v:'<span class="mut">no data</span>', svg:'<svg viewBox="0 0 120 10"><g transform="translate(0,1)">' + bar(120, 0, C.win) + '</g></svg>', s:'Needs the day low in the day file (<span class="num">day_low</span>). DLL $' + dll });
+    else { var worst = lows.reduce(function(m, p){ return +p.row.day_low < +m.row.day_low ? p : m; }), room = dll + +worst.row.day_low, rf = Math.max(0, room / dll), col = rf < 0.34 ? C.loss : rf < 0.67 ? C.warn : C.win;
+      tiles.push({ l:'DLL room · worst day', v:'<span style="color:' + col + '">$' + Math.round(room).toLocaleString('en-US') + '</span>', svg:'<svg viewBox="0 0 120 10"><g transform="translate(0,1)"' + dt('DLL $' + dll + ' · worst day low ' + YC.usd(+worst.row.day_low) + ' on ' + fmtDate(worst.date)) + '>' + bar(120, rf, col) + '</g></svg>', s:'worst day low ' + YC.usd(+worst.row.day_low) + ' (' + shortD(worst.date) + ') · DLL $' + dll + (lows.length < D.perDay.length ? ' · ' + (D.perDay.length - lows.length) + ' days without data' : '') }); }
 
-    /* 3 · Calls copied */
-    var cpOne = function(q){ return { v:q.t.taken + '<span class="s"> / ' + q.calls.length + '</span>', svg:blocks(q.calls.map(function(k){ return !k.copy ? {stroke:C.cy, dash:1} : (k.deviations.length || k.copy.status === 'deviation') ? {fill:C.warn} : {fill:C.win}; })), s:multi ? q.t.missed + ' missed · ' + q.t.devs + ' dev' : '<span class="pos">■</span> copied · <span class="cyan">◌</span> missed · <span class="warn">■</span> deviation' }; };
-    tiles.push(multi ? { l:'Calls copied', multi:wrapP(0, cpOne) } : Object.assign({ l:'Calls copied' }, cpOne(D.per[0])));
-
-    /* 4 · Copy net $ */
-    var netOne = function(q){
-      var cum = 0, pts = [0].concat(q.perDay.map(function(p){ cum += p.s.cUsd; return cum; })), lo = Math.min.apply(null, pts), hi = Math.max.apply(null, pts), sp = (hi - lo) || 1;
-      var py = function(v){ return (26 - (v - lo) / sp * 22).toFixed(1); }, px = function(i){ return (pts.length === 1 ? 116 : 3 + i * 113 / (pts.length - 1)).toFixed(1); };
-      var lc = cum < 0 ? C.loss : C.win, comm = q.perDay.reduce(function(a, p){ return a + (p.row && p.row.commissions != null ? +p.row.commissions : 0); }, 0);
-      return { v:'<span class="' + (q.t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(q.t.cUsd) + '</span>',
-        svg:'<svg viewBox="0 0 120 30"><line x1="0" x2="120" y1="' + py(0) + '" y2="' + py(0) + '" stroke="' + C.bs + '" stroke-dasharray="2 2"/><polyline fill="none" stroke="' + lc + '" stroke-width="2" stroke-linejoin="round" points="' + pts.map(function(v, i){ return px(i) + ',' + py(v); }).join(' ') + '"/><circle cx="' + px(pts.length - 1) + '" cy="' + py(cum) + '" r="2.5" fill="' + lc + '"/></svg>',
-        s:'comm ' + comm.toFixed(2) };
-    };
-    var callerUsd = ' · Caller est. <span class="gold">' + YC.usd(T.yUsd) + '</span> net est.';
-    if (multi) tiles.push({ l:'Copy net $', multi:wrapP(0, netOne) + '<span class="s">' + callerUsd.slice(3) + '</span>' });
-    else { var n1 = netOne(D.per[0]); n1.s += callerUsd; tiles.push(Object.assign({ l:'Copy net $' }, n1)); }
-
-    /* 5 · DLL room on the worst day */
-    var dllOne = function(q){
-      var st = settingsOf(q.p), dll = st && st.dll_usd != null ? +st.dll_usd : 600;
-      var worst = q.perDay.reduce(function(m, p){ return p.s.low < m.low ? {low:p.s.low, date:p.date} : m; }, {low:0, date:null}), room = dll + worst.low, rf = Math.max(0, room / dll);
-      var last = q.perDay.length ? q.perDay[q.perDay.length - 1].row : null;
-      return { v:'<span class="' + (rf < 0.34 ? 'neg' : rf < 0.67 ? 'warn' : '') + '">$' + Math.round(room).toLocaleString('en-US') + '</span>',
-        svg:'<svg viewBox="0 0 120 10"><g transform="translate(0,1)">' + bar(120, rf, rf < 0.34 ? C.loss : rf < 0.67 ? C.warn : C.win) + '</g></svg>',
-        s:'worst day low ' + (worst.low ? '−$' + Math.abs(Math.round(worst.low)) + ' (' + shortD(worst.date) + ')' : '$0') + (last && last.balance_eod != null ? ' · EOD ' + (+last.balance_eod).toLocaleString('en-US') : '') };
-    };
-    tiles.push(multi ? { l:'DLL room · worst day', multi:wrapP(0, dllOne) } : Object.assign({ l:'DLL room · worst day' }, dllOne(D.per[0])));
-
-    /* 6 · Deviations by tag */
-    var devOne = function(q){
-      var cnt = {}, untagged = 0, list = [];
-      q.calls.forEach(function(k){ k.deviations.forEach(function(v){ if (v.tag) cnt[v.tag] = (cnt[v.tag] || 0) + 1; else untagged++; list.push(v.tag || null); }); });
-      list.sort(function(a, b){ return (a === null ? -1 : TAGS.indexOf(a)) - (b === null ? -1 : TAGS.indexOf(b)); });
-      return { v:'<span class="warn">' + list.length + '</span>', svg:blocks(list.map(function(tg){ return tg ? {fill:TAGC[tg] || C.warn, label:tg} : {fill:C.muted, label:'none'}; })),
-        s:TAGS.slice(0, 4).map(function(k){ return k + ' ' + (cnt[k] || 0); }).join(' · ') + (cnt.T ? ' · T ' + cnt.T : '') + (cnt.DLL ? ' · DLL ' + cnt.DLL : '') + (untagged ? ' · no tag ' + untagged : '') };
-    };
-    tiles.push(multi ? { l:'Deviations', multi:wrapP(0, devOne) } : Object.assign({ l:'Deviations' }, devOne(D.per[0])));
-
-    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x.l + '</div>' + (x.multi != null ? x.multi : '<div class="v">' + x.v + '</div>' + x.svg + '<div class="s">' + x.s + '</div>') + '</div>'; }).join('');
-    renderEquity(D); renderGapChart(D); renderDevChart(D); renderHold(D); renderCal(D); renderReview(D);
+    $('dash-tiles').innerHTML = tiles.map(function(x){ return '<div class="tile"><div class="l">' + x.l + '</div><div class="v">' + x.v + '</div>' + x.svg + '<div class="s">' + x.s + '</div></div>'; }).join('');
+    renderEquity(D); renderGapChart(D); renderDevChart(D); renderHold(D); renderCal(); renderReview(D);
   }
 
+  /* equity: calls and my extra / unlinked trades in time order */
   function renderEquity(D){
-    var H = 150, L = 34, R = 310, T = 14, B = 132;
-    var list = D.callerCalls;
-    if (!list.length){ $('ch-eq').innerHTML = '<p class="note">No calls in range.</p>'; $('lg-eq').innerHTML = ''; return; }
-    var yc = [0], labs = [''], y = 0;
-    list.forEach(function(k){ var s = YC.callStats(k); y += YC.rd(s.yR) || 0; yc.push(YC.rd(y)); labs.push(+k.date.slice(8) + '/' + k.n); });
-    var lines = D.per.map(function(q){
-      var arr = [0], miss = [], c = 0, byId = {}; q.calls.forEach(function(k){ byId[k.id] = k; });
-      list.forEach(function(k, i){ var mine = byId[k.id]; if (mine){ if (mine.copy){ var s = YC.callStats(mine); c += YC.rd(s.cR) || 0; } else miss.push(i + 1); } arr.push(YC.rd(c)); });
-      return { q:q, arr:arr, miss:miss };
+    var H = 160, L = 34, R = 310, T = 14, B = 140;
+    var ev = [];
+    D.perDay.forEach(function(p){
+      var list = p.calls.map(function(k){ return { t:k.time_et || '99', k:k, call:1 }; }).concat(p.trades.map(function(k){ return { t:k.t_entry || '99', k:k, call:0 }; }));
+      list.sort(function(a, b){ return a.t < b.t ? -1 : a.t > b.t ? 1 : 0; });
+      ev = ev.concat(list.map(function(x){ x.date = p.date; return x; }));
     });
-    var allV = yc.concat.apply(yc, lines.map(function(l){ return l.arr; }));
-    var ax = yAxis(Math.min.apply(null, allV), Math.max.apply(null, allV));
-    var X = function(i){ return L + 6 + i * (R - L - 6) / Math.max(1, yc.length - 1); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
+    if (!ev.length){ $('ch-eq').innerHTML = '<p class="note">No calls in range.</p>'; $('lg-eq').innerHTML = ''; return; }
+    var yc = [0], cc = [0], y = 0, c = 0, tips = [''], kinds = [''];
+    ev.forEach(function(e){ var k = e.k, yd = null, cd = null;
+      if (e.call){ yd = YC.rd(YC.realR(k.yush, k.dir)) || 0; y += yd; if (k.copy){ cd = YC.rd(YC.realR(k.copy, k.dir)) || 0; c += cd; } }
+      else { cd = YC.rd(YC.realR(k.copy, k.dir)) || 0; c += cd; }
+      yc.push(YC.rd(y)); cc.push(YC.rd(c));
+      var head = shortD(e.date) + (e.call ? ' #' + k.n : ' ' + (k.kind === 'extra' ? 'extra trade' : 'not linked')) + ' · ' + (k.dir === 'short' ? 'short' : 'long') + ' ' + k.inst + ((e.call ? k.time_et : k.t_entry) ? ' · ' + String(e.call ? k.time_et : k.t_entry).slice(0,5) + ' ET' : '');
+      tips.push(head + (e.call ? '\nCaller ' + YC.r2(yd) + ' (total ' + YC.r2(y) + ')' : '') + '\nCopy ' + (cd == null ? (k.waiting ? 'waiting' : 'missed ' + (k.missed || '')) : YC.r2(cd)) + ' (total ' + YC.r2(c) + ')' + (e.call && k.deviations.length ? '\n' + k.deviations.map(function(v){ return tagLabel(v.tag); }).join(', ') : ''));
+      kinds.push(e.call ? (k.copy ? 'c' : k.waiting ? 'w' : 'm') : 'x'); });
+    var ax = yAxis(Math.min.apply(null, yc.concat(cc)), Math.max.apply(null, yc.concat(cc)));
+    var n = yc.length - 1, X = function(i){ return L + 6 + i * (R - L - 6) / Math.max(1, n); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
     var g = grid(ax, Y, L, R, true);
-    var every = Math.ceil((yc.length - 1) / 8);
-    g += '<g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="middle">' + labs.map(function(l, i){ return (i && ((i - 1) % every === 0 || i === labs.length - 1)) ? '<text x="' + X(i).toFixed(1) + '" y="' + (H - 3) + '">' + l + '</text>' : ''; }).join('') + '</g>';
+    var every = Math.ceil(n / 7), lastD = null;
+    ev.forEach(function(e, i){ if (e.date !== lastD){ lastD = e.date; if (i % every === 0 || i === 0) g += '<text x="' + Math.min(X(i + 1), R - 16).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(e.date) + '</text>'; } });
     var pl = function(a, col, sw){ return '<polyline fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linejoin="round" points="' + a.map(function(v, i){ return X(i).toFixed(1) + ',' + Y(v).toFixed(1); }).join(' ') + '"/>'; };
-    var n = yc.length - 1;
-    g += pl(yc, C.gold, 4); /* caller drawn wider underneath so both show where they overlap */
-    lines.forEach(function(l, j){ g += pl(l.arr, l.q.color, j ? 1.4 : 1.8); });
-    lines.forEach(function(l){ g += l.miss.map(function(i){ return '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(l.arr[i]).toFixed(1) + '" r="3.5" fill="' + C.bg + '" stroke="' + l.q.color + '" stroke-dasharray="2 1.5"/>'; }).join(''); });
-    g += '<circle cx="' + X(n).toFixed(1) + '" cy="' + Y(yc[n]).toFixed(1) + '" r="3" fill="' + C.gold + '"/>' + lines.map(function(l){ return '<circle cx="' + X(n).toFixed(1) + '" cy="' + Y(l.arr[n]).toFixed(1) + '" r="3" fill="' + l.q.color + '"/>'; }).join('');
-    $('ch-eq').innerHTML = svgWrap(g, 'Cumulative R per call, Caller vs Copy', H);
-    $('lg-eq').innerHTML = '<span class="gold"><i></i>Caller ' + YC.r2(yc[n]) + '</span>' + lines.map(function(l){ return '<span style="color:' + l.q.color + '"><i></i>' + (D.per.length > 1 ? esc(l.q.p) : 'Copy') + ' ' + YC.r2(l.arr[n]) + '</span>'; }).join('') + '<span>◌ missed</span>';
+    g += pl(yc, C.gold, 3.5) + pl(cc, C.cy, 1.8);
+    for (var i = 1; i <= n; i++){
+      var k = kinds[i];
+      g += k === 'm' || k === 'w' ? '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(cc[i]).toFixed(1) + '" r="3.5" fill="' + C.bg + '" stroke="' + (k === 'w' ? C.gold : C.cy) + '" stroke-dasharray="2 1.5"/>'
+        : '<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(cc[i]).toFixed(1) + '" r="2.6" fill="' + (k === 'x' ? C.vi : C.cy) + '"/>';
+      g += '<rect x="' + (X(i) - (R - L) / Math.max(2, n) / 2).toFixed(1) + '" y="' + T + '" width="' + ((R - L) / Math.max(2, n)).toFixed(1) + '" height="' + (B - T) + '" fill="transparent"' + dt(tips[i]) + '/>';
+    }
+    $('ch-eq').innerHTML = svgWrap(g, 'Cumulative R, Caller vs Copy', H);
+    $('lg-eq').innerHTML = '<span class="gold"><i></i>Caller ' + YC.r2(yc[n]) + '</span><span class="cyan"><i></i>Copy ' + YC.r2(cc[n]) + '</span><span class="cyan">◌ missed</span>' + (kinds.indexOf('x') >= 0 ? '<span class="vio">● extra</span>' : '') + (kinds.indexOf('w') >= 0 ? '<span class="gold">◌ waiting</span>' : '');
   }
 
   function renderGapChart(D){
     var H = 150, L = 34, R = 310, T = 14, B = 128;
-    var dates = D.dates;
-    if (!dates.length){ $('ch-gap').innerHTML = '<p class="note">No days in range.</p>'; return; }
-    var lo = 0, hi = 0, cells = dates.map(function(d){ return D.per.map(function(q){ var pd = q.perDay.find(function(x){ return x.date === d; }); return pd ? pd.s : null; }); });
-    cells.forEach(function(row){ row.forEach(function(s){ if (!s) return; var up = 0, dn = 0; CAUSE.forEach(function(c){ var v = s.cause[c[0]]; if (v > 0) up += v; else dn += v; }); hi = Math.max(hi, up); lo = Math.min(lo, dn); }); });
+    if (!D.dates.length){ $('ch-gap').innerHTML = '<p class="note">No days in range.</p>'; $('lg-gap').innerHTML = ''; return; }
+    var lo = 0, hi = 0;
+    D.perDay.forEach(function(p){ var up = 0, dn = 0; CAUSE.forEach(function(c){ var v = p.s.cause[c[0]]; if (v > 0) up += v; else dn += v; }); hi = Math.max(hi, up); lo = Math.min(lo, dn); });
     var ax = yAxis(lo, hi), Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
-    var g = grid(ax, Y, L, R, false);
-    var n = dates.length, m = D.per.length, slot = (R - L) / n, bw = Math.min(60 / m, slot * 0.6 / m), every = Math.ceil(n / 6);
-    dates.forEach(function(d, i){
-      var cx0 = L + slot * (i + 0.5) - bw * m / 2;
-      cells[i].forEach(function(s, j){ if (!s) return; var x = cx0 + j * bw, up = 0, dn = 0;
-        CAUSE.forEach(function(c){ var v = s.cause[c[0]]; if (!v) return;
-          var a = v > 0 ? up : dn, b = a + v; if (v > 0) up = b; else dn = b;
-          var y1 = Y(Math.max(a, b)), y2 = Y(Math.min(a, b));
-          g += '<rect x="' + (x + (m > 1 ? 1 : 0)).toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + (bw - (m > 1 ? 2 : 0)).toFixed(1) + '" height="' + Math.max(0.6, y2 - y1).toFixed(1) + '" fill="' + c[1] + '"/>'; });
-        if (m > 1) g += '<rect x="' + (x + 1).toFixed(1) + '" y="' + (B + 2) + '" width="' + (bw - 2).toFixed(1) + '" height="2" fill="' + D.per[j].color + '"/>';
-      });
-      var tot = cells[i].filter(Boolean);
-      if (i % every === 0 || i === n - 1) g += '<text x="' + (L + slot * (i + 0.5)).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(d) + (n <= 3 && m === 1 && tot[0] ? ' ' + YC.r2(tot[0].gap) : '') + '</text>';
+    var g = grid(ax, Y, L, R, false), n = D.perDay.length, slot = (R - L) / n, bw = Math.min(56, slot * 0.6), every = Math.ceil(n / 6), used = {};
+    D.perDay.forEach(function(p, i){
+      var x = L + slot * (i + 0.5) - bw / 2, up = 0, dn = 0, s = p.s;
+      var tipT = fmtDate(p.date) + ' · gap ' + YC.r2(s.gap) + 'R\n' + CAUSE.filter(function(c){ return s.cause[c[0]]; }).map(function(c){ return c[2] + ' ' + YC.r2(s.cause[c[0]]); }).join('\n');
+      CAUSE.forEach(function(c){ var v = s.cause[c[0]]; if (!v) return; used[c[0]] = 1;
+        var a = v > 0 ? up : dn, b = a + v; if (v > 0) up = b; else dn = b;
+        var y1 = Y(Math.max(a, b)), y2 = Y(Math.min(a, b));
+        g += '<rect x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + Math.max(0.8, y2 - y1).toFixed(1) + '" fill="' + c[1] + '"/>'; });
+      g += '<rect x="' + (L + slot * i).toFixed(1) + '" y="' + T + '" width="' + slot.toFixed(1) + '" height="' + (B - T) + '" fill="transparent"' + dt(tipT) + '/>';
+      if (i % every === 0 || i === n - 1) g += '<text x="' + (L + slot * (i + 0.5)).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(p.date) + (n <= 4 ? ' ' + YC.r2(s.gap) : '') + '</text>';
     });
     $('ch-gap').innerHTML = svgWrap(g, 'Gap per day by cause', H);
+    $('lg-gap').innerHTML = CAUSE.filter(function(c){ return used[c[0]]; }).map(function(c){ return '<span style="color:' + c[1] + '"><i class="b"></i>' + c[2] + '</span>'; }).join('') || '<span>no gap in range</span>';
   }
 
   function renderDevChart(D){
-    var H = 140, L = 34, R = 310, T = 12, B = 118, dates = D.dates;
-    var counts = dates.map(function(d){ return D.per.map(function(q){ var o = {}; q.calls.filter(function(k){ return k.date === d; }).forEach(function(k){ k.deviations.forEach(function(v){ var t = v.tag || 'none'; o[t] = (o[t] || 0) + 1; }); }); return o; }); });
-    var mx = 1, used = {};
-    counts.forEach(function(row){ row.forEach(function(o){ var s = 0; Object.keys(o).forEach(function(k){ s += o[k]; used[k] = 1; }); mx = Math.max(mx, s); }); });
-    if (!dates.length){ $('ch-dev').innerHTML = '<p class="note">No days in range.</p>'; $('lg-dev').innerHTML = ''; return; }
+    var H = 140, L = 34, R = 310, T = 12, B = 118;
+    if (!D.dates.length){ $('ch-dev').innerHTML = '<p class="note">No days in range.</p>'; $('lg-dev').innerHTML = ''; return; }
+    var counts = D.perDay.map(function(p){ var o = {}; p.calls.concat(p.trades).forEach(function(k){ (k.deviations || []).forEach(function(v){ var t = YC.normTag(v.tag) || 'other'; o[t] = (o[t] || 0) + 1; }); }); return o; });
+    var mx = 1, used = {}; counts.forEach(function(o){ var s = 0; Object.keys(o).forEach(function(k){ s += o[k]; used[k] = 1; }); mx = Math.max(mx, s); });
     var hiT = Math.max(2, mx), Y = function(v){ return B - v / hiT * (B - T); }, ticks = []; for (var v = 0; v <= hiT; v += Math.max(1, Math.ceil(hiT / 4))) ticks.push(v);
     var g = '<g stroke="' + C.b + '">' + ticks.map(function(v){ return '<line x1="' + L + '" x2="' + R + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '"/>'; }).join('') + '</g><g font-family="JetBrains Mono,monospace" font-size="9" fill="' + C.dim + '" text-anchor="end">' + ticks.map(function(v){ return '<text x="' + (L - 6) + '" y="' + (Y(v) + 3).toFixed(1) + '">' + v + '</text>'; }).join('') + '</g>';
-    var n = dates.length, m = D.per.length, slot = (R - L) / n, bw = Math.min(40 / m, slot * 0.6 / m), every = Math.ceil(n / 6), order = ['none'].concat(TAGS);
-    dates.forEach(function(d, i){
-      var cx0 = L + slot * (i + 0.5) - bw * m / 2;
-      counts[i].forEach(function(o, j){ var acc = 0, x = cx0 + j * bw;
-        order.forEach(function(t){ var c = o[t]; if (!c) return; g += '<rect x="' + (x + (m > 1 ? 1 : 0)).toFixed(1) + '" y="' + Y(acc + c).toFixed(1) + '" width="' + (bw - (m > 1 ? 2 : 0)).toFixed(1) + '" height="' + (Y(acc) - Y(acc + c)).toFixed(1) + '" fill="' + TAGC[t] + '"/>'; acc += c; });
-        if (m > 1) g += '<rect x="' + (x + 1).toFixed(1) + '" y="' + (B + 2) + '" width="' + (bw - 2).toFixed(1) + '" height="2" fill="' + D.per[j].color + '"/>';
-      });
-      if (i % every === 0 || i === n - 1) g += '<text x="' + (L + slot * (i + 0.5)).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(d) + '</text>';
+    var n = D.perDay.length, slot = (R - L) / n, bw = Math.min(40, slot * 0.6), every = Math.ceil(n / 6), order = YC.TAGS.map(function(t){ return t.k; });
+    D.perDay.forEach(function(p, i){
+      var x = L + slot * (i + 0.5) - bw / 2, acc = 0, o = counts[i];
+      order.forEach(function(t){ var c = o[t]; if (!c) return; g += '<rect x="' + x.toFixed(1) + '" y="' + Y(acc + c).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + (Y(acc) - Y(acc + c)).toFixed(1) + '" fill="' + YC.tag(t).c + '"/>'; acc += c; });
+      var tipT = fmtDate(p.date) + '\n' + (Object.keys(o).length ? order.filter(function(t){ return o[t]; }).map(function(t){ return YC.tag(t).l + ' ' + o[t]; }).join('\n') : 'no deviations');
+      g += '<rect x="' + (L + slot * i).toFixed(1) + '" y="' + T + '" width="' + slot.toFixed(1) + '" height="' + (B - T) + '" fill="transparent"' + dt(tipT) + '/>';
+      if (i % every === 0 || i === n - 1) g += '<text x="' + (L + slot * (i + 0.5)).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + shortD(p.date) + '</text>';
     });
     $('ch-dev').innerHTML = svgWrap(g, 'Deviations by tag per day', H);
     var ks = order.filter(function(t){ return used[t]; });
-    $('lg-dev').innerHTML = ks.length ? ks.map(function(t){ return '<span style="color:' + TAGC[t] + '"><i class="b"></i>' + (t === 'none' ? 'no tag' : t) + '</span>'; }).join('') : '<span>no deviations in range</span>';
+    $('lg-dev').innerHTML = ks.length ? ks.map(function(t){ return '<span style="color:' + YC.tag(t).c + '"><i class="b"></i>' + YC.tag(t).l + '</span>'; }).join('') : '<span>no deviations in range</span>';
   }
 
   function renderHold(D){
     var H = 150, L = 34, R = 310, T = 14, B = 128, pts = [];
-    D.per.forEach(function(q){ q.calls.forEach(function(k){ if (!k.copy || k.copy.hold_s == null) return; var s = YC.callStats(k); if (s.cR == null) return; pts.push({ x:k.copy.hold_s / 60, y:YC.rd(s.cR), c:q.color, dev:k.deviations.length > 0, lab:+k.date.slice(8) + '/' + k.n }); }); });
-    if (!pts.length){ $('ch-hold').innerHTML = '<p class="note">No copied trades with a hold time in range.</p>'; $('lg-hold').innerHTML = ''; return; }
+    D.calls.forEach(function(k){ if (!k.copy || k.copy.hold_s == null) return; var r = YC.realR(k.copy, k.dir); if (r == null) return;
+      pts.push({ x:k.copy.hold_s / 60, y:YC.rd(r), dev:k.deviations.length > 0, ext:false, lab:shortD(k.date) + ' #' + k.n + ' · ' + YC.hms(k.copy.hold_s) + ' · ' + YC.r2(r) + 'R' + (k.deviations.length ? '\n' + k.deviations.map(function(v){ return tagLabel(v.tag); }).join(', ') : '') }); });
+    D.trades.forEach(function(k){ if (k.copy.hold_s == null) return; var r = YC.realR(k.copy, k.dir); if (r == null) return;
+      pts.push({ x:k.copy.hold_s / 60, y:YC.rd(r), dev:false, ext:true, lab:shortD(k.date) + ' ' + (k.kind === 'extra' ? 'extra trade' : 'not linked') + ' · ' + YC.hms(k.copy.hold_s) + ' · ' + YC.r2(r) + 'R' }); });
+    if (!pts.length){ $('ch-hold').innerHTML = '<p class="note">No trades with a hold time in range.</p>'; $('lg-hold').innerHTML = ''; return; }
     var ax = yAxis(Math.min.apply(null, pts.map(function(p){ return p.y; })), Math.max.apply(null, pts.map(function(p){ return p.y; })), 1);
     var xmax = Math.max(5, Math.ceil(Math.max.apply(null, pts.map(function(p){ return p.x; })) / 5) * 5);
     var X = function(v){ return L + 6 + v / xmax * (R - L - 6); }, Y = function(v){ return B - (v - ax.lo) / (ax.hi - ax.lo) * (B - T); };
     var g = grid(ax, Y, L, R, true), xs = niceStep(xmax) < 1 ? 1 : niceStep(xmax);
     for (var v = 0; v <= xmax + 1e-9; v += xs) g += '<text x="' + X(v).toFixed(1) + '" y="' + (H - 3) + '" font-size="9" fill="' + C.dim + '" text-anchor="middle" font-family="JetBrains Mono,monospace">' + v + 'm</text>';
     pts.forEach(function(p){ var col = p.y > 0 ? C.win : p.y < 0 ? C.loss : C.muted;
-      g += '<circle cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="4" fill="' + col + '" fill-opacity=".85" stroke="' + (D.per.length > 1 ? p.c : (p.dev ? C.warn : C.bg)) + '" stroke-width="' + (p.dev || D.per.length > 1 ? 1.6 : 1) + '"><title>' + p.lab + ' · ' + p.x.toFixed(1) + 'm · ' + YC.r2(p.y) + 'R</title></circle>'; });
+      g += '<circle cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="4.5" fill="' + col + '" fill-opacity=".85" stroke="' + (p.ext ? C.vi : p.dev ? C.warn : C.bg) + '" stroke-width="' + (p.dev || p.ext ? 1.8 : 1) + '"/>' +
+        '<circle cx="' + X(p.x).toFixed(1) + '" cy="' + Y(p.y).toFixed(1) + '" r="11" fill="transparent"' + dt(p.lab) + '/>'; });
     $('ch-hold').innerHTML = svgWrap(g, 'Hold time in minutes vs copy R', H);
-    $('lg-hold').innerHTML = '<span class="pos"><i class="b"></i>win</span><span class="neg"><i class="b"></i>loss</span>' + (D.per.length > 1 ? D.per.map(function(q){ return '<span style="color:' + q.color + '">○ ' + esc(q.p) + '</span>'; }).join('') : '<span class="warn">○ had a deviation</span>');
+    $('lg-hold').innerHTML = '<span class="pos"><i class="b"></i>win</span><span class="neg"><i class="b"></i>loss</span><span class="warn">○ had a deviation</span>' + (D.trades.length ? '<span class="vio">○ extra / not linked</span>' : '');
   }
 
-  /* calendar: weekdays from the first copy day to 4 weeks after, colour = copy R */
-  function renderCal(D){
-    var q0 = D.per[0], all = []; D.per.forEach(function(q){ all = all.concat(personDates(q.p)); });
-    all.sort(); if (!all.length){ $('cal').innerHTML = '<p class="note">No days yet.</p>'; $('cal-note').innerHTML = ''; return; }
+  /* calendar: Mon–Fri plus a week total; $ and R for Copy or Caller */
+  function renderCal(){
+    var all = myDates();
+    if (!all.length){ $('cal').innerHTML = '<p class="note">No days yet.</p>'; $('cal-note').innerHTML = ''; return; }
     var start = new Date(all[0] + 'T12:00:00Z'); start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
     var end = new Date(all[0] + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 30); var lastD = new Date(all[all.length - 1] + 'T12:00:00Z'); if (lastD > end) end = lastD;
-    var h = '<div class="cal">' + ['Mon','Tue','Wed','Thu','Fri'].map(function(d){ return '<span class="h">' + d + '</span>'; }).join('');
+    var caller = calSide === 'caller', has = datesIn(all);
+    var val = function(ds){ var dc = callsOn(ds), tr = tradesOn(ds), s = YC.dayStats(dc, tr); return caller ? { r:s.yR, usd:s.yUsd, n:s.n } : { r:s.cR, usd:s.cUsd, n:s.taken + s.extras + s.pending }; };
+    var h = '<div class="cal">' + ['Mon','Tue','Wed','Thu','Fri','Week'].map(function(d){ return '<span class="h">' + d + '</span>'; }).join('');
+    var wk = { r:0, usd:0, n:0 };
     for (var d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)){
-      var dw = d.getUTCDay(); if (dw === 0 || dw === 6) continue;
-      var ds = d.toISOString().slice(0,10), stats = D.per.map(function(q){ var dc = callsFor(q.p, personDates(q.p).indexOf(ds) >= 0 ? [ds] : []); return dc.length || dayRow(ds, q.p) ? YC.dayStats(dc) : null; });
-      var s = stats[0], has = stats.some(Boolean);
-      if (!has){ h += '<button class="e" disabled>' + d.getUTCDate() + '</button>'; continue; }
-      var r = s ? s.cR : stats.find(Boolean).cR, a = Math.min(1, Math.abs(r) / 2) * 0.55 + 0.12, bg = r > 0 ? 'rgba(74,222,128,' + a.toFixed(2) + ')' : r < 0 ? 'rgba(248,113,113,' + a.toFixed(2) + ')' : C.s2;
-      h += '<button data-d="' + ds + '" class="' + (calSel === ds ? 'sel' : '') + '" style="background:' + bg + ';color:var(--text)">' + d.getUTCDate() + '<small>' + stats.map(function(x){ return x ? YC.r2(x.cR) : '·'; }).join(' ') + '</small></button>';
+      var dw = d.getUTCDay();
+      if (dw === 6){ /* close the week on Saturday */
+        h += wk.n ? '<div class="c wk"' + dt('Week to ' + fmtDate(new Date(d.getTime() - 86400000).toISOString().slice(0,10)) + (caller ? ' · Caller' : ' · Copy') + '\n' + YC.r2(YC.rd(wk.r)) + 'R · ' + YC.usd(wk.usd) + (caller ? ' est.' : '')) + '><b>Week</b><span class="' + cls(wk.r) + '">' + YC.r2(YC.rd(wk.r)) + 'R</span><span class="' + cls(wk.usd) + '">' + YC.usd(Math.round(wk.usd)) + '</span></div>' : '<div class="c wk e"><b></b></div>';
+        wk = { r:0, usd:0, n:0 }; continue;
+      }
+      if (dw === 0) continue;
+      var ds = d.toISOString().slice(0,10);
+      if (!has[ds]){ h += '<div class="c e"><b>' + d.getUTCDate() + '</b></div>'; continue; }
+      var v = val(ds); wk.r += v.r || 0; wk.usd += v.usd || 0; wk.n++;
+      var a = Math.min(1, Math.abs(v.r) / 2) * 0.5 + 0.12, bg = v.r > 0 ? 'rgba(74,222,128,' + a.toFixed(2) + ')' : v.r < 0 ? 'rgba(248,113,113,' + a.toFixed(2) + ')' : C.s2;
+      h += '<button class="c' + (calSel === ds ? ' sel' : '') + '" data-d="' + ds + '" style="background:' + bg + '"><b style="color:var(--text)">' + d.getUTCDate() + '</b><span>' + YC.r2(v.r) + 'R</span><span>' + YC.usd(Math.round(v.usd)) + '</span></button>';
     }
+    if (wk.n) h += '<div class="c wk"><b>Week</b><span class="' + cls(wk.r) + '">' + YC.r2(YC.rd(wk.r)) + 'R</span><span class="' + cls(wk.usd) + '">' + YC.usd(Math.round(wk.usd)) + '</span></div>';
     $('cal').innerHTML = h + '</div>';
-    $('cal').querySelectorAll('button[data-d]').forEach(function(b){ b.addEventListener('click', function(){ calSel = calSel === b.dataset.d ? null : b.dataset.d; renderCal(D); }); });
-    if (!calSel){ $('cal-note').innerHTML = '<p class="note">Tap a day for its state note.</p>'; return; }
-    $('cal-note').innerHTML = D.per.map(function(q){ var row = dayRow(calSel, q.p); return '<div style="margin-top:6px"><h2 style="margin:0 0 4px">' + fmtDate(calSel) + (D.per.length > 1 ? ' · ' + esc(q.p) : '') + '</h2><p class="state">' + (row && row.state ? esc(row.state) : '<span class="xs">No state note.</span>') + '</p></div>'; }).join('') +
-      '<p class="note" style="margin-top:8px"><a href="#" id="cal-open">Open this day in Days</a></p>';
+    $('cal').querySelectorAll('button[data-d]').forEach(function(b){ b.addEventListener('click', function(){ calSel = calSel === b.dataset.d ? null : b.dataset.d; renderCal(); }); });
+    if (!calSel){ $('cal-note').innerHTML = '<p class="note">Tap a day for its state note.' + (caller ? ' Caller $ is estimated.' : '') + '</p>'; return; }
+    var row = dayRow(calSel);
+    $('cal-note').innerHTML = '<h2 style="margin:0 0 4px">' + fmtDate(calSel) + (row && row.near_payout ? ' · <span class="gold">near target / payout</span>' : '') + '</h2><p class="state">' + (row && row.state ? esc(row.state) : '<span class="xs">No state note.</span>') + '</p><p class="note" style="margin-top:8px"><a href="#" id="cal-open">Open this day</a></p>';
     $('cal-open').addEventListener('click', function(e){ e.preventDefault(); openDate = calSel; renderDays(); show('days'); });
   }
 
-  /* review (Instructions §6) — follows the range and copier filters */
+  /* review (Instructions §6) — follows the range */
   var lastReview = null;
+  function reviewData(D){
+    var r = YC.review(D.calls, D.trades), y = YC.review(D.calls, []).y;
+    var np = D.perDay.filter(function(p){ return p.row && p.row.near_payout; }), other = D.perDay.filter(function(p){ return !(p.row && p.row.near_payout); });
+    var grp = function(ps){ var tk = 0, R = 0, ms = 0, n = 0; ps.forEach(function(p){ tk += p.s.taken; R += p.s.cR; ms += p.s.missed; n += p.s.n - p.s.waiting; }); return { days:ps.length, rpt:tk ? R / tk : null, missRate:n ? ms / n : null }; };
+    return { r:r, y:y, np:np.length ? grp(np) : null, other:grp(other) };
+  }
   function renderReview(D){
     var pc = function(x){ return x == null ? '—' : Math.round(x * 100) + '%'; }, f2 = function(x){ return x == null ? '—' : x.toFixed(2); };
-    var revs = D.per.map(function(q){ return { q:q, r:YC.review(q.calls) }; });
-    var y = YC.review(D.callerCalls).y;
-    var label = range === 'month' ? 'Month' : range === 'week' ? 'Week' : 'Day';
+    var X = reviewData(D), r = X.r, y = X.y, label = range === 'month' ? 'Month' : range === 'week' ? 'Week' : 'Day';
     $('rv-title').textContent = label + ' review';
-    var cols = [['Caller', C.gold]].concat(revs.map(function(x){ return [D.per.length > 1 ? x.q.p : 'Copy', x.q.color]; }));
-    var line = function(name, a, b){ return '<b>' + name + '</b><span>' + a + '</span>' + b.map(function(v){ return '<span>' + v + '</span>'; }).join(''); };
-    var h = '<div class="rv" style="--cols:' + cols.length + '"><span></span>' + cols.map(function(c){ return '<span class="hd" style="color:' + c[1] + '">' + esc(c[0]) + '</span>'; }).join('');
-    h += line('Calls / taken', y.n, revs.map(function(x){ return x.r.c.n; }));
-    h += line('Win rate', pc(y.wr), revs.map(function(x){ return pc(x.r.c.wr); }));
-    h += line('Avg planned R', f2(y.avgPlan), revs.map(function(x){ return f2(x.r.c.avgPlan); }));
-    h += line('Realised R', YC.r2(y.real), revs.map(function(x){ return YC.r2(x.r.c.real); }));
-    h += line('Expectancy R', y.exp == null ? '—' : YC.r2(y.exp), revs.map(function(x){ return x.r.c.exp == null ? '—' : YC.r2(x.r.c.exp); }));
-    h += line('R missed', '', revs.map(function(x){ return YC.r2(x.r.missedR); }));
-    h += line('R lost on dev. calls', '', revs.map(function(x){ return YC.r2(x.r.devR); }));
-    h += line('Max drawdown R', '', revs.map(function(x){ return x.r.dd ? '−' + x.r.dd.toFixed(2) : '0.00'; }));
-    h += line('Max drawdown $', '', revs.map(function(x){ return x.r.ddUsd ? '−' + Math.round(x.r.ddUsd) : '0'; }));
-    h += line('Avg hold', '', revs.map(function(x){ return x.r.c.avgHold == null ? '—' : YC.hms(Math.round(x.r.c.avgHold)); }));
-    h += line('Deviations', '', revs.map(function(x){ var k = Object.keys(x.r.tags); return k.length ? k.map(function(t){ return (t === 'none' ? 'no tag' : t) + ' ' + x.r.tags[t]; }).join(' · ') : '0'; }));
+    var line = function(name, a, b, tipS){ return '<b' + (tipS ? dt(tipS) : '') + '>' + name + '</b><span>' + a + '</span><span>' + b + '</span>'; };
+    var h = '<div class="rv"><span></span><span class="hd gold">Caller</span><span class="hd cyan">Copy</span>';
+    h += line('Calls / taken', y.n, r.c.n, 'Copy includes extra and not-yet-linked trades.');
+    h += line('Win rate', pc(y.wr), pc(r.c.wr));
+    h += line('Avg planned R', f2(y.avgPlan), f2(r.c.avgPlan), 'Target distance ÷ stop distance, at entry.');
+    h += line('Realised R', YC.r2(y.real), YC.r2(r.c.real));
+    h += line('Expectancy R', y.exp == null ? '—' : YC.r2(y.exp), r.c.exp == null ? '—' : YC.r2(r.c.exp), 'Average R per trade.');
+    h += '<span class="sep"></span>';
+    h += line('R missed', '', YC.r2(r.missedR), 'The caller’s R on calls you missed.');
+    h += line('R lost on dev. calls', '', YC.r2(r.devR), 'Gap on calls where you deviated.');
+    h += line('Extra trades', '', r.extras + (r.extras ? ' · ' + YC.r2(r.extraR) + 'R' : ''));
+    h += line('Green on a broken rule', '', r.green, 'Deviation calls that still ended green. Counted as a breach, never a win.');
+    h += line('Max drawdown R', '', r.dd ? '−' + r.dd.toFixed(2) : '0.00');
+    h += line('Max drawdown $', '', r.ddUsd ? '−' + Math.round(r.ddUsd) : '0');
+    h += line('Avg hold', '', r.c.avgHold == null ? '—' : YC.hms(Math.round(r.c.avgHold)));
+    h += line('Deviations', '', Object.keys(r.tags).length ? Object.keys(r.tags).map(function(t){ return YC.tag(t).l + ' ' + r.tags[t]; }).join(' · ') : '0');
+    if (X.np){ h += '<span class="sep"></span>' + line('Near payout · R per trade', '', f2(X.np.rpt) + ' vs ' + f2(X.other.rpt), 'Days switched to "near target / payout" (' + X.np.days + ') vs the other days.') + line('Near payout · miss rate', '', pc(X.np.missRate) + ' vs ' + pc(X.other.missRate)); }
     $('review').innerHTML = h + '</div>';
-    lastReview = { label:label, D:D, y:y, revs:revs };
+    lastReview = { label:label, D:D, X:X };
   }
   $('b-review').addEventListener('click', function(){
     if (!lastReview) return;
-    var R = lastReview, D = R.D, f2 = function(x){ return x == null ? '—' : x.toFixed(2); }, pc = function(x){ return x == null ? '—' : Math.round(x * 100) + '%'; };
+    var R = lastReview, D = R.D, r = R.X.r, y = R.X.y, f2 = function(x){ return x == null ? '—' : x.toFixed(2); }, pc = function(x){ return x == null ? '—' : Math.round(x * 100) + '%'; };
     var span = D.dates.length ? (D.dates[0] === D.dates[D.dates.length - 1] ? D.dates[0] : D.dates[0] + ' to ' + D.dates[D.dates.length - 1]) : '—';
-    var md = '# TrackLog · ' + R.label + ' review\n\n' + span + ' · ' + D.dates.length + ' days · exported ' + new Date().toISOString().slice(0,16).replace('T', ' ') + ' UTC\n\n';
-    var heads = ['', 'Caller'].concat(R.revs.map(function(x){ return D.per.length > 1 ? x.q.p : 'Copy'; }));
-    md += '| ' + heads.join(' | ') + ' |\n|' + heads.map(function(){ return '---'; }).join('|') + '|\n';
-    var row = function(n, a, b){ md += '| ' + n + ' | ' + a + ' | ' + b.join(' | ') + ' |\n'; };
-    row('Calls / taken', R.y.n, R.revs.map(function(x){ return x.r.c.n; }));
-    row('Win rate', pc(R.y.wr), R.revs.map(function(x){ return pc(x.r.c.wr); }));
-    row('Avg planned R', f2(R.y.avgPlan), R.revs.map(function(x){ return f2(x.r.c.avgPlan); }));
-    row('Realised R', YC.r2(R.y.real), R.revs.map(function(x){ return YC.r2(x.r.c.real); }));
-    row('Expectancy R', R.y.exp == null ? '—' : YC.r2(R.y.exp), R.revs.map(function(x){ return x.r.c.exp == null ? '—' : YC.r2(x.r.c.exp); }));
-    row('R missed', '', R.revs.map(function(x){ return YC.r2(x.r.missedR); }));
-    row('R lost on deviation calls', '', R.revs.map(function(x){ return YC.r2(x.r.devR); }));
-    row('Max drawdown R', '', R.revs.map(function(x){ return '−' + f2(x.r.dd); }));
-    row('Max drawdown $', '', R.revs.map(function(x){ return '−' + Math.round(x.r.ddUsd); }));
-    row('Deviations', '', R.revs.map(function(x){ var k = Object.keys(x.r.tags); return k.length ? k.map(function(t){ return (t === 'none' ? 'no tag' : t) + ' ' + x.r.tags[t]; }).join(', ') : '0'; }));
-    D.per.forEach(function(q){
-      md += '\n## ' + (D.per.length > 1 ? q.p : 'Copy') + ' · by day\n\n| Day | Caller R | Copy R | Gap | Net $ | State |\n|---|---|---|---|---|---|\n';
-      q.perDay.forEach(function(p){ md += '| ' + fmtDate(p.date) + ' | ' + YC.r2(p.s.yR) + ' | ' + YC.r2(p.s.cR) + ' | ' + YC.r2(p.s.gap) + ' | ' + YC.usd(p.s.cUsd) + ' | ' + (p.row && p.row.state ? p.row.state.replace(/\|/g, '/').replace(/\n/g, ' ') : '') + ' |\n'; });
-    });
-    var blob = new Blob([md], {type:'text/markdown'}), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'tracklog-' + R.label.toLowerCase() + '-review-' + (D.dates[D.dates.length - 1] || 'empty') + '.md'; document.body.appendChild(a); a.click(); a.remove();
+    var md = '# TrackLog · ' + R.label + ' review\n\n' + span + ' · ' + D.dates.length + ' days · exported ' + new Date().toISOString().slice(0,16).replace('T', ' ') + ' UTC\n\n| | Caller | Copy |\n|---|---|---|\n';
+    var row = function(n, a, b){ md += '| ' + n + ' | ' + a + ' | ' + b + ' |\n'; };
+    row('Calls / taken', y.n, r.c.n); row('Win rate', pc(y.wr), pc(r.c.wr)); row('Avg planned R', f2(y.avgPlan), f2(r.c.avgPlan)); row('Realised R', YC.r2(y.real), YC.r2(r.c.real));
+    row('Expectancy R', y.exp == null ? '—' : YC.r2(y.exp), r.c.exp == null ? '—' : YC.r2(r.c.exp)); row('R missed', '', YC.r2(r.missedR)); row('R lost on deviation calls', '', YC.r2(r.devR));
+    row('Extra trades', '', r.extras + ' · ' + YC.r2(r.extraR) + 'R'); row('Green on a broken rule', '', r.green); row('Max drawdown R', '', '−' + f2(r.dd)); row('Max drawdown $', '', '−' + Math.round(r.ddUsd));
+    row('Deviations', '', Object.keys(r.tags).length ? Object.keys(r.tags).map(function(t){ return YC.tag(t).l + ' ' + r.tags[t]; }).join(', ') : '0');
+    md += '\n## By day\n\n| Day | Caller R | Copy R | Gap | Net $ | Near payout | State |\n|---|---|---|---|---|---|---|\n';
+    D.perDay.forEach(function(p){ md += '| ' + fmtDate(p.date) + ' | ' + YC.r2(p.s.yR) + ' | ' + YC.r2(p.s.cR) + ' | ' + YC.r2(p.s.gap) + ' | ' + YC.usd(p.s.cUsd) + ' | ' + (p.row && p.row.near_payout ? 'yes' : '') + ' | ' + (p.row && p.row.state ? p.row.state.replace(/\|/g, '/').replace(/\n/g, ' ') : '') + ' |\n'; });
+    download(md, 'text/markdown', 'tracklog-' + R.label.toLowerCase() + '-review-' + (D.dates[D.dates.length - 1] || 'empty') + '.md');
   });
+  function download(text, type, name){ var blob = new Blob([text], {type:type}), a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
 
   /* ===== DAYS ===== */
   function renderDays(){
-    var ps = sel(), multi = ps.length > 1, dates = rangeDatesAll(ps);
+    var dates = myDates().slice().reverse();
     var h = '<div class="row head"><span>Day</span><span class="r">Caller</span><span class="r">Copy</span><span class="r">Net $</span><span class="r">Calls</span></div>';
     dates.forEach(function(d){
-      var st = ps.map(function(p){ var has = personDates(p).indexOf(d) >= 0, dc = has ? callsFor(p, [d]) : []; return { p:p, has:has, dc:dc, t:YC.dayStats(dc), row:dayRow(d, p) }; });
-      var any = st.find(function(x){ return x.has; }), t0 = YC.dayStats(calls.filter(function(c){ return c.date === d; }).map(function(c){ return callObj(c, any.p); }));
-      var row0 = any.row;
-      var tag = st.map(function(x){ if (!x.has) return '<span class="tag">—</span>'; var t = x.t, n = x.dc.length; if (multi) return '<span class="tag' + (t.devs ? ' dev' : t.missed ? ' miss' : '') + '">' + t.taken + '/' + n + '</span>'; return t.devs ? '<span class="tag dev">' + t.taken + '/' + n + ' · ' + t.devs + ' dev</span>' : t.missed ? '<span class="tag miss">' + t.taken + '/' + n + ' · ' + t.missed + ' miss</span>' : '<span class="tag">' + t.taken + '/' + n + '</span>'; }).join(multi ? '<br>' : '');
-      var cR = st.map(function(x){ return x.has ? '<span style="color:' + (x.t.cR < 0 ? C.loss : multi ? colorOf(x.p) : C.win) + '">' + YC.r2(x.t.cR) + '</span>' : '<span class="xs">—</span>'; }).join(multi ? '<br>' : '');
-      var usd = st.map(function(x){ return x.has ? '<span class="' + (x.t.cUsd < 0 ? 'neg' : 'pos') + '">' + YC.usd(x.t.cUsd) + '</span>' : '<span class="xs">—</span>'; }).join(multi ? '<br>' : '');
-      h += '<button class="row' + (d === openDate ? ' open' : '') + '" data-date="' + d + '"><span class="d">' + fmtDate(d) + '<small>Day ' + ((row0 && row0.day_no) || '?') + (!multi && row0 && row0.state ? ' · ' + esc(row0.state) : '') + '</small></span>' +
-        '<span class="r num gold">' + YC.r2(t0.yR) + '</span><span class="r num">' + cR + '</span><span class="r num">' + usd + '</span><span class="r">' + tag + '</span></button>';
+      var dc = callsOn(d), tr = tradesOn(d), t = YC.dayStats(dc, tr), row = dayRow(d);
+      var b = ['<span class="tag">' + t.taken + '/' + t.n + '</span>'];
+      if (t.devs) b.push('<span class="tag t-dev">' + t.devs + ' dev</span>');
+      if (t.missed) b.push('<span class="tag t-miss">' + t.missed + ' miss</span>');
+      if (t.extras) b.push('<span class="tag t-ext">' + t.extras + ' extra</span>');
+      if (t.pending || t.waiting) b.push('<span class="tag t-wait">to link</span>');
+      h += '<button class="row' + (d === openDate ? ' open' : '') + '" data-date="' + d + '"><span class="d">' + fmtDate(d) + '<small>Day ' + ((row && row.day_no) || '?') + (row && row.near_payout ? ' · near payout' : '') + (row && row.state ? ' · ' + esc(row.state) : '') + '</small></span>' +
+        '<span class="r num gold">' + YC.r2(t.yR) + '</span><span class="r num ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + '</span><span class="r num ' + cls(t.cUsd) + '">' + YC.usd(t.cUsd) + '</span><span class="r badges">' + b.join('') + '</span></button>';
     });
     if (!dates.length) h += '<div class="row" style="cursor:default"><span class="d xs">No days imported yet.</span></div>';
     $('day-rows').innerHTML = h;
     $('day-rows').querySelectorAll('button.row').forEach(function(b){ b.addEventListener('click', function(){ openDate = (openDate === b.dataset.date) ? null : b.dataset.date; renderDays(); }); });
     renderDayView();
   }
-  function rangeDatesAll(ps){ var o = {}; ps.forEach(function(p){ personDates(p).forEach(function(d){ o[d] = 1; }); }); return Object.keys(o).sort().reverse(); }
-
-  function sideKv(s, dir, other){
+  function sideKv(s, dir, other, sizeNote){
     var pl = YC.planR(s), slp = YC.slPts(s), tpp = YC.tpPts(s);
     var h = '<div class="kv"><b>Entry</b><span>' + YC.px(s.entry) + (other && s.entry !== other.entry ? ' <em class="' + ((s.entry - other.entry) * YC.sign(dir) < 0 ? 'pos' : 'neg') + '">' + YC.r2(s.entry - other.entry) + '</em>' : '') + '</span>' +
-      '<b>SL</b><span' + (other && s.sl !== other.sl ? ' class="neg"' : '') + '>' + YC.px(s.sl) + ' <em>(' + (slp == null ? '—' : slp.toFixed(2)) + ')</em></span>' +
-      '<b>TP</b><span>' + YC.px(s.tp) + (tpp != null ? ' <em>(' + tpp.toFixed(2) + ')</em>' : '') + '</span>' +
+      '<b>Stop</b><span' + (other && s.sl !== other.sl ? ' class="neg"' : '') + '>' + YC.px(s.sl) + ' <em>(' + (slp == null ? '—' : slp.toFixed(2)) + ')</em></span>' +
+      '<b>Target</b><span>' + YC.px(s.tp) + (tpp != null ? ' <em>(' + tpp.toFixed(2) + ')</em>' : '') + '</span>' +
       '<b>Plan R</b><span>' + (pl == null ? '—' : pl.toFixed(2)) + '</span><b>Risk</b><span>' + (YC.riskUsd(s) == null ? '—' : '$' + YC.riskUsd(s).toFixed(0)) + '</span>' +
-      (s.lag_s != null ? '<b>Lag</b><span>' + s.lag_s + 's' + (s.lag_pts != null ? ' · ' + YC.r2(s.lag_pts) + ' pts' : '') + '</span>' : '') + '</div>';
+      (sizeNote || '') +
+      (s.lag_s != null || s.lag_pts != null ? '<b>Lag</b><span>' + (s.lag_s != null ? s.lag_s + 's' : '') + (s.lag_pts != null ? (s.lag_s != null ? ' · ' : '') + YC.r2(s.lag_pts) + ' pts' : '') + '</span>' : '') + '</div>';
     var r = YC.realR(s, dir), p = YC.pts(s, dir);
     h += '<div class="exits">' + (s.exits || []).map(function(e){ return '<div><span>' + (e.t ? e.t + ' · ' : '') + YC.px(e.px) + ' × ' + e.qty + '</span><span>' + YC.r2(YC.sign(dir) * (e.px - s.entry)) + '</span></div>'; }).join('') +
       (p == null ? '<div><span class="xs">no exits yet</span></div>' : '<div style="margin-top:3px;color:var(--text)"><span>' + (s.hold_s != null ? YC.hms(s.hold_s) : '') + '</span><span class="' + (r < 0 ? 'neg' : 'pos') + '">' + (s.net_usd != null ? 'net ' + YC.usd(s.net_usd) + ' · ' : s.net_usd_est != null ? 'est ' + YC.usd(s.net_usd_est) + ' · ' : '') + YC.r2(p) + ' pts · ' + YC.r2(r) + 'R</span></div>') + '</div>';
     return h;
   }
-
+  function devList(list){
+    return list.length ? '<div class="devs" style="margin-top:8px">' + list.map(function(v){ var t = YC.normTag(v.tag) || 'other';
+      return '<div class="dev" style="border-left-color:' + YC.tag(t).c + '"><span class="k" style="color:' + YC.tag(t).c + '"' + dt(YC.tag(t).m) + '>' + YC.tag(t).l + '</span><div><p>' + esc(v.what) + '</p><small>' + esc(v.why || '') + (v.r_effect != null ? ' · ' + YC.r2(+v.r_effect) + 'R' : '') + (v.usd_effect != null ? ' · ' + YC.usd(+v.usd_effect) : '') + '</small></div></div>'; }).join('') + '</div>' : '';
+  }
   function renderDayView(){
     var el = $('day-view');
-    if (!openDate){ el.innerHTML = ''; return; }
-    var ps = sel().filter(function(p){ return personDates(p).indexOf(openDate) >= 0; });
-    if (!ps.length){ el.innerHTML = ''; return; }
-    var multi = ps.length > 1, base = calls.filter(function(c){ return c.date === openDate; });
-    var per = ps.map(function(p){ var dc = base.map(function(c){ return callObj(c, p); }); return { p:p, row:dayRow(openDate, p), dc:dc, t:YC.dayStats(dc) }; });
-    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(openDate) + ' · Day ' + ((per[0].row && per[0].row.day_no) || '?') + '</span></div>';
-    per.forEach(function(x){ var d = x.row, t = x.t;
-      h += (multi ? '<h2 style="margin:0;color:' + colorOf(x.p) + '">' + esc(x.p) + '</h2>' : '') + '<div class="day-top" style="margin-top:-8px"><span class="meta num">' + (d && d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d && d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d && d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + '</span></div>';
-      h += '<div class="tiles"><div class="tile"><div class="l">Caller</div><div class="v gold">' + YC.r2(t.yR) + 'R</div><div class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</div></div><div class="tile"><div class="l">Copy</div><div class="v ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + 'R</div><div class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts · ' + YC.usd(t.cUsd) + '</div></div><div class="tile"><div class="l">Gap</div><div class="v ' + (t.gap < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.gap) + 'R</div><div class="s">miss ' + YC.r2(t.cause.missed) + ' · stop ' + YC.r2(t.cause.stop_size) + ' · fills ' + YC.r2(t.cause.fills) + ' · mgmt ' + YC.r2(t.cause.mgmt) + '</div></div></div>';
-    });
-    base.forEach(function(c, i){
-      var k0 = per[0].dc[i];
-      h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">#' + k0.n + ' · ' + (k0.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k0.inst) + ' · ' + (k0.time_et || '').slice(0,5) + ' ET / ' + YC.bkkOf(k0.date, k0.time_et) + ' BKK</span><span class="tag">' + esc(k0.source || '') + (k0.stamped_at ? ' · stamped' : '') + '</span></div>';
-      h += '<div class="side"><div><div class="who y">Caller · ' + k0.yush.qty + ' ' + esc(k0.yush.contract) + '</div>' + sideKv(k0.yush, k0.dir, null) + '</div>';
-      per.forEach(function(x){ var k = x.dc[i], nm = multi ? esc(x.p) : 'Copy';
-        h += k.copy ? '<div><div class="who c" style="color:' + colorOf(x.p) + '">' + nm + ' · ' + k.copy.qty + ' ' + esc(k.copy.contract) + (k.copy.status === 'deviation' ? ' · <span class="warn">dev</span>' : '') + '</div>' + sideKv(k.copy, k.dir, k.yush) + (k.copy.note ? '<p class="note" style="margin-top:6px">' + esc(k.copy.note) + '</p>' : '') + '</div>'
-                    : '<div><div class="who c" style="color:' + colorOf(x.p) + '">' + nm + ' · <span class="cyan">missed ' + esc(k.missed) + '</span></div><p class="note" style="color:var(--muted)">' + esc(k.note || 'Missed.') + '</p></div>';
-      });
+    if (!openDate || !dayRow(openDate)){ el.innerHTML = ''; return; }
+    var d = dayRow(openDate), dc = callsOn(openDate), tr = tradesOn(openDate), t = YC.dayStats(dc, tr), pct = d.size_pct != null ? +d.size_pct : pctOf();
+    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(openDate) + ' · Day ' + (d.day_no || '?') + '</span><button class="sw" id="dv-np" aria-pressed="' + !!d.near_payout + '"><i></i>Near target / payout</button></div>';
+    h += '<div class="day-top" style="margin-top:-6px"><span class="meta num">' + (d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + (d.day_low != null ? ' · day low ' + YC.usd(+d.day_low) : '') + ' · size ' + pct + '%</span></div>';
+    h += '<div class="strip"><div><span class="l">Caller</span><span class="v gold">' + YC.r2(t.yR) + 'R</span><span class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</span></div><div><span class="l">Copy</span><span class="v ' + (t.cR < 0 ? 'neg' : 'cyan') + '">' + YC.r2(t.cR) + 'R</span><span class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts</span></div><div' + dt(CAUSE.map(function(c){ return c[2] + ' ' + YC.r2(t.cause[c[0]]); }).join('\n')) + '><span class="l">Gap</span><span class="v ' + cls(t.gap) + '">' + YC.r2(t.gap) + 'R</span><span class="s">tap for causes</span></div><div><span class="l">Net $</span><span class="v ' + cls(t.cUsd) + '">' + YC.usd(t.cUsd) + '</span><span class="s">Caller est. ' + YC.usd(t.yUsd) + '</span></div></div>';
+    dc.forEach(function(k){
+      h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">#' + k.n + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' · ' + (k.time_et || '').slice(0,5) + ' ET / ' + YC.bkkOf(k.date, k.time_et) + ' BKK</span><span class="tag">' + (k.source === 'discord' ? 'Discord' : 'Live') + (k.stamped_at ? ' · stamped' : '') + '</span></div>';
+      h += '<div class="side"><div><div class="who y">Caller · ' + (k.yush.qty || '?') + ' ' + esc(k.yush.contract || '') + '</div>' + sideKv(k.yush, k.dir, null) + '</div>';
+      if (k.copy){
+        var allowed = YC.sizeFor(k.yush.qty, k.yush.contract, pct), mine = YC.micros(k.copy.qty, k.copy.contract), over = allowed && mine != null && mine > allowed.qty;
+        var sn = allowed ? '<b>Size rule</b><span' + (over ? ' class="neg"' : '') + '>' + pct + '% = ' + allowed.qty + ' ' + allowed.contract + (over ? ' · over' : '') + '</span>' : '';
+        h += '<div><div class="who c">Copy · ' + k.copy.qty + ' ' + esc(k.copy.contract) + (k.deviations.length ? ' · <span class="warn">deviation</span>' : '') + '</div>' + sideKv(k.copy, k.dir, k.yush, sn) + (k.copy.note ? '<p class="note" style="margin-top:6px">' + esc(k.copy.note) + '</p>' : '') + '</div>';
+      } else if (k.waiting) h += '<div><div class="who c">Copy · <span class="gold">no side yet</span></div><p class="note" style="color:var(--muted)">Link a trade to this call, or mark it missed, in Log.</p></div>';
+      else h += '<div><div class="who c">Copy · <span class="cyan">missed</span></div><p class="note" style="color:var(--muted)">' + esc(missLabel(k.missed)) + (k.missTag ? ' · ' + esc(YC.tag(k.missTag).l) : '') + (k.note ? '<br>' + esc(k.note) : '') + '</p></div>';
       h += '</div>';
-      per.forEach(function(x){ var k = x.dc[i]; if (k.deviations.length){ h += '<div class="devs" style="margin-top:8px">' + k.deviations.map(function(v){ return '<div class="dev"><span class="k' + (v.tag ? '' : ' none') + '">' + (multi ? esc(x.p) + ' · ' : '') + (v.tag ? esc(v.tag) : 'no tag') + '</span><div><p>' + esc(v.what) + '</p><small>' + esc(v.why || '') + (v.r_effect != null ? ' · ' + YC.r2(+v.r_effect) + 'R' : '') + (v.usd_effect != null ? ' · ' + YC.usd(+v.usd_effect) : '') + '</small></div></div>'; }).join('') + '</div>'; } });
-      h += '</div>';
+      if (YC.isGreen(k)) h += '<p class="note" style="margin-top:6px;color:var(--loss)"' + dt('A deviation call that still ended green. Logged as a breach, never a win.') + '>● Green on a broken rule</p>';
+      h += devList(k.deviations) + '</div>';
     });
-    per.forEach(function(x){ if (x.row && x.row.state) h += '<div><h2>State' + (multi ? ' · ' + esc(x.p) : '') + '</h2><p class="state">' + esc(x.row.state) + '</p></div>'; });
-    per.forEach(function(x){ if (x.row && x.row.notion_url) h += '<p class="note"><a href="' + esc(x.row.notion_url) + '" target="_blank" rel="noopener">Notion day page' + (multi ? ' · ' + esc(x.p) : '') + '</a></p>'; });
+    tr.forEach(function(k){
+      h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">' + (k.kind === 'extra' ? '<span class="vio">Extra trade</span>' : '<span class="gold">Not linked yet</span>') + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst || '') + (k.t_entry ? ' · ' + k.t_entry.slice(0,5) + ' ET' : '') + '</span><span class="tag ' + (k.kind === 'extra' ? 't-ext' : 't-wait') + '">' + (k.kind === 'extra' ? 'not called' : 'link in Log') + '</span></div>';
+      h += '<div class="side" style="grid-template-columns:1fr"><div><div class="who c">Copy · ' + k.copy.qty + ' ' + esc(k.copy.contract || '') + '</div>' + sideKv(k.copy, k.dir, null) + '</div></div>' + devList(k.deviations) + '</div>';
+    });
+    if (d.state) h += '<div><h2>State</h2><p class="state">' + esc(d.state) + '</p></div>';
+    if (d.notion_url) h += '<p class="note"><a href="' + esc(d.notion_url) + '" target="_blank" rel="noopener">Notion day page</a></p>';
     el.innerHTML = h + '</div>';
+    $('dv-np').addEventListener('click', function(){ var b = this, v = b.getAttribute('aria-pressed') !== 'true'; b.disabled = true;
+      sb.from('yc_days').update({ near_payout:v }).eq('id', d.id).then(function(r){ if (r.error) throw r.error; d.near_payout = v; renderAll(); }).catch(function(e){ alert('Could not save: ' + (e.message || e)); b.disabled = false; }); });
   }
 
-  /* ===== LOG CALL (Batch 3) ===== */
-  var stampMs = null, stampTimer = null;
+  /* ===== LOG ===== */
+  var logMode = 'import';
+  document.querySelectorAll('#log-mode button').forEach(function(b){ b.addEventListener('click', function(){ logMode = b.dataset.m; renderLogMode(); }); });
+  function renderLogMode(){ if (!isAdmin) logMode = 'import'; document.querySelectorAll('#log-mode button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.m === logMode); }); $('imp').hidden = logMode !== 'import'; $('logcall').hidden = logMode !== 'call'; $('log-mode').hidden = !isAdmin; }
+
+  /* things that need you: trades to link, calls without your side */
+  function renderNeeds(){
+    var dates = myDates(), blocksH = [];
+    dates.forEach(function(d){
+      var pend = tradesOn(d).filter(function(k){ return k.kind === 'pending'; }), dc = callsOn(d), open = dc.filter(function(k){ return k.waiting; });
+      pend.forEach(function(k){
+        var r = YC.realR(k.copy, k.dir), opts = YC.suggest({ dir:k.dir, inst:k.inst, t_entry:k.t_entry, entry:k.copy.entry }, open.map(function(c){ return calls.find(function(x){ return x.id === c.id; }); }));
+        blocksH.push('<div class="need" data-id="' + k.id + '"><span class="h">' + shortD(d) + (k.t_entry ? ' ' + k.t_entry.slice(0,5) + ' ET' : '') + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst || '') + ' ' + k.copy.qty + ' ' + esc(k.copy.contract || '') + ' @ ' + YC.px(k.copy.entry) + ' → ' + YC.r2(r) + 'R</span>' +
+          (opts.length ? '' : '<span class="xs">The caller’s calls for ' + shortD(d) + ' aren’t in yet, or all are taken. It can still be an extra trade.</span>') +
+          '<select class="sel nd-link">' + opts.map(function(c, i){ return '<option value="' + c.id + '">' + (i === 0 ? 'Suggested: ' : '') + '#' + c.n + ' ' + String(c.time_et || '').slice(0,5) + ' ' + (c.dir === 'short' ? 'short' : 'long') + ' ' + c.inst + ' @ ' + (+c.y_entry) + ' / stop ' + (+c.y_sl) + '</option>'; }).join('') + '<option value="extra">Extra trade (he didn’t call it)</option></select>' +
+          '<div class="g2 nd-extra" hidden><select class="sel nd-tag">' + YC.TAGS.map(function(t){ return '<option value="' + t.k + '"' + (t.k === 'revenge' ? ' selected' : '') + '>' + t.l + '</option>'; }).join('') + '</select><input class="sel nd-why" placeholder="Why (short)"></div>' +
+          '<div class="btnrow"><button class="btn sm p nd-ok">Confirm</button></div></div>');
+      });
+      if (!pend.length) open.forEach(function(k){
+        blocksH.push('<div class="need" data-call="' + k.id + '"><span class="h">' + shortD(d) + ' #' + k.n + ' ' + String(k.time_et || '').slice(0,5) + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' @ ' + YC.px(k.yush.entry) + ' — no side from you</span>' +
+          '<select class="sel nd-m">' + YC.MISS.map(function(m){ return '<option value="' + m[0] + '">' + m[1] + '</option>'; }).join('') + '</select><input class="sel nd-mwhy" placeholder="Reason (needed for M3)">' +
+          '<label class="check"><input type="checkbox" class="nd-pay"> Payout pressure</label><div class="btnrow"><button class="btn sm nd-miss">Mark missed</button></div></div>');
+      });
+    });
+    $('needs').hidden = !blocksH.length;
+    $('needs').innerHTML = '<h2>Needs you</h2><div style="display:grid;gap:8px">' + blocksH.join('') + '</div><div class="msg" id="nd-msg" hidden style="margin-top:8px"></div>';
+    $('needs').querySelectorAll('.nd-link').forEach(function(s){ s.addEventListener('change', function(){ s.parentNode.querySelector('.nd-extra').hidden = s.value !== 'extra'; }); if (s.value === 'extra') s.parentNode.querySelector('.nd-extra').hidden = false; });
+    $('needs').querySelectorAll('.nd-ok').forEach(function(b){ b.addEventListener('click', function(){ var box = b.closest('.need'); linkTrade(box.dataset.id, box.querySelector('.nd-link').value, box.querySelector('.nd-tag').value, box.querySelector('.nd-why').value.trim(), b); }); });
+    $('needs').querySelectorAll('.nd-miss').forEach(function(b){ b.addEventListener('click', function(){ var box = b.closest('.need'); markMissed(box.dataset.call, box.querySelector('.nd-m').value, box.querySelector('.nd-mwhy').value.trim(), box.querySelector('.nd-pay').checked, b); }); });
+  }
+  function after(p, btn, okText){ btn.disabled = true; return p.then(function(){ return load(); }).then(function(){ renderAll(); if (okText) msg('nd-msg', okText, 'ok'); }).catch(function(e){ btn.disabled = false; msg('nd-msg', 'Failed: ' + (e.message || e), 'err'); }); }
+  function linkTrade(copyId, target, tag, why, btn){
+    var cp = copies.find(function(x){ return x.id === copyId; }); if (!cp) return;
+    if (target === 'extra'){
+      if (!why && tag === 'other'){ msg('nd-msg', 'Other needs a reason.', 'err'); return; }
+      after(sb.from('yc_copies').update({ status:'extra' }).eq('id', copyId).then(function(r){ if (r.error) throw r.error;
+        return sb.from('yc_deviations').insert({ copy_id:copyId, tag:tag, what:'Extra trade (not called)', why:why || null }); }).then(function(r){ if (r.error) throw r.error; }), btn, 'Saved as an extra trade.');
+      return;
+    }
+    var c = calls.find(function(x){ return x.id === target; }); if (!c) return;
+    var sg = YC.sign(c.dir), lagPts = cp.c_entry != null ? YC.rd(sg * (+cp.c_entry - +c.y_entry)) : null, lag = null;
+    if (cp.t_entry && c.stamped_at) lag = Math.round((YC.etToMs(c.date, String(cp.t_entry).slice(0,8)) - Date.parse(c.stamped_at)) / 1000);
+    var hasDev = devs.some(function(d){ return d.copy_id === copyId; });
+    after(sb.from('yc_copies').update({ call_id:c.id, status:hasDev ? 'deviation' : 'copied', lag_pts:cp.lag_pts != null ? cp.lag_pts : lagPts, lag_s:cp.lag_s != null ? cp.lag_s : lag, inst:c.inst, dir:c.dir }).eq('id', copyId).then(function(r){ if (r.error) throw r.error; }), btn, 'Linked to #' + c.n + '.');
+  }
+  function markMissed(callId, m, why, pay, btn){
+    var c = calls.find(function(x){ return x.id === callId; }); if (!c) return;
+    if (m === 'M3' && !why){ msg('nd-msg', 'M3 needs a reason.', 'err'); return; }
+    after(sb.from('yc_copies').insert({ call_id:c.id, copier:me.email, date:c.date, inst:c.inst, dir:c.dir, status:'missed', missed:m, miss_tag:pay ? 'payout' : null, note:why || null, c_exits:[] }).then(function(r){ if (r.error) throw r.error; }), btn, 'Marked #' + c.n + ' missed.');
+  }
+
+  /* log a call (admin) */
+  var timeTouched = false;
   var lcIds = ['lc-inst','lc-dir','lc-src','lc-e','lc-sl','lc-tp','lc-q','lc-c'];
   function lcContracts(){ var i = $('lc-inst').value, cur = $('lc-c').value, o = i === 'ES' ? ['MES','ES'] : ['MNQ','NQ']; $('lc-c').innerHTML = o.map(function(x){ return '<option' + (x === cur ? ' selected' : '') + '>' + x + '</option>'; }).join(''); }
   function etNow(ms){ return YC.tzParts(ms, 'America/New_York'); }
-  function stampText(){ if (!stampMs) return 'tap any field to stamp'; var e = etNow(stampMs), b = YC.tzParts(stampMs, 'Asia/Bangkok'); return e.time + ' ET · ' + b.time + ' BKK'; }
-  function stamp(){ if (stampMs) return; stampMs = Date.now(); $('lc-stamp').textContent = stampText(); $('lc-stamp').style.color = 'var(--accent)'; }
+  function stamp(){ if (timeTouched || $('lc-time').value) return; var e = etNow(Date.now()); if (!$('lc-date').value || $('lc-date').value === e.date) $('lc-date').value = e.date; $('lc-time').value = e.time; $('lc-stamp').textContent = 'stamped ' + e.time + ' ET · ' + YC.bkkOf(e.date, e.time) + ' BKK'; $('lc-stamp').style.color = 'var(--accent)'; }
   lcIds.forEach(function(id){ var el = $(id); ['focus','pointerdown','input','change'].forEach(function(ev){ el.addEventListener(ev, stamp); }); el.addEventListener('input', lcCalc); el.addEventListener('change', lcCalc); });
+  ['lc-date','lc-time'].forEach(function(id){ $(id).addEventListener('input', function(){ timeTouched = true; $('lc-stamp').textContent = 'time set by hand'; $('lc-stamp').style.color = ''; }); });
   $('lc-inst').addEventListener('change', function(){ lcContracts(); lcCalc(); });
+  $('lc-m').innerHTML = YC.MISS.map(function(m){ return '<option value="' + m[0] + '">' + m[1] + '</option>'; }).join('');
+  $('lc-m').addEventListener('change', function(){ $('lc-why-f').hidden = $('lc-m').value !== 'M3'; });
   function num(id){ var v = $(id).value.trim().replace(',', '.'); return v === '' ? null : +v; }
   function lcRead(){ return { inst:$('lc-inst').value, dir:$('lc-dir').value, source:$('lc-src').value, entry:num('lc-e'), sl:num('lc-sl'), tp:num('lc-tp'), qty:num('lc-q') == null ? null : Math.round(num('lc-q')), contract:$('lc-c').value }; }
   function lcCalc(){
-    var x = lcRead(), s = { entry:x.entry, sl:x.sl, tp:x.tp, qty:x.qty, contract:x.contract }, pl = YC.planR(s), hs = YC.halfSize(x.qty, x.contract);
+    var x = lcRead(), s = { entry:x.entry, sl:x.sl, tp:x.tp, qty:x.qty, contract:x.contract }, pl = YC.planR(s), pct = pctOf(), hs = YC.sizeFor(x.qty, x.contract, pct);
     var risk = hs && YC.slPts(s) != null ? YC.slPts(s) * hs.qty * (YC.mult[hs.contract] || 0) : null;
     var bad = (x.entry != null && x.sl != null && ((x.dir === 'long' && x.sl >= x.entry) || (x.dir === 'short' && x.sl <= x.entry)));
-    $('lc-calc').innerHTML = 'Plan R ' + (pl == null ? '—' : pl.toFixed(2)) + ' · half size ' + (hs ? hs.qty + ' ' + hs.contract : '—') + ' · risk ' + (risk == null ? '—' : '$' + risk.toFixed(0)) + (bad ? ' · <span class="neg">SL on the wrong side for ' + x.dir + '</span>' : '');
+    $('lc-calc').innerHTML = 'Plan R ' + (pl == null ? '—' : pl.toFixed(2)) + ' · your size (' + pct + '%) ' + (hs ? hs.qty + ' ' + hs.contract : '—') + ' · risk ' + (risk == null ? '—' : '$' + risk.toFixed(0)) + (bad ? ' · <span class="neg">stop on the wrong side for ' + x.dir + '</span>' : '');
   }
-  $('lc-reset').addEventListener('click', function(){ ['lc-e','lc-sl','lc-tp','lc-q'].forEach(function(id){ $(id).value = ''; }); stampMs = null; $('lc-stamp').textContent = stampText(); $('lc-stamp').style.color = ''; lcCalc(); msg('lc-msg', ''); });
+  function lcClear(){ ['lc-e','lc-sl','lc-tp','lc-q','lc-why','lc-time'].forEach(function(id){ $(id).value = ''; }); $('lc-pay').checked = false; timeTouched = false; $('lc-stamp').textContent = 'time fills at first tap'; $('lc-stamp').style.color = ''; if (!$('lc-date').value) $('lc-date').value = etNow(Date.now()).date; lcCalc(); }
+  $('lc-reset').addEventListener('click', function(){ lcClear(); msg('lc-msg', ''); });
   function lcSave(missType){
     var x = lcRead();
-    if (x.entry == null || x.sl == null){ msg('lc-msg', 'His entry and SL are needed.', 'err'); return; }
-    if (!stampMs) stampMs = Date.now();
-    var e = etNow(stampMs), date = e.date;
+    if (x.entry == null || x.sl == null){ msg('lc-msg', 'His entry and stop are needed.', 'err'); return; }
+    if (missType === 'M3' && !$('lc-why').value.trim()){ msg('lc-msg', 'M3 needs a reason.', 'err'); return; }
+    if (!$('lc-time').value) stamp();
+    var date = $('lc-date').value, time = $('lc-time').value; if (time.length === 5) time += ':00';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}:\d{2}$/.test(time)){ msg('lc-msg', 'Date and time are needed.', 'err'); return; }
     var n = calls.filter(function(c){ return c.date === date; }).reduce(function(m, c){ return Math.max(m, c.n); }, 0) + 1;
-    var row = { date:date, n:n, time_et:e.time, stamped_at:new Date(stampMs).toISOString(), source:x.source, inst:x.inst, dir:x.dir, y_entry:x.entry, y_sl:x.sl, y_tp:x.tp, y_qty:x.qty, y_contract:x.contract, y_exits:[] };
+    var row = { date:date, n:n, time_et:time, stamped_at:new Date(YC.etToMs(date, time)).toISOString(), source:x.source, inst:x.inst, dir:x.dir, y_entry:x.entry, y_sl:x.sl, y_tp:x.tp, y_qty:x.qty, y_contract:x.contract, y_exits:[] };
     $('lc-save').disabled = $('lc-miss').disabled = true; msg('lc-msg', 'Saving…');
     sb.from('yc_calls').insert(row).select('id').then(function(r){ if (r.error) throw r.error;
       if (!missType) return r;
-      return sb.from('yc_copies').insert({ call_id:r.data[0].id, copier:me.email, status:'missed', missed:missType }).then(function(q){ if (q.error) throw q.error; return r; });
+      return sb.from('yc_copies').insert({ call_id:r.data[0].id, copier:me.email, date:date, inst:x.inst, dir:x.dir, status:'missed', missed:missType, miss_tag:$('lc-pay').checked ? 'payout' : null, note:$('lc-why').value.trim() || null, c_exits:[] }).then(function(q){ if (q.error) throw q.error; return r; });
     }).then(function(){ return load(); }).then(function(){
-      msg('lc-msg', 'Saved #' + n + ' · ' + shortD(date) + ' · ' + e.time + ' ET' + (missType ? ' · missed ' + missType : '') + '. Claude uses #' + n + ' for this call in the day file.', 'ok');
-      ['lc-e','lc-sl','lc-tp','lc-q'].forEach(function(id){ $(id).value = ''; }); stampMs = null; $('lc-stamp').textContent = stampText(); $('lc-stamp').style.color = ''; lcCalc();
-      renderAll();
+      msg('lc-msg', 'Saved #' + n + ' · ' + shortD(date) + ' · ' + time + ' ET' + (missType ? ' · missed ' + missType : '') + '.', 'ok');
+      lcClear(); renderAll();
     }).catch(function(err){ msg('lc-msg', 'Save failed: ' + (err.message || err), 'err'); }).then(function(){ $('lc-save').disabled = $('lc-miss').disabled = false; });
   }
   $('lc-save').addEventListener('click', function(){ lcSave(null); });
   $('lc-miss').addEventListener('click', function(){ lcSave($('lc-m').value); });
   function renderLog(){
-    $('logcall').hidden = !isAdmin; $('lc-viewer').hidden = isAdmin;
-    renderTemplateDates();
+    renderLogMode(); renderNeeds(); renderTemplateDates();
     if (!isAdmin) return;
-    lcContracts(); lcCalc();
-    var today = etNow(Date.now()).date, logged = calls.filter(function(c){ return c.stamped_at; }).sort(function(a, b){ return a.stamped_at < b.stamped_at ? 1 : -1; });
-    var dayShown = logged.length && logged[0].date !== today ? logged[0].date : today, list = logged.filter(function(c){ return c.date === dayShown; });
-    $('lc-day').textContent = shortD(dayShown) + ' ET';
+    lcContracts(); if (!$('lc-date').value) $('lc-date').value = etNow(Date.now()).date; lcCalc();
+    var shown = $('lc-date').value || etNow(Date.now()).date, list = calls.filter(function(c){ return c.date === shown; });
+    $('lc-day').textContent = shortD(shown) + ' ET';
     $('lc-list').innerHTML = list.length ? list.map(function(c){
-      var mine = copies.find(function(x){ return x.call_id === c.id && personOf(x.copier) === myName; }), others = copies.some(function(x){ return x.call_id === c.id && personOf(x.copier) !== myName; });
-      return '<div><span>#' + c.n + ' · ' + (c.time_et || '').slice(0,8) + ' · ' + (c.dir === 'short' ? 'S' : 'L') + ' ' + esc(c.inst) + ' ' + (+c.y_entry) + ' / ' + (+c.y_sl) + (c.y_tp != null ? ' / ' + (+c.y_tp) : '') + (c.y_qty ? ' · ' + c.y_qty + ' ' + esc(c.y_contract) : '') + (mine && mine.status === 'missed' ? ' · <span class="cyan">' + esc(mine.missed || 'missed') + '</span>' : mine ? ' · <span class="pos">imported</span>' : '') + '</span>' +
-        (!others && !(mine && mine.status !== 'missed') ? '<button data-del="' + c.id + '">Delete</button>' : '') + '</div>';
-    }).join('') : '<span class="xs">Nothing logged ' + (dayShown === today ? 'today' : 'that day') + '.</span>';
+      var mine = copies.find(function(x){ return x.call_id === c.id; });
+      return '<div><span>#' + c.n + ' · ' + (c.time_et || '').slice(0,8) + ' · ' + (c.dir === 'short' ? 'S' : 'L') + ' ' + esc(c.inst) + ' ' + (+c.y_entry) + ' / ' + (+c.y_sl) + (c.y_tp != null ? ' / ' + (+c.y_tp) : '') + (c.y_qty ? ' · ' + c.y_qty + ' ' + esc(c.y_contract) : '') + (mine && mine.status === 'missed' ? ' · <span class="cyan">' + esc(mine.missed || 'missed') + '</span>' : mine ? ' · <span class="pos">your side in</span>' : '') + '</span>' +
+        (c.stamped_at && !mine ? '<button data-del="' + c.id + '">Delete</button>' : '') + '</div>';
+    }).join('') : '<span class="xs">Nothing logged that day.</span>';
     $('lc-list').querySelectorAll('button[data-del]').forEach(function(b){ b.addEventListener('click', function(){
       if (b.dataset.armed !== '1'){ b.dataset.armed = '1'; b.textContent = 'Tap again'; return; }
       sb.from('yc_calls').delete().eq('id', b.dataset.del).then(function(r){ if (r.error) throw r.error; return load(); }).then(renderAll).catch(function(err){ msg('lc-msg', 'Delete failed: ' + (err.message || err), 'err'); });
     }); });
   }
+  $('lc-date').addEventListener('change', function(){ if (isAdmin) renderLog(); });
 
   /* ===== SETTINGS ===== */
+  $('st-size').addEventListener('change', function(){ $('st-pct-f').hidden = $('st-size').value !== 'x'; });
   function renderSettings(){
-    var s = settingsOf(myName) || {}, m = s.mult || YC.mult;
-    $('st-size').value = s.size_rule || ''; $('st-dll').value = s.dll_usd != null ? s.dll_usd : ''; $('st-et').value = s.et_offset_rule || '';
-    ['NQ','MNQ','ES','MES'].forEach(function(k){ $('st-' + k).value = m[k] != null ? m[k] : ''; });
-    var rows = [['Signed in', me.email + ' (' + myName + ')'], ['Version', YC_VERSION], ['Trade date', 'US session date (ET)'], ['Days stored', String(days.length)], ['Calls stored', String(calls.length)]];
+    var pct = pctOf(), preset = ['30','50','100'].indexOf(String(pct)) >= 0;
+    $('st-size').value = preset ? String(pct) : 'x'; $('st-pct-f').hidden = preset; $('st-pct').value = preset ? '' : pct;
+    $('st-dll').value = settings && settings.dll_usd != null ? settings.dll_usd : 600;
+    $('set-tags').innerHTML = YC.TAGS.map(function(t){ return '<div><span><span class="chip" style="background:' + t.c + '"></span><b style="font-weight:500">' + t.l + '</b></span><span>' + t.m + '</span></div>'; }).join('') +
+      '<div><span><span class="chip" style="background:var(--loss)"></span><b style="font-weight:500">Green on a broken rule</b></span><span>Set by the app: a deviation call that still ended green. Counted as a breach, never a win.</span></div>';
+    $('set-miss').innerHTML = YC.MISS.map(function(m){ return '<div><span><b style="font-weight:500">' + m[0] + '</b></span><span>' + m[1].slice(5) + '</span></div>'; }).join('') + '<div><span><b style="font-weight:500">Payout pressure</b></span><span>Can be added to a miss: skipped to protect a target or payout.</span></div>';
+    var rows = [['Signed in', me.email], ['Version', YC_VERSION], ['Trade date', 'US session date (ET)'], ['Days stored', String(days.length)]];
     $('set-rows').innerHTML = rows.map(function(r){ return '<div><span>' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
-    $('set-mem').innerHTML = members.map(function(x){ return '<div><span>' + esc(x.name || '—') + ' · ' + esc(x.role || 'copier') + '</span><span>' + esc(x.email) + '</span></div>'; }).join('');
-    $('set-rules').innerHTML = rules.length ? rules.map(function(r){ return '<div><span>' + esc(r.date || '') + ' · ' + esc(r.rule || '') + '</span><span>' + esc(r.old || '—') + ' → ' + esc(r.new || '—') + (r.why ? '<br><small>' + esc(r.why) + '</small>' : '') + '</span></div>'; }).join('') : '<div><span class="xs">None yet. Changes are logged in Notion until Claude adds them here.</span><span></span></div>';
+    $('set-rules').innerHTML = rules.length ? rules.map(function(r){ return '<div><span>' + esc(r.date || '') + ' · ' + esc(r.rule || '') + '</span><span>' + esc(r.old || '—') + ' → ' + esc(r.new || '—') + (r.why ? '<br><small>' + esc(r.why) + '</small>' : '') + '</span></div>'; }).join('') : '<div><span class="xs">None yet.</span><span></span></div>';
   }
   $('st-save').addEventListener('click', function(){
-    var mult = {}; ['NQ','MNQ','ES','MES'].forEach(function(k){ var v = num('st-' + k); if (v != null) mult[k] = v; });
-    var dll = num('st-dll');
-    if (dll == null || dll <= 0){ msg('set-msg', 'DLL must be a positive number.', 'err'); return; }
-    var row = { copier:me.email, size_rule:$('st-size').value.trim() || null, dll_usd:dll, mult:mult, et_offset_rule:$('st-et').value.trim() || null };
-    sb.from('yc_settings').upsert(row, {onConflict:'copier'}).then(function(r){ if (r.error) throw r.error; return load(); }).then(function(){ var st = settingsOf(myName); if (st && st.mult) YC.mult = st.mult; renderAll(); msg('set-msg', 'Settings saved.', 'ok'); })
+    var pct = $('st-size').value === 'x' ? num('st-pct') : +$('st-size').value, dll = num('st-dll');
+    if (pct == null || !(pct > 0 && pct <= 300)){ msg('set-msg', 'Size % must be between 1 and 300.', 'err'); return; }
+    if (dll == null || dll <= 0){ msg('set-msg', 'Daily loss limit must be a positive number.', 'err'); return; }
+    sb.from('yc_settings').upsert({ copier:me.email, size_pct:pct, dll_usd:dll, size_rule:pct + '% of his position size, round down' }, {onConflict:'copier'}).then(function(r){ if (r.error) throw r.error; return load(); })
+      .then(function(){ renderAll(); msg('set-msg', 'Saved. New days use ' + pct + '%; past days keep theirs.', 'ok'); })
       .catch(function(e){ msg('set-msg', 'Save failed: ' + (e.message || e), 'err'); });
   });
-  $('b-export').addEventListener('click', function(){
-    var mine = personDates(myName);
-    var out = mine.map(function(date){ var d = dayRow(date, myName); return { schema:'yc-day-1', date:date, day_no:d.day_no, copier:d.copier, account:d.account, balance_start:d.balance_start == null ? null : +d.balance_start, balance_eod:d.balance_eod == null ? null : +d.balance_eod, commissions:d.commissions == null ? null : +d.commissions, state:d.state, notion_url:d.notion_url,
-      calls:callsFor(myName, [date]).map(function(k){ var o = { n:k.n, time_et:k.time_et, stamped_at:k.stamped_at, source:k.source, inst:k.inst, dir:k.dir, yush:k.yush, copy:k.copy, deviations:k.deviations.map(function(v){ return { tag:v.tag, what:v.what, why:v.why, r_effect:v.r_effect == null ? null : +v.r_effect, usd_effect:v.usd_effect == null ? null : +v.usd_effect }; }) }; if (!k.copy){ o.missed = k.missed; o.note = k.note; } return o; }) }; });
-    var blob = new Blob([JSON.stringify(out, null, 1)], {type:'application/json'}), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'tracklog-export-' + new Date().toISOString().slice(0,10) + '.json'; document.body.appendChild(a); a.click(); a.remove();
-    msg('set-msg', 'Exported ' + out.length + ' days.', 'ok');
-  });
+  function dayExport(date){
+    var d = dayRow(date), cs = callsOn(date), tr = tradesOn(date), side = function(c){ return c ? { entry:c.entry, sl:c.sl, tp:c.tp, qty:c.qty, contract:c.contract, t_entry:c.t_entry, exits:c.exits, net_usd:c.net_usd, lag_s:c.lag_s, lag_pts:c.lag_pts, hold_s:c.hold_s, status:c.status, note:c.note } : null; };
+    var dv = function(list){ return list.map(function(v){ return { tag:v.tag, what:v.what, why:v.why, r_effect:v.r_effect == null ? null : +v.r_effect, usd_effect:v.usd_effect == null ? null : +v.usd_effect }; }); };
+    var tradeOut = function(k){ var o = side(k.copy); o.inst = k.inst; o.dir = k.dir; o.deviations = dv(k.deviations); delete o.status; return o; };
+    return { schema:'yc-day-1', date:date, day_no:d.day_no, account:d.account, balance_start:d.balance_start == null ? null : +d.balance_start, balance_eod:d.balance_eod == null ? null : +d.balance_eod, commissions:d.commissions == null ? null : +d.commissions, day_low:d.day_low == null ? null : +d.day_low, size_pct:d.size_pct == null ? null : +d.size_pct, near_payout:!!d.near_payout, state:d.state, notion_url:d.notion_url,
+      calls:cs.filter(function(k){ return !k.waiting; }).map(function(k){ var o = { n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, yush:k.yush, copy:side(k.copy), deviations:dv(k.deviations) }; if (!k.copy){ o.missed = k.missed; o.miss_tag = k.missTag || null; o.note = k.note || null; } return o; }),
+      trades:tr.filter(function(k){ return k.kind === 'pending'; }).map(tradeOut), extras:tr.filter(function(k){ return k.kind === 'extra'; }).map(tradeOut) };
+  }
+  $('b-export').addEventListener('click', function(){ var out = myDates().map(dayExport); download(JSON.stringify(out, null, 1), 'application/json', 'tracklog-export-' + new Date().toISOString().slice(0,10) + '.json'); });
 
   /* ===== DAY TEMPLATE ===== */
   function renderTemplateDates(){
     var ds = {}; calls.forEach(function(c){ ds[c.date] = 1; });
     var list = Object.keys(ds).sort().reverse(), cur = $('tp-date').value;
-    $('tp-date').innerHTML = list.length ? list.map(function(d){ var n = calls.filter(function(c){ return c.date === d; }).length; return '<option value="' + d + '"' + (d === cur ? ' selected' : '') + '>' + fmtDate(d) + ' · ' + n + (n === 1 ? ' call' : ' calls') + (dayRow(d, myName) ? ' · imported' : '') + '</option>'; }).join('') : '<option value="">No calls yet</option>';
+    $('tp-date').innerHTML = list.length ? list.map(function(d){ var n = calls.filter(function(c){ return c.date === d; }).length; return '<option value="' + d + '"' + (d === cur ? ' selected' : '') + '>' + fmtDate(d) + ' · ' + n + (n === 1 ? ' call' : ' calls') + (dayRow(d) ? ' · imported' : '') + '</option>'; }).join('') : '<option value="">No calls yet</option>';
   }
   function templateFor(d){
-    var mine = dayRow(d, myName), st = settingsOf(myName) || {};
-    return { schema:'yc-day-1', date:d, day_no:mine ? mine.day_no : (personDates(myName).filter(function(x){ return x < d; }).length + 1), account:mine ? mine.account : null,
-      balance_start:null, balance_eod:null, commissions:null, state:null, notion_url:null,
+    var mine = dayRow(d);
+    return { schema:'yc-day-1', date:d, day_no:mine ? mine.day_no : (myDates().filter(function(x){ return x < d; }).length + 1), account:mine ? mine.account : null,
+      balance_start:null, balance_eod:null, commissions:null, day_low:null, size_pct:pctOf(), near_payout:false, state:null, notion_url:null,
       calls: calls.filter(function(c){ return c.date === d; }).sort(function(a, b){ return a.n - b.n; }).map(function(c){ return { n:c.n, time_et:c.time_et, source:c.source, inst:c.inst, dir:c.dir,
         yush:{ entry:+c.y_entry, sl:+c.y_sl, tp:c.y_tp == null ? null : +c.y_tp, qty:c.y_qty, contract:c.y_contract, exits:c.y_exits || [], net_usd_est:c.y_net_usd_est == null ? null : +c.y_net_usd_est },
-        copy:null, missed:null, deviations:[] }; }) };
+        copy:null, missed:null, deviations:[] }; }), extras:[] };
   }
-  $('tp-copy').addEventListener('click', function(){ var d = $('tp-date').value; if (!d) return; var t = JSON.stringify(templateFor(d), null, 1);
-    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ msg('l-msg', 'Template for ' + fmtDate(d) + ' copied. Give it to your Claude with your trade export and the format guide.', 'ok'); })
+  var tpText = function(d){ return JSON.stringify(templateFor(d), null, 1); };
+  $('tp-copy').addEventListener('click', function(){ var d = $('tp-date').value; if (!d) return; var t = tpText(d);
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ msg('l-msg', 'Template for ' + fmtDate(d) + ' copied.', 'ok'); })
       .catch(function(){ $('l-json').value = t; msg('l-msg', 'Could not copy. The template is in the paste box; copy it from there.', 'err'); }); });
-  $('tp-dl').addEventListener('click', function(){ var d = $('tp-date').value; if (!d) return;
-    var blob = new Blob([JSON.stringify(templateFor(d), null, 1)], {type:'application/json'}), a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = 'tracklog-template-' + d + '.json'; document.body.appendChild(a); a.click(); a.remove(); });
+  $('tp-dl').addEventListener('click', function(){ var d = $('tp-date').value; if (d) download(tpText(d), 'application/json', 'tracklog-template-' + d + '.json'); });
+  $('tp-share').addEventListener('click', function(){ var d = $('tp-date').value; if (!d) return; var t = tpText(d), name = 'tracklog-template-' + d + '.json';
+    try { var f = new File([t], name, {type:'application/json'});
+      if (navigator.canShare && navigator.canShare({files:[f]})) return navigator.share({files:[f], title:'TrackLog template ' + d}).catch(function(){});
+      if (navigator.share) return navigator.share({title:'TrackLog template ' + d, text:t}).catch(function(){});
+    } catch(e){}
+    download(t, 'application/json', name); msg('l-msg', 'Sharing isn’t available here, so the file was downloaded.', 'ok'); });
 
-  /* non-admin: the caller's calls must already exist and match */
+  /* copier with calls in the file: they must match the caller's calls */
   function checkAgainstCalls(j){
-    var e = [];
-    if (!calls.some(function(c){ return c.date === j.date; })) return ['The caller’s calls for ' + j.date + ' are not in yet. Import again once they are.'];
+    var e = []; if (!(j.calls || []).length) return e;
+    if (!calls.some(function(c){ return c.date === j.date; })) return ['The caller’s calls for ' + j.date + ' are not in yet. Put your trades under "trades" instead, or import again once the calls are in.'];
     j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; });
       if (!c) e.push('#' + k.n + ': no caller call with that number on ' + j.date);
-      else if (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl || c.dir !== k.dir) e.push('#' + k.n + ': entry / SL / direction differ from the caller’s call (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ' ' + c.dir + ')'); });
+      else if (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl || c.dir !== k.dir) e.push('#' + k.n + ': entry / stop / direction differ from the caller’s call (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ' ' + c.dir + ')'); });
     return e;
   }
 
@@ -901,56 +1077,63 @@ if (typeof module !== 'undefined') module.exports = YC;
     var r = new FileReader(); r.onload = function(){ $('l-json').value = r.result; preview(); }; r.readAsText(f);
   });
   $('l-prev').addEventListener('click', preview);
+  var asTrade = function(k, kind){ return { kind:kind, dir:k.dir, inst:k.inst, copy:k, deviations:k.deviations || [] }; };
   function preview(){
     pending = null; $('l-save').disabled = true; $('l-out').innerHTML = '';
     var j; try { j = JSON.parse($('l-json').value); } catch(e){ msg('l-msg', 'Not valid JSON: ' + e.message, 'err'); return; }
+    if (Array.isArray(j)){ msg('l-msg', 'This is a list of days (an export). Import one day file at a time.', 'err'); return; }
     var errs = YC.validate(j);
     if (!errs.length && !isAdmin) errs = checkAgainstCalls(j);
     if (errs.length){ msg('l-msg', errs.join(' · '), 'err'); return; }
-    j.copier = me.email; /* always the signed-in user, whatever the file says */
-    var t = YC.dayStats(j.calls), exists = !!dayRow(j.date, myName);
+    j.calls = j.calls || []; j.trades = j.trades || []; j.extras = j.extras || [];
+    var tr = j.trades.map(function(k){ return asTrade(k, 'pending'); }).concat(j.extras.map(function(k){ return asTrade(k, 'extra'); }));
+    var t = YC.dayStats(j.calls, tr), exists = !!dayRow(j.date), pct = j.size_pct != null ? j.size_pct : pctOf();
     var warn = [];
-    j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; }); if (c && c.stamped_at && (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl)) warn.push('#' + k.n + ' differs from the call logged live (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ')'); });
-    $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · ' + esc(myName) + (exists ? ' · <span class="warn">replaces your existing day</span>' : '') + '</div>' +
-      '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations</div>' +
+    j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; }); if (isAdmin && c && c.stamped_at && (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl)) warn.push('#' + k.n + ' differs from the call logged live (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ')'); });
+    if (j.trades.length) warn.push(j.trades.length + ' trade' + (j.trades.length > 1 ? 's' : '') + ' to link to the caller’s calls after saving (Log → Needs you).');
+    $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · size ' + pct + '%' + (j.near_payout ? ' · near payout' : '') + (exists ? ' · <span class="warn">replaces your existing day</span>' : '') + '</div>' +
+      '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations' + (j.extras.length ? ' · ' + j.extras.length + ' extra' : '') + '</div>' +
       '<div>Caller ' + YC.r2(t.yR) + 'R · Copy ' + YC.r2(t.cR) + 'R · gap ' + YC.r2(t.gap) + 'R · net ' + YC.usd(t.cUsd) + '</div>' +
-      '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + '</div>' +
+      '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + ' · day low ' + (j.day_low == null ? '—' : j.day_low) + '</div>' +
       warn.map(function(w){ return '<div class="warn">' + esc(w) + '</div>'; }).join('');
     msg('l-msg', 'Valid. Check the numbers, then Save day.', 'ok');
     pending = j; $('l-save').disabled = false;
   }
   $('l-save').addEventListener('click', function(){
     if (!pending) return; var j = pending; $('l-save').disabled = true; msg('l-msg', 'Saving…');
-    var mine = emailsOf(myName), others = mine.filter(function(e){ return e !== me.email; });
-    var dayRow0 = { date:j.date, copier:me.email, day_no:j.day_no, account:j.account, balance_start:j.balance_start, balance_eod:j.balance_eod, commissions:j.commissions, state:j.state, notion_url:j.notion_url, imported_at:new Date().toISOString(), source_file:'yc-day-1' };
-    var ids = {}, stamps = {};
-    (others.length ? sb.from('yc_days').delete().eq('date', j.date).in('copier', others) : Promise.resolve({})).then(function(r){ if (r.error) throw r.error;
-      return sb.from('yc_days').upsert(dayRow0, {onConflict:'date,copier'});
-    }).then(function(r){ if (r.error) throw r.error;
-      /* caller fields only: the live stamp, miss types and notes are per copier and are not overwritten */
-      if (!isAdmin) return sb.from('yc_calls').select('id,n,stamped_at').eq('date', j.date); /* copiers never write the caller's calls */
+    var pct = j.size_pct != null ? j.size_pct : pctOf();
+    var day0 = { date:j.date, copier:me.email, day_no:j.day_no, account:j.account, balance_start:j.balance_start, balance_eod:j.balance_eod, commissions:j.commissions, day_low:j.day_low == null ? null : j.day_low, size_pct:pct, near_payout:!!j.near_payout, state:j.state, notion_url:j.notion_url, imported_at:new Date().toISOString(), source_file:'yc-day-1' };
+    var ids = {}, stamps = {}, callRow = {};
+    sb.from('yc_days').upsert(day0, {onConflict:'date,copier'}).then(function(r){ if (r.error) throw r.error;
+      if (!j.calls.length) return { data:[] };
+      if (!isAdmin) return sb.from('yc_calls').select('id,n,stamped_at,inst,dir').eq('date', j.date); /* copiers never write the caller's calls */
       var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est == null ? null : k.yush.net_usd_est }; });
-      return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n,stamped_at');
+      return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n,stamped_at,inst,dir');
     }).then(function(r){ if (r.error) throw r.error;
-      r.data.forEach(function(x){ ids[x.n] = x.id; stamps[x.n] = x.stamped_at; });
-      return sb.from('yc_copies').delete().in('copier', mine).in('call_id', Object.keys(ids).map(function(n){ return ids[n]; }));
-    }).then(function(d){ if (d.error) throw d.error;
-      var copyRows = j.calls.map(function(k){ var c = k.copy;
-        if (!c) return { call_id:ids[k.n], copier:me.email, c_entry:null, c_sl:null, c_tp:null, c_qty:null, c_contract:null, c_exits:[], c_net_usd:null, lag_s:null, lag_pts:null, hold_s:null, status:'missed', missed:k.missed, note:k.note || null };
+      r.data.forEach(function(x){ ids[x.n] = x.id; stamps[x.n] = x.stamped_at; callRow[x.n] = x; });
+      /* re-import replaces this day for me: my copies on this date, and any linked to these calls */
+      var callIds = Object.keys(ids).map(function(n){ return ids[n]; });
+      return sb.from('yc_copies').delete().eq('copier', me.email).eq('date', j.date).then(function(d){ if (d.error) throw d.error;
+        return callIds.length ? sb.from('yc_copies').delete().eq('copier', me.email).in('call_id', callIds) : {}; });
+    }).then(function(d){ if (d && d.error) throw d.error;
+      var rows = [], devFor = [];
+      var base = function(c, extra){ var o = { copier:me.email, date:j.date, c_entry:c.entry, c_sl:c.sl, c_tp:c.tp == null ? null : c.tp, c_qty:c.qty == null ? null : c.qty, c_contract:c.contract || null, c_exits:c.exits || [], c_net_usd:c.net_usd == null ? null : c.net_usd, lag_s:c.lag_s == null ? null : c.lag_s, lag_pts:c.lag_pts == null ? null : c.lag_pts, hold_s:c.hold_s == null ? null : c.hold_s, t_entry:c.t_entry || null, note:c.note || null, missed:null, miss_tag:null };
+        Object.keys(extra).forEach(function(k){ o[k] = extra[k]; }); return o; };
+      j.calls.forEach(function(k){ var c = k.copy, cid = ids[k.n];
+        if (!c){ rows.push({ call_id:cid, copier:me.email, date:j.date, inst:k.inst, dir:k.dir, status:'missed', missed:k.missed, miss_tag:k.miss_tag || null, note:k.note || null, c_exits:[] }); devFor.push(null); return; }
         var lag = c.lag_s;
         if (lag == null && c.t_entry && stamps[k.n]) lag = Math.round((YC.etToMs(j.date, c.t_entry) - Date.parse(stamps[k.n])) / 1000);
-        return { call_id:ids[k.n], copier:me.email, c_entry:c.entry, c_sl:c.sl, c_tp:c.tp, c_qty:c.qty, c_contract:c.contract, c_exits:c.exits || [], c_net_usd:c.net_usd, lag_s:lag == null ? null : lag, lag_pts:c.lag_pts == null ? null : c.lag_pts, hold_s:c.hold_s == null ? null : c.hold_s, status:c.status || 'copied', missed:null, note:c.note || null };
-      });
-      if (!copyRows.length) return {};
-      return sb.from('yc_copies').insert(copyRows).select('id,call_id').then(function(r){ if (r.error) throw r.error;
-        var byCall = {}; r.data.forEach(function(x){ byCall[x.call_id] = x.id; });
+        rows.push(base(c, { call_id:cid, inst:k.inst, dir:k.dir, lag_s:lag == null ? null : lag, status:(k.deviations || []).length ? 'deviation' : (c.status === 'deviation' ? 'deviation' : 'copied') })); devFor.push(k.deviations || []); });
+      j.trades.forEach(function(k){ rows.push(base(k, { call_id:null, inst:k.inst, dir:k.dir, status:'pending' })); devFor.push(k.deviations || []); });
+      j.extras.forEach(function(k){ rows.push(base(k, { call_id:null, inst:k.inst, dir:k.dir, status:'extra' })); devFor.push(k.deviations || []); });
+      if (!rows.length) return {};
+      return sb.from('yc_copies').insert(rows).select('id').then(function(r){ if (r.error) throw r.error;
         var devRows = [];
-        j.calls.forEach(function(k){ if (k.copy && k.deviations) k.deviations.forEach(function(v){ devRows.push({ copy_id:byCall[ids[k.n]], tag:v.tag || null, what:v.what, why:v.why || null, r_effect:v.r_effect == null ? null : v.r_effect, usd_effect:v.usd_effect == null ? null : v.usd_effect }); }); });
+        r.data.forEach(function(x, i){ (devFor[i] || []).forEach(function(v){ devRows.push({ copy_id:x.id, tag:YC.normTag(v.tag), what:v.what || null, why:v.why || null, r_effect:v.r_effect == null ? null : v.r_effect, usd_effect:v.usd_effect == null ? null : v.usd_effect }); }); });
         return devRows.length ? sb.from('yc_deviations').insert(devRows) : {};
       });
-    }).then(function(r){ if (r && r.error) throw r.error;
-      return load();
-    }).then(function(){ renderAll(); pending = null; $('l-json').value = ''; $('l-out').innerHTML = ''; msg('l-msg', 'Saved ' + fmtDate(j.date) + '. See Days.', 'ok'); })
+    }).then(function(r){ if (r && r.error) throw r.error; return load();
+    }).then(function(){ renderAll(); pending = null; $('l-json').value = ''; $('l-file').value = ''; $('l-out').innerHTML = ''; msg('l-msg', 'Saved ' + fmtDate(j.date) + '.' + (j.trades.length ? ' Link your trades under Needs you.' : ' See Days.'), 'ok'); })
     .catch(function(e){ msg('l-msg', 'Save failed: ' + (e.message || e) + '. Re-import the same file after fixing.', 'err'); $('l-save').disabled = false; });
   });
 

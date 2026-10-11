@@ -1,4 +1,4 @@
-var CACHE_NAME = 'yc-v5';
+var CACHE_NAME = 'yc-v6';
 var ASSETS = ['./', './index.html', './manifest.json', './icons/icon.svg'];
 self.addEventListener('install', function(e){ e.waitUntil(caches.open(CACHE_NAME).then(function(c){ return c.addAll(ASSETS); }).then(function(){ return self.skipWaiting(); })); });
 self.addEventListener('activate', function(e){ e.waitUntil(caches.keys().then(function(ks){ return Promise.all(ks.filter(function(k){ return k !== CACHE_NAME; }).map(function(k){ return caches.delete(k); })); }).then(function(){ return self.clients.claim(); })); });
