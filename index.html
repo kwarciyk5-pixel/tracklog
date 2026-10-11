@@ -168,6 +168,7 @@ a{color:var(--accent)}
     </section>
 
     <section class="tab" id="tab-log" hidden>
+      <div class="card" id="lc-viewer" hidden><h2>Calls</h2><p class="note" style="color:var(--muted)">The caller&rsquo;s calls are filled in by the admin each day. Use <b>Day template</b> below to get a day&rsquo;s calls, have your Claude fill in your side from your trade export, then import the result.</p></div>
       <div class="card form" id="logcall">
         <div class="day-top"><h2 style="margin:0">Log call</h2><span class="stamp" id="lc-stamp">tap any field to stamp</span></div>
         <div class="g3">
@@ -193,10 +194,11 @@ a{color:var(--accent)}
       </div>
       <div class="card form">
         <h2 style="margin:0">Import day &middot; JSON</h2>
-        <p class="note" style="color:var(--muted)">One file per day, in the <span class="num">yc-day-1</span> shape. Re-importing a date replaces that day for you. Calls you logged live keep their stamp; lag is worked out from it when the file has <span class="num">copy.t_entry</span>.</p>
+        <p class="note" style="color:var(--muted)">One file per day, in the <span class="num">yc-day-1</span> shape. Re-importing a date replaces that day for you. Only you can see your days. Calls you logged live keep their stamp; lag is worked out from it when the file has <span class="num">copy.t_entry</span>.</p>
         <div class="f"><label for="l-file">File</label><input type="file" id="l-file" accept="application/json,.json"></div>
         <div class="f"><label for="l-json">or paste</label><textarea id="l-json" rows="4" placeholder="{ &quot;schema&quot;: &quot;yc-day-1&quot;, &hellip; }"></textarea></div>
         <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save day</button></div>
+        <div class="f" style="margin-top:6px"><label for="tp-date">Day template &middot; the caller&rsquo;s calls, your side empty</label><div class="btnrow"><select id="tp-date" style="flex:1;min-width:0;background:var(--surface-2);border:1px solid var(--border-strong);color:var(--text);border-radius:6px;padding:9px 10px;font:13px var(--mono)"></select><button class="btn" id="tp-copy" style="flex:0;min-width:0">Copy</button><button class="btn" id="tp-dl" style="flex:0;min-width:0">Download</button></div></div>
         <div class="prev" id="l-out"></div>
         <div class="msg" id="l-msg" hidden></div>
       </div>
@@ -223,7 +225,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v4';
+var YC_VERSION = 'yc-v5';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},
   sign: function(dir){ return dir === 'short' ? -1 : 1; },
@@ -344,7 +346,7 @@ if (typeof module !== 'undefined') module.exports = YC;
   var sb = supabase.createClient(SB_URL, SB_KEY);
   var $ = function(id){ return document.getElementById(id); };
   var me = null, members = [], days = [], calls = [], copies = [], devs = [], settingsAll = [], rules = [], openDate = null, pending = null;
-  var myName = null, people = [], who = 'me';
+  var myName = null, people = [], who = 'me', isAdmin = false;
   var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
   var fmtDate = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + MON[x.getUTCMonth()] + ' (' + DOW[x.getUTCDay()] + ')'; };
@@ -387,13 +389,14 @@ if (typeof module !== 'undefined') module.exports = YC;
       if (!members.some(function(m){ return m.email === me.email; })) throw new Error('not a member');
       /* a person = one member name; one person may sign in with more than one Gmail */
       myName = personOf(me.email);
-      people = [myName];
-      members.forEach(function(m){ var n = personOf(m.email); if ((m.role || 'copier') === 'copier' && people.indexOf(n) < 0) people.push(n); });
+      /* one email = one user: each person sees only their own side (enforced by the database) */
+      people = [myName]; who = 'me';
+      var mrow = members.find(function(m){ return m.email === me.email; }); isAdmin = !!mrow && mrow.role === 'admin';
       if (who !== 'me' && who !== 'both' && people.indexOf(who) < 0) who = 'me';
     });
   }
-  function personOf(email){ var m = members.find(function(x){ return x.email === email; }); return (m && m.name) || email; }
-  function emailsOf(person){ return members.filter(function(m){ return personOf(m.email) === person; }).map(function(m){ return m.email; }); }
+  function personOf(email){ if (email !== me.email) return email; var m = members.find(function(x){ return x.email === email; }); return (m && m.name) || email; }
+  function emailsOf(person){ return person === myName ? [me.email] : []; }
   function sel(){ return who === 'both' ? people.slice() : [who === 'me' ? myName : who]; }
   function colorOf(person){ var i = people.indexOf(person); return i <= 0 ? C.cy : C.vi; }
   function settingsOf(person){ var em = emailsOf(person); return (person === myName && settingsAll.find(function(s){ return s.copier === me.email; })) || settingsAll.find(function(s){ return em.indexOf(s.copier) >= 0; }) || null; }
@@ -816,6 +819,9 @@ if (typeof module !== 'undefined') module.exports = YC;
   $('lc-save').addEventListener('click', function(){ lcSave(null); });
   $('lc-miss').addEventListener('click', function(){ lcSave($('lc-m').value); });
   function renderLog(){
+    $('logcall').hidden = !isAdmin; $('lc-viewer').hidden = isAdmin;
+    renderTemplateDates();
+    if (!isAdmin) return;
     lcContracts(); lcCalc();
     var today = etNow(Date.now()).date, logged = calls.filter(function(c){ return c.stamped_at; }).sort(function(a, b){ return a.stamped_at < b.stamped_at ? 1 : -1; });
     var dayShown = logged.length && logged[0].date !== today ? logged[0].date : today, list = logged.filter(function(c){ return c.date === dayShown; });
@@ -858,6 +864,37 @@ if (typeof module !== 'undefined') module.exports = YC;
     msg('set-msg', 'Exported ' + out.length + ' days.', 'ok');
   });
 
+  /* ===== DAY TEMPLATE ===== */
+  function renderTemplateDates(){
+    var ds = {}; calls.forEach(function(c){ ds[c.date] = 1; });
+    var list = Object.keys(ds).sort().reverse(), cur = $('tp-date').value;
+    $('tp-date').innerHTML = list.length ? list.map(function(d){ var n = calls.filter(function(c){ return c.date === d; }).length; return '<option value="' + d + '"' + (d === cur ? ' selected' : '') + '>' + fmtDate(d) + ' · ' + n + (n === 1 ? ' call' : ' calls') + (dayRow(d, myName) ? ' · imported' : '') + '</option>'; }).join('') : '<option value="">No calls yet</option>';
+  }
+  function templateFor(d){
+    var mine = dayRow(d, myName), st = settingsOf(myName) || {};
+    return { schema:'yc-day-1', date:d, day_no:mine ? mine.day_no : (personDates(myName).filter(function(x){ return x < d; }).length + 1), account:mine ? mine.account : null,
+      balance_start:null, balance_eod:null, commissions:null, state:null, notion_url:null,
+      calls: calls.filter(function(c){ return c.date === d; }).sort(function(a, b){ return a.n - b.n; }).map(function(c){ return { n:c.n, time_et:c.time_et, source:c.source, inst:c.inst, dir:c.dir,
+        yush:{ entry:+c.y_entry, sl:+c.y_sl, tp:c.y_tp == null ? null : +c.y_tp, qty:c.y_qty, contract:c.y_contract, exits:c.y_exits || [], net_usd_est:c.y_net_usd_est == null ? null : +c.y_net_usd_est },
+        copy:null, missed:null, deviations:[] }; }) };
+  }
+  $('tp-copy').addEventListener('click', function(){ var d = $('tp-date').value; if (!d) return; var t = JSON.stringify(templateFor(d), null, 1);
+    (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(function(){ msg('l-msg', 'Template for ' + fmtDate(d) + ' copied. Give it to your Claude with your trade export and the format guide.', 'ok'); })
+      .catch(function(){ $('l-json').value = t; msg('l-msg', 'Could not copy. The template is in the paste box; copy it from there.', 'err'); }); });
+  $('tp-dl').addEventListener('click', function(){ var d = $('tp-date').value; if (!d) return;
+    var blob = new Blob([JSON.stringify(templateFor(d), null, 1)], {type:'application/json'}), a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'tracklog-template-' + d + '.json'; document.body.appendChild(a); a.click(); a.remove(); });
+
+  /* non-admin: the caller's calls must already exist and match */
+  function checkAgainstCalls(j){
+    var e = [];
+    if (!calls.some(function(c){ return c.date === j.date; })) return ['The caller’s calls for ' + j.date + ' are not in yet. Import again once they are.'];
+    j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; });
+      if (!c) e.push('#' + k.n + ': no caller call with that number on ' + j.date);
+      else if (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl || c.dir !== k.dir) e.push('#' + k.n + ': entry / SL / direction differ from the caller’s call (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ' ' + c.dir + ')'); });
+    return e;
+  }
+
   /* ===== IMPORT ===== */
   $('l-file').addEventListener('change', function(){
     var f = this.files && this.files[0]; if (!f) return;
@@ -868,6 +905,7 @@ if (typeof module !== 'undefined') module.exports = YC;
     pending = null; $('l-save').disabled = true; $('l-out').innerHTML = '';
     var j; try { j = JSON.parse($('l-json').value); } catch(e){ msg('l-msg', 'Not valid JSON: ' + e.message, 'err'); return; }
     var errs = YC.validate(j);
+    if (!errs.length && !isAdmin) errs = checkAgainstCalls(j);
     if (errs.length){ msg('l-msg', errs.join(' · '), 'err'); return; }
     j.copier = me.email; /* always the signed-in user, whatever the file says */
     var t = YC.dayStats(j.calls), exists = !!dayRow(j.date, myName);
@@ -890,6 +928,7 @@ if (typeof module !== 'undefined') module.exports = YC;
       return sb.from('yc_days').upsert(dayRow0, {onConflict:'date,copier'});
     }).then(function(r){ if (r.error) throw r.error;
       /* caller fields only: the live stamp, miss types and notes are per copier and are not overwritten */
+      if (!isAdmin) return sb.from('yc_calls').select('id,n,stamped_at').eq('date', j.date); /* copiers never write the caller's calls */
       var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est == null ? null : k.yush.net_usd_est }; });
       return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n,stamped_at');
     }).then(function(r){ if (r.error) throw r.error;
