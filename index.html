@@ -158,7 +158,7 @@ a{color:var(--accent)}
       </div>
       <div class="card"><h2>Calendar &middot; copy R and state</h2><div id="cal"></div><div id="cal-note" style="margin-top:10px"></div></div>
       <div class="card"><div class="day-top" style="margin-bottom:8px"><h2 style="margin:0" id="rv-title">Review</h2><button class="btn" id="b-review" style="flex:0;min-width:0;padding:6px 10px;font-size:12px">Export</button></div><div id="review"></div></div>
-      <p class="note">Each call&rsquo;s R is rounded to 2 dp before summing, as on the day pages. Caller $ is estimated, gross.</p>
+      <p class="note">Each call&rsquo;s R is rounded to 2 dp before summing, as on the day pages. Caller $ is estimated from his shown exits, net of IQ commissions (MNQ $1.50, NQ $4 per contract round turn).</p>
     </section>
 
     <section class="tab" id="tab-days" hidden>
@@ -527,7 +527,7 @@ if (typeof module !== 'undefined') module.exports = YC;
         svg:'<svg viewBox="0 0 120 30"><line x1="0" x2="120" y1="' + py(0) + '" y2="' + py(0) + '" stroke="' + C.bs + '" stroke-dasharray="2 2"/><polyline fill="none" stroke="' + lc + '" stroke-width="2" stroke-linejoin="round" points="' + pts.map(function(v, i){ return px(i) + ',' + py(v); }).join(' ') + '"/><circle cx="' + px(pts.length - 1) + '" cy="' + py(cum) + '" r="2.5" fill="' + lc + '"/></svg>',
         s:'comm ' + comm.toFixed(2) };
     };
-    var callerUsd = ' · Caller est. <span class="gold">' + YC.usd(T.yUsd) + '</span> gross';
+    var callerUsd = ' · Caller est. <span class="gold">' + YC.usd(T.yUsd) + '</span> net est.';
     if (multi) tiles.push({ l:'Copy net $', multi:wrapP(0, netOne) + '<span class="s">' + callerUsd.slice(3) + '</span>' });
     else { var n1 = netOne(D.per[0]); n1.s += callerUsd; tiles.push(Object.assign({ l:'Copy net $' }, n1)); }
 
