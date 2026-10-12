@@ -189,14 +189,14 @@ a{color:var(--accent)}
 
     <section class="tab" id="tab-log" hidden>
       <div class="card" id="needs" hidden></div>
-      <div class="seg big" id="log-mode" role="group" aria-label="How to add"><button data-m="import" aria-pressed="true">Import a day file</button><button data-m="call" aria-pressed="false" id="m-call">Log a call yourself</button></div>
+      <div class="seg big" id="log-mode" role="group" aria-label="How to add"><button data-m="import" aria-pressed="true">Import day files</button><button data-m="call" aria-pressed="false" id="m-call">Log a call yourself</button></div>
 
       <div class="card form" id="imp">
-        <h2 style="margin:0">Import a day file</h2>
+        <h2 style="margin:0">Import day files</h2>
         <p class="note" style="color:var(--muted)">Give your trade export and the <b>TrackLog import format</b> file to your Claude. It returns a <span class="num">.json</span> file for the day. Pick it here, check the preview, then Save. Re-importing a date replaces that day for you. Only you see your days.</p>
-        <div class="f"><label for="l-file">Day file</label><input type="file" id="l-file" accept="application/json,.json"></div>
+        <div class="f"><label for="l-file">Day files (one or several, or an export)</label><input type="file" id="l-file" accept="application/json,.json" multiple></div>
         <div class="f"><label for="l-json">or paste</label><textarea id="l-json" rows="3" placeholder="{ &quot;schema&quot;: &quot;yc-day-1&quot;, &hellip; }"></textarea></div>
-        <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save day</button></div>
+        <div class="btnrow"><button class="btn" id="l-prev">Preview</button><button class="btn p" id="l-save" disabled>Save</button></div>
         <div class="prev" id="l-out"></div>
         <div class="msg" id="l-msg" hidden></div>
         <div class="f" style="margin-top:8px;border-top:1px dashed var(--border-strong);padding-top:12px"><label for="tp-date">Day template &middot; the caller&rsquo;s calls, your side empty (optional)</label>
@@ -275,7 +275,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v8';
+var YC_VERSION = 'yc-v9';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -1100,38 +1100,58 @@ if (typeof module !== 'undefined') module.exports = YC;
 
   /* ===== IMPORT ===== */
   $('l-file').addEventListener('change', function(){
-    var f = this.files && this.files[0]; if (!f) return;
-    var r = new FileReader(); r.onload = function(){ $('l-json').value = r.result; preview(); }; r.readAsText(f);
+    var fs = Array.prototype.slice.call(this.files || []); if (!fs.length) return;
+    Promise.all(fs.map(function(f){ return new Promise(function(ok, no){ var r = new FileReader(); r.onload = function(){ ok({ name:f.name, text:r.result }); }; r.onerror = function(){ no(new Error(f.name + ': could not read')); }; r.readAsText(f); }); }))
+      .then(function(list){
+        if (list.length === 1){ $('l-json').value = list[0].text; return preview(); }
+        var all = [];
+        for (var i = 0; i < list.length; i++){ var j; try { j = JSON.parse(list[i].text); } catch(e){ msg('l-msg', list[i].name + ': not valid JSON (' + e.message + '). Nothing imported.', 'err'); return; } all = all.concat(Array.isArray(j) ? j : [j]); }
+        $('l-json').value = JSON.stringify(all); preview();
+      }).catch(function(e){ msg('l-msg', (e.message || e) + '. Nothing imported.', 'err'); });
   });
   $('l-prev').addEventListener('click', preview);
   var asTrade = function(k, kind){ return { kind:kind, dir:k.dir, inst:k.inst, copy:k, deviations:k.deviations || [] }; };
-  function preview(){
-    pending = null; $('l-save').disabled = true; $('l-out').innerHTML = '';
-    var j; try { j = JSON.parse($('l-json').value); } catch(e){ msg('l-msg', 'Not valid JSON: ' + e.message, 'err'); return; }
-    if (Array.isArray(j)){ msg('l-msg', 'This is a list of days (an export). Import one day file at a time.', 'err'); return; }
-    var errs = YC.validate(j);
-    if (!errs.length && !isAdmin) errs = checkAgainstCalls(j);
-    if (errs.length){ msg('l-msg', errs.join(' · '), 'err'); return; }
+  /* one day's preview block; returns the HTML */
+  function previewDay(j){
     j.calls = j.calls || []; j.trades = j.trades || []; j.extras = j.extras || [];
     var tr = j.trades.map(function(k){ return asTrade(k, 'pending'); }).concat(j.extras.map(function(k){ return asTrade(k, 'extra'); }));
     var t = YC.dayStats(j.calls, tr), exists = !!dayRow(j.date), pct = j.size_pct != null ? j.size_pct : pctOf();
     var warn = [];
     j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; }); if (isAdmin && c && c.stamped_at && (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl)) warn.push('#' + k.n + ' differs from the call logged live (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ')'); });
     if (j.trades.length) warn.push(j.trades.length + ' trade' + (j.trades.length > 1 ? 's' : '') + ' to link to the caller’s calls after saving (Log → Needs you).');
-    $('l-out').innerHTML = '<div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · size ' + pct + '%' + (j.near_payout ? ' · near payout' : '') + (exists ? ' · <span class="warn">replaces your existing day</span>' : '') + '</div>' +
+    return '<div style="display:grid;gap:2px"><div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · size ' + pct + '%' + (j.near_payout ? ' · near payout' : '') + (exists ? ' · <span class="warn">replaces your existing day</span>' : '') + '</div>' +
       '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations' + (j.extras.length ? ' · ' + j.extras.length + ' extra' : '') + '</div>' +
       '<div>Caller ' + YC.r2(t.yR) + 'R · Copy ' + YC.r2(t.cR) + 'R · gap ' + YC.r2(t.gap) + 'R · net ' + YC.usd(t.cUsd) + '</div>' +
       '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + ' · day low ' + (j.day_low == null ? '—' : j.day_low) + '</div>' +
-      warn.map(function(w){ return '<div class="warn">' + esc(w) + '</div>'; }).join('');
-    msg('l-msg', 'Valid. Check the numbers, then Save day.', 'ok');
-    pending = j; $('l-save').disabled = false;
+      warn.map(function(w){ return '<div class="warn">' + esc(w) + '</div>'; }).join('') + '</div>';
   }
-  $('l-save').addEventListener('click', function(){
-    if (!pending) return; var j = pending; $('l-save').disabled = true; msg('l-msg', 'Saving…');
+  /* a single day file, a list of days (an export), or several files: all checked first; one bad day stops the whole batch */
+  function preview(){
+    pending = null; $('l-save').disabled = true; $('l-out').innerHTML = '';
+    var j; try { j = JSON.parse($('l-json').value); } catch(e){ msg('l-msg', 'Not valid JSON: ' + e.message, 'err'); return; }
+    var list = Array.isArray(j) ? j : [j];
+    if (!list.length){ msg('l-msg', 'The file holds no days.', 'err'); return; }
+    var bad = [], seen = {};
+    list.forEach(function(d, i){
+      var label = (d && d.date) ? fmtDate(d.date) : 'Day ' + (i + 1);
+      var errs = (d && typeof d === 'object') ? YC.validate(d) : ['not a day object'];
+      if (!errs.length && seen[d.date]) errs = ['the same date appears twice in this import'];
+      if (!errs.length && !isAdmin) errs = checkAgainstCalls(d);
+      if (d && d.date) seen[d.date] = 1;
+      if (errs.length) bad.push(label + ': ' + errs.join(' · '));
+    });
+    if (bad.length){ msg('l-msg', 'Nothing imported. ' + bad.join(' — '), 'err'); return; }
+    list.sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+    $('l-out').innerHTML = '<div style="display:grid;gap:10px">' + list.map(previewDay).join('<hr style="border:0;border-top:1px solid var(--border);margin:0">') + '</div>';
+    var rep = list.filter(function(d){ return !!dayRow(d.date); }).length;
+    msg('l-msg', 'Valid: ' + list.length + (list.length === 1 ? ' day' : ' days') + (rep ? ' (' + rep + ' replace' + (rep === 1 ? 's' : '') + ' an existing day)' : '') + '. Check the numbers, then Save.', 'ok');
+    pending = list; $('l-save').disabled = false;
+  }
+  function saveDay(j){
     var pct = j.size_pct != null ? j.size_pct : pctOf();
     var day0 = { date:j.date, copier:me.email, day_no:j.day_no, account:j.account, balance_start:j.balance_start, balance_eod:j.balance_eod, commissions:j.commissions, day_low:j.day_low == null ? null : j.day_low, size_pct:pct, near_payout:!!j.near_payout, state:j.state, notion_url:j.notion_url, imported_at:new Date().toISOString(), source_file:'yc-day-1' };
     var ids = {}, stamps = {}, callRow = {};
-    sb.from('yc_days').upsert(day0, {onConflict:'date,copier'}).then(function(r){ if (r.error) throw r.error;
+    return sb.from('yc_days').upsert(day0, {onConflict:'date,copier'}).then(function(r){ if (r.error) throw r.error;
       if (!j.calls.length) return { data:[] };
       if (!isAdmin) return sb.from('yc_calls').select('id,n,stamped_at,inst,dir').eq('date', j.date); /* copiers never write the caller's calls */
       var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est == null ? null : k.yush.net_usd_est }; });
@@ -1159,9 +1179,17 @@ if (typeof module !== 'undefined') module.exports = YC;
         r.data.forEach(function(x, i){ (devFor[i] || []).forEach(function(v){ devRows.push({ copy_id:x.id, tag:YC.normTag(v.tag), what:v.what || null, why:v.why || null, r_effect:v.r_effect == null ? null : v.r_effect, usd_effect:v.usd_effect == null ? null : v.usd_effect }); }); });
         return devRows.length ? sb.from('yc_deviations').insert(devRows) : {};
       });
-    }).then(function(r){ if (r && r.error) throw r.error; return load();
-    }).then(function(){ renderAll(); pending = null; $('l-json').value = ''; $('l-file').value = ''; $('l-out').innerHTML = ''; msg('l-msg', 'Saved ' + fmtDate(j.date) + '.' + (j.trades.length ? ' Link your trades under Needs you.' : ' See Days.'), 'ok'); })
-    .catch(function(e){ msg('l-msg', 'Save failed: ' + (e.message || e) + '. Re-import the same file after fixing.', 'err'); $('l-save').disabled = false; });
+    }).then(function(r){ if (r && r.error) throw r.error; });
+  }
+  $('l-save').addEventListener('click', function(){
+    if (!pending) return; var list = pending, done = [], i = 0; $('l-save').disabled = true;
+    var next = function(){ if (i >= list.length) return Promise.resolve(); var j = list[i++]; msg('l-msg', 'Saving ' + fmtDate(j.date) + ' (' + i + ' of ' + list.length + ')…'); return saveDay(j).then(function(){ done.push(j); return next(); }); };
+    next().then(load).then(function(){ renderAll(); pending = null; $('l-json').value = ''; $('l-file').value = ''; $('l-out').innerHTML = '';
+      var link = done.some(function(j){ return j.trades.length; });
+      msg('l-msg', 'Saved ' + done.map(function(j){ return fmtDate(j.date); }).join(', ') + '.' + (link ? ' Link your trades under Needs you.' : ' See Days.'), 'ok'); })
+    .catch(function(e){ var f = list[done.length];
+      load().then(renderAll);
+      msg('l-msg', 'Save stopped at ' + (f ? fmtDate(f.date) : '?') + ': ' + (e.message || e) + '.' + (done.length ? ' Already saved: ' + done.map(function(j){ return fmtDate(j.date); }).join(', ') + '.' : '') + ' Fix and import the same file again; saved days are simply replaced.', 'err'); $('l-save').disabled = false; });
   });
 
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
