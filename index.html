@@ -139,6 +139,13 @@ h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
 .prev b{color:var(--text);font-weight:500}
 .need{display:grid;gap:8px;border:1px solid var(--border);border-left:2px solid var(--accent);border-radius:6px;padding:10px;background:var(--surface-2)}
 .need .h{font:12px var(--mono);color:var(--text)}
+.cnt{display:inline-block;min-width:16px;margin-left:5px;padding:0 4px;border-radius:8px;background:var(--warn);color:#1a1205;font:600 10.5px/16px var(--sans);text-align:center}
+.card.needs{padding:0;border-color:rgba(245,158,11,.45)}
+.nd-head{display:flex;align-items:center;gap:8px;width:100%;padding:12px 14px;background:rgba(245,158,11,.08);border:0;border-radius:inherit;color:var(--warn);font:600 13px var(--sans);text-align:left;cursor:pointer}
+.nd-head .ar{margin-left:auto;transition:transform .15s}.nd-head[aria-expanded="true"] .ar{transform:rotate(180deg)}
+.nd-list{display:grid;gap:6px;padding:0 10px 10px}
+.need{padding:0;gap:0}.need .nd-sum{display:flex;gap:8px;align-items:center;width:100%;padding:9px 10px;background:none;border:0;color:var(--text);font:12px var(--mono);text-align:left;cursor:pointer}
+.need .nd-sum .ar{margin-left:auto;color:var(--muted)}.need .nd-b{display:grid;gap:8px;padding:0 10px 10px}
 .sw{display:inline-flex;align-items:center;gap:8px;background:none;border:1px solid var(--border-strong);border-radius:999px;padding:4px 10px 4px 5px;color:var(--muted);font:12px var(--sans);cursor:pointer}
 .sw i{width:26px;height:14px;border-radius:7px;background:var(--border-strong);position:relative;display:inline-block}
 .sw i:after{content:"";position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:var(--muted);transition:left .15s}
@@ -166,7 +173,7 @@ a{color:var(--accent)}
     <div class="tabs" role="tablist" style="margin-bottom:16px">
       <button role="tab" aria-selected="true" data-tab="dash">Dashboard</button>
       <button role="tab" aria-selected="false" data-tab="days">Days</button>
-      <button role="tab" aria-selected="false" data-tab="log">Log</button>
+      <button role="tab" aria-selected="false" data-tab="log">Log<span class="cnt" id="log-cnt" hidden></span></button>
       <button role="tab" aria-selected="false" data-tab="set">Settings</button>
     </div>
 
@@ -189,7 +196,6 @@ a{color:var(--accent)}
     </section>
 
     <section class="tab" id="tab-log" hidden>
-      <div class="card" id="needs" hidden></div>
       <div class="seg big" id="log-mode" role="group" aria-label="How to add"><button data-m="import" aria-pressed="true">Import day files</button><button data-m="call" aria-pressed="false" id="m-call">Log a call yourself</button></div>
 
       <div class="card form" id="imp">
@@ -241,6 +247,7 @@ a{color:var(--accent)}
         <div class="msg" id="lc-msg" hidden></div>
         <div><h2>Logged &middot; <span id="lc-day"></span></h2><div class="logged" id="lc-list"></div></div>
       </div>
+      <div class="card needs" id="needs" hidden></div>
     </section>
 
     <section class="tab" id="tab-set" hidden>
@@ -276,7 +283,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v11';
+var YC_VERSION = 'yc-v12';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -916,27 +923,42 @@ if (typeof module !== 'undefined') module.exports = YC;
   function renderLogMode(){ if (!isAdmin) logMode = 'import'; document.querySelectorAll('#log-mode button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.m === logMode); }); $('imp').hidden = logMode !== 'import'; $('logcall').hidden = logMode !== 'call'; $('log-mode').hidden = !isAdmin; }
 
   /* things that need you: trades to link, calls without your side */
+  var needsOpen = false, needOpenKey = null;
+  function needBox(key, line, body){
+    var on = needOpenKey === key;
+    return '<div class="need" data-key="' + key + '"' + body.attr + '><button class="nd-sum" aria-expanded="' + on + '">' + line + '<span class="ar">' + (on ? '▴' : '▾') + '</span></button><div class="nd-b"' + (on ? '' : ' hidden') + '>' + body.html + '</div></div>';
+  }
   function renderNeeds(){
-    var dates = allDates(), blocksH = [];
+    var dates = allDates(), blocksH = [], nT = 0, nC = 0;
     dates.forEach(function(d){
       var pend = tradesOn(d).filter(function(k){ return k.kind === 'pending'; }), dc = callsOn(d), open = dc.filter(function(k){ return k.waiting; });
       pend.forEach(function(k){
         var r = YC.realR(k.copy, k.dir), opts = YC.suggest({ dir:k.dir, inst:k.inst, t_entry:k.t_entry, entry:k.copy.entry }, open.map(function(c){ return calls.find(function(x){ return x.id === c.id; }); }));
-        blocksH.push('<div class="need" data-id="' + k.id + '"><span class="h">' + shortD(d) + (k.t_entry ? ' ' + k.t_entry.slice(0,5) + ' ET' : '') + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst || '') + ' ' + k.copy.qty + ' ' + esc(k.copy.contract || '') + ' @ ' + YC.px(k.copy.entry) + ' → ' + YC.r2(r) + 'R</span>' +
+        nT++;
+        blocksH.push(needBox('t' + k.id, 'Link · ' + shortD(d) + (k.t_entry ? ' ' + k.t_entry.slice(0,5) : '') + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst || '') + ' ' + k.copy.qty + ' ' + esc(k.copy.contract || '') + ' @ ' + YC.px(k.copy.entry) + ' → ' + YC.r2(r) + 'R', { attr:' data-id="' + k.id + '"', html:
           (opts.length ? '' : '<span class="xs">The caller’s calls for ' + shortD(d) + ' aren’t in yet, or all are taken. It can still be an extra trade.</span>') +
           '<select class="sel nd-link">' + opts.map(function(c, i){ return '<option value="' + c.id + '">' + (i === 0 ? 'Suggested: ' : '') + '#' + c.n + ' ' + String(c.time_et || '').slice(0,5) + ' ' + (c.dir === 'short' ? 'short' : 'long') + ' ' + c.inst + ' @ ' + (+c.y_entry) + ' / stop ' + (+c.y_sl) + '</option>'; }).join('') + '<option value="extra">Extra trade (he didn’t call it)</option></select>' +
           '<div class="g2 nd-extra" hidden><select class="sel nd-tag">' + YC.TAGS.map(function(t){ return '<option value="' + t.k + '"' + (t.k === 'revenge' ? ' selected' : '') + '>' + t.l + '</option>'; }).join('') + '</select><input class="sel nd-why" placeholder="Why (short)"></div>' +
-          '<div class="btnrow"><button class="btn sm p nd-ok">Confirm</button></div></div>');
+          '<div class="btnrow"><button class="btn sm p nd-ok">Confirm</button></div>' }));
       });
       if (!pend.length) open.forEach(function(k){
-        blocksH.push('<div class="need" data-call="' + k.id + '"><span class="h">' + shortD(d) + ' #' + k.n + ' ' + String(k.time_et || '').slice(0,5) + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' @ ' + YC.px(k.yush.entry) + ' — no side from you</span>' +
+        nC++;
+        blocksH.push(needBox('c' + k.id, 'Mark · ' + shortD(d) + ' #' + k.n + ' ' + String(k.time_et || '').slice(0,5) + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' @ ' + YC.px(k.yush.entry), { attr:' data-call="' + k.id + '"', html:
+          '<span class="xs mut">No side from you for this call.</span>' +
           '<select class="sel nd-m">' + YC.MISS.map(function(m){ return '<option value="' + m[0] + '">' + m[1] + '</option>'; }).join('') + '</select><input class="sel nd-mwhy" placeholder="Reason (needed for M3)">' +
-          '<label class="check"><input type="checkbox" class="nd-pay"> Payout pressure</label><div class="btnrow"><button class="btn sm nd-miss">Mark missed</button></div></div>');
+          '<label class="check"><input type="checkbox" class="nd-pay"> Payout pressure</label><div class="btnrow"><button class="btn sm nd-miss">Mark missed</button></div>' }));
       });
     });
-    $('needs').hidden = !blocksH.length;
-    $('needs').innerHTML = '<h2>Needs you</h2><div style="display:grid;gap:8px">' + blocksH.join('') + '</div><div class="msg" id="nd-msg" hidden style="margin-top:8px"></div>';
-    $('needs').querySelectorAll('.nd-link').forEach(function(s){ s.addEventListener('change', function(){ s.parentNode.querySelector('.nd-extra').hidden = s.value !== 'extra'; }); if (s.value === 'extra') s.parentNode.querySelector('.nd-extra').hidden = false; });
+    var n = nT + nC, parts = [];
+    if (nC) parts.push(nC + (nC === 1 ? ' call' : ' calls') + ' to mark');
+    if (nT) parts.push(nT + (nT === 1 ? ' trade' : ' trades') + ' to link');
+    $('log-cnt').hidden = !n; $('log-cnt').textContent = n;
+    var keep = $('nd-msg') && !$('nd-msg').hidden ? $('nd-msg').outerHTML : '<div class="msg" id="nd-msg" hidden style="margin:0 10px 10px"></div>';
+    $('needs').hidden = !n && !(keep.indexOf('hidden') < 0);
+    $('needs').innerHTML = '<button class="nd-head" aria-expanded="' + needsOpen + '">⚠ Needs you' + (n ? ' · ' + parts.join(' · ') : ' · all done') + '<span class="ar">▾</span></button><div class="nd-list"' + (needsOpen ? '' : ' hidden') + '>' + blocksH.join('') + '</div>' + keep;
+    $('needs').querySelector('.nd-head').addEventListener('click', function(){ needsOpen = !needsOpen; renderNeeds(); });
+    $('needs').querySelectorAll('.nd-sum').forEach(function(b){ b.addEventListener('click', function(){ var k = b.parentNode.dataset.key; needOpenKey = needOpenKey === k ? null : k; renderNeeds(); }); });
+    $('needs').querySelectorAll('.nd-link').forEach(function(s){ s.addEventListener('change', function(){ s.closest('.nd-b').querySelector('.nd-extra').hidden = s.value !== 'extra'; }); if (s.value === 'extra') s.closest('.nd-b').querySelector('.nd-extra').hidden = false; });
     $('needs').querySelectorAll('.nd-ok').forEach(function(b){ b.addEventListener('click', function(){ var box = b.closest('.need'); linkTrade(box.dataset.id, box.querySelector('.nd-link').value, box.querySelector('.nd-tag').value, box.querySelector('.nd-why').value.trim(), b); }); });
     $('needs').querySelectorAll('.nd-miss').forEach(function(b){ b.addEventListener('click', function(){ var box = b.closest('.need'); markMissed(box.dataset.call, box.querySelector('.nd-m').value, box.querySelector('.nd-mwhy').value.trim(), box.querySelector('.nd-pay').checked, b); }); });
   }
