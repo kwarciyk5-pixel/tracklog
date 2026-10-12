@@ -159,6 +159,7 @@ a{color:var(--accent)}
     <p>Sign in with the Google account on the members list. Nothing here is readable without it.</p>
     <button class="btn p" id="b-login" style="flex:0">Sign in with Google</button>
     <div class="msg err" id="login-err" hidden></div>
+    <button class="btn" id="b-switch" style="flex:0" hidden>Sign out / use another account</button>
   </div>
 
   <div id="app" hidden>
@@ -275,7 +276,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v10';
+var YC_VERSION = 'yc-v11';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -503,7 +504,11 @@ if (typeof module !== 'undefined') module.exports = YC;
 
   /* auth */
   $('b-login').addEventListener('click', function(){
-    sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname } }).then(function(r){ if (r.error) msg('login-err', r.error.message, 'err'); });
+    sb.auth.signInWithOAuth({ provider:'google', options:{ redirectTo: location.origin + location.pathname, queryParams:{ prompt:'select_account' } } }).then(function(r){ if (r.error) msg('login-err', r.error.message, 'err'); });
+  });
+  $('b-switch').addEventListener('click', function(){
+    function done(){ try { Object.keys(localStorage).forEach(function(k){ if (k.indexOf('sb-') === 0) localStorage.removeItem(k); }); } catch(e){} location.reload(); }
+    sb.auth.signOut({ scope:'local' }).then(done, done);
   });
   $('b-logout').addEventListener('click', function(){ sb.auth.signOut().then(function(){ location.reload(); }); });
   sb.auth.onAuthStateChange(function(ev, session){ if (session && !me){ me = session.user; boot(); } });
@@ -570,7 +575,7 @@ if (typeof module !== 'undefined') module.exports = YC;
       var t = 'dash'; try { t = localStorage.getItem('yc_tab') || 'dash'; } catch(e){}
       show(panels[t] ? t : 'dash');
       renderAll();
-    }).catch(function(e){ $('login').hidden = false; msg('login-err', 'Signed in as ' + me.email + ' but not on the members list, or: ' + (e.message || e), 'err'); $('b-login').hidden = true; });
+    }).catch(function(e){ $('login').hidden = false; msg('login-err', 'Signed in as ' + me.email + ' but not on the members list, or: ' + (e.message || e), 'err'); $('b-login').hidden = true; $('b-switch').hidden = false; });
   }
   function renderAll(){ renderDash(); renderDays(); renderLog(); renderSettings(); }
 
