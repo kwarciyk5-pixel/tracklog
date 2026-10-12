@@ -267,7 +267,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v6';
+var YC_VERSION = 'yc-v7';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -527,6 +527,9 @@ if (typeof module !== 'undefined') module.exports = YC;
   }
   function dayRow(date){ return days.find(function(d){ return d.date === date; }) || null; }
   function myDates(){ return days.map(function(d){ return d.date; }).sort(); }
+  /* every date shown on screen: my days plus every date with a caller call (the caller's side is the same for everyone) */
+  function allDates(){ var o = {}; days.forEach(function(d){ o[d.date] = 1; }); calls.forEach(function(c){ o[c.date] = 1; }); return Object.keys(o).sort(); }
+  function dayNoOf(date){ var r = dayRow(date); return (r && r.day_no) || (allDates().indexOf(date) + 1) || null; }
   function devsOf(copyId){ return devs.filter(function(d){ return d.copy_id === copyId; }); }
   function sideOf(cp){ return { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note, t_entry:cp.t_entry ? String(cp.t_entry).slice(0,8) : null }; }
 
@@ -569,7 +572,7 @@ if (typeof module !== 'undefined') module.exports = YC;
   document.querySelectorAll('#dash-range button').forEach(function(b){ b.addEventListener('click', function(){ range = b.dataset.r; try { localStorage.setItem('yc_range', range); } catch(e){} renderDash(); }); });
   document.querySelectorAll('#cal-side button').forEach(function(b){ b.addEventListener('click', function(){ calSide = b.dataset.s; document.querySelectorAll('#cal-side button').forEach(function(x){ x.setAttribute('aria-pressed', x === b); }); renderCal(); }); });
   function rangeDates(){
-    var ds = myDates(); if (!ds.length) return [];
+    var ds = allDates(); if (!ds.length) return [];
     var last = ds[ds.length - 1];
     if (range === 'day') return [last];
     if (range === 'week'){ var x = new Date(last + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() - (x.getUTCDay() + 6) % 7); var mon = x.toISOString().slice(0,10); return ds.filter(function(d){ return d >= mon; }); }
@@ -749,7 +752,7 @@ if (typeof module !== 'undefined') module.exports = YC;
 
   /* calendar: Mon–Fri plus a week total; $ and R for Copy or Caller */
   function renderCal(){
-    var all = myDates();
+    var all = allDates();
     if (!all.length){ $('cal').innerHTML = '<p class="note">No days yet.</p>'; $('cal-note').innerHTML = ''; return; }
     var start = new Date(all[0] + 'T12:00:00Z'); start.setUTCDate(start.getUTCDate() - ((start.getUTCDay() + 6) % 7));
     var end = new Date(all[0] + 'T12:00:00Z'); end.setUTCDate(end.getUTCDate() + 30); var lastD = new Date(all[all.length - 1] + 'T12:00:00Z'); if (lastD > end) end = lastD;
@@ -829,7 +832,7 @@ if (typeof module !== 'undefined') module.exports = YC;
 
   /* ===== DAYS ===== */
   function renderDays(){
-    var dates = myDates().slice().reverse();
+    var dates = allDates().slice().reverse();
     var h = '<div class="row head"><span>Day</span><span class="r">Caller</span><span class="r">Copy</span><span class="r">Net $</span><span class="r">Calls</span></div>';
     dates.forEach(function(d){
       var dc = callsOn(d), tr = tradesOn(d), t = YC.dayStats(dc, tr), row = dayRow(d);
@@ -838,7 +841,7 @@ if (typeof module !== 'undefined') module.exports = YC;
       if (t.missed) b.push('<span class="tag t-miss">' + t.missed + ' miss</span>');
       if (t.extras) b.push('<span class="tag t-ext">' + t.extras + ' extra</span>');
       if (t.pending || t.waiting) b.push('<span class="tag t-wait">to link</span>');
-      h += '<button class="row' + (d === openDate ? ' open' : '') + '" data-date="' + d + '"><span class="d">' + fmtDate(d) + '<small>Day ' + ((row && row.day_no) || '?') + (row && row.near_payout ? ' · near payout' : '') + (row && row.state ? ' · ' + esc(row.state) : '') + '</small></span>' +
+      h += '<button class="row' + (d === openDate ? ' open' : '') + '" data-date="' + d + '"><span class="d">' + fmtDate(d) + '<small>Day ' + (dayNoOf(d) || '?') + (row && row.near_payout ? ' · near payout' : '') + (row && row.state ? ' · ' + esc(row.state) : '') + '</small></span>' +
         '<span class="r num gold">' + YC.r2(t.yR) + '</span><span class="r num ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + '</span><span class="r num ' + cls(t.cUsd) + '">' + YC.usd(t.cUsd) + '</span><span class="r badges">' + b.join('') + '</span></button>';
     });
     if (!dates.length) h += '<div class="row" style="cursor:default"><span class="d xs">No days imported yet.</span></div>';
@@ -865,9 +868,9 @@ if (typeof module !== 'undefined') module.exports = YC;
   }
   function renderDayView(){
     var el = $('day-view');
-    if (!openDate || !dayRow(openDate)){ el.innerHTML = ''; return; }
-    var d = dayRow(openDate), dc = callsOn(openDate), tr = tradesOn(openDate), t = YC.dayStats(dc, tr), pct = d.size_pct != null ? +d.size_pct : pctOf();
-    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(openDate) + ' · Day ' + (d.day_no || '?') + '</span><button class="sw" id="dv-np" aria-pressed="' + !!d.near_payout + '"><i></i>Near target / payout</button></div>';
+    if (!openDate || allDates().indexOf(openDate) < 0){ el.innerHTML = ''; return; }
+    var hasRow = !!dayRow(openDate), d = dayRow(openDate) || { day_no:dayNoOf(openDate) }, dc = callsOn(openDate), tr = tradesOn(openDate), t = YC.dayStats(dc, tr), pct = d.size_pct != null ? +d.size_pct : pctOf();
+    var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(openDate) + ' · Day ' + (d.day_no || '?') + '</span>' + (hasRow ? '<button class="sw" id="dv-np" aria-pressed="' + !!d.near_payout + '"><i></i>Near target / payout</button>' : '<span class="tag t-wait">no day file yet</span>') + '</div>';
     h += '<div class="day-top" style="margin-top:-6px"><span class="meta num">' + (d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + (d.day_low != null ? ' · day low ' + YC.usd(+d.day_low) : '') + ' · size ' + pct + '%</span></div>';
     h += '<div class="strip"><div><span class="l">Caller</span><span class="v gold">' + YC.r2(t.yR) + 'R</span><span class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</span></div><div><span class="l">Copy</span><span class="v ' + (t.cR < 0 ? 'neg' : 'cyan') + '">' + YC.r2(t.cR) + 'R</span><span class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts</span></div><div' + dt(CAUSE.map(function(c){ return c[2] + ' ' + YC.r2(t.cause[c[0]]); }).join('\n')) + '><span class="l">Gap</span><span class="v ' + cls(t.gap) + '">' + YC.r2(t.gap) + 'R</span><span class="s">tap for causes</span></div><div><span class="l">Net $</span><span class="v ' + cls(t.cUsd) + '">' + YC.usd(t.cUsd) + '</span><span class="s">Caller est. ' + YC.usd(t.yUsd) + '</span></div></div>';
     dc.forEach(function(k){
@@ -890,7 +893,7 @@ if (typeof module !== 'undefined') module.exports = YC;
     if (d.state) h += '<div><h2>State</h2><p class="state">' + esc(d.state) + '</p></div>';
     if (d.notion_url) h += '<p class="note"><a href="' + esc(d.notion_url) + '" target="_blank" rel="noopener">Notion day page</a></p>';
     el.innerHTML = h + '</div>';
-    $('dv-np').addEventListener('click', function(){ var b = this, v = b.getAttribute('aria-pressed') !== 'true'; b.disabled = true;
+    if (hasRow) $('dv-np').addEventListener('click', function(){ var b = this, v = b.getAttribute('aria-pressed') !== 'true'; b.disabled = true;
       sb.from('yc_days').update({ near_payout:v }).eq('id', d.id).then(function(r){ if (r.error) throw r.error; d.near_payout = v; renderAll(); }).catch(function(e){ alert('Could not save: ' + (e.message || e)); b.disabled = false; }); });
   }
 
@@ -901,7 +904,7 @@ if (typeof module !== 'undefined') module.exports = YC;
 
   /* things that need you: trades to link, calls without your side */
   function renderNeeds(){
-    var dates = myDates(), blocksH = [];
+    var dates = allDates(), blocksH = [];
     dates.forEach(function(d){
       var pend = tradesOn(d).filter(function(k){ return k.kind === 'pending'; }), dc = callsOn(d), open = dc.filter(function(k){ return k.waiting; });
       pend.forEach(function(k){
