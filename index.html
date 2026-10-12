@@ -254,11 +254,19 @@ a{color:var(--accent)}
         <div class="btnrow"><button class="btn p" id="st-save">Save settings</button></div>
         <div class="msg" id="set-msg" hidden></div>
       </div>
+      <div class="card"><h2 style="margin:0 0 4px">Caller data</h2><p class="note">Yush&rsquo;s calls come from the server. They are set by the admin, the same for everyone, and read-only here. Your import adds only your side.</p></div>
       <div><h2>Deviation tags</h2><div class="set guide" id="set-tags"></div></div>
       <div><h2>Missed calls</h2><div class="set guide" id="set-miss"></div></div>
       <div><h2>Rule changes</h2><div class="set" id="set-rules"></div></div>
       <div><h2>App</h2><div class="set" id="set-rows"></div></div>
       <div class="btnrow"><button class="btn" id="b-export">Export all<small>JSON of every day</small></button><button class="btn" id="b-logout">Sign out</button></div>
+      <div class="card form" style="border-color:var(--loss)">
+        <h2 style="margin:0">Clear my data</h2>
+        <p class="note">Deletes your days, trades, misses and deviations, so you can import again from empty. Your settings and Yush&rsquo;s calls stay. Your export downloads first; if it fails, nothing is deleted. Type CLEAR to confirm.</p>
+        <div class="f"><input id="clr-in" autocomplete="off" autocapitalize="characters" placeholder="CLEAR"></div>
+        <div class="btnrow"><button class="btn" id="b-clear" disabled style="color:var(--loss)">Clear my data<small>export downloads first</small></button></div>
+        <div class="msg" id="clr-msg" hidden></div>
+      </div>
     </section>
   </div>
 </div>
@@ -267,7 +275,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v7';
+var YC_VERSION = 'yc-v8';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -1029,14 +1037,30 @@ if (typeof module !== 'undefined') module.exports = YC;
       .catch(function(e){ msg('set-msg', 'Save failed: ' + (e.message || e), 'err'); });
   });
   function dayExport(date){
-    var d = dayRow(date), cs = callsOn(date), tr = tradesOn(date), side = function(c){ return c ? { entry:c.entry, sl:c.sl, tp:c.tp, qty:c.qty, contract:c.contract, t_entry:c.t_entry, exits:c.exits, net_usd:c.net_usd, lag_s:c.lag_s, lag_pts:c.lag_pts, hold_s:c.hold_s, status:c.status, note:c.note } : null; };
+    var d = dayRow(date) || { day_no:dayNoOf(date) }, cs = callsOn(date), tr = tradesOn(date), side = function(c){ return c ? { entry:c.entry, sl:c.sl, tp:c.tp, qty:c.qty, contract:c.contract, t_entry:c.t_entry, exits:c.exits, net_usd:c.net_usd, lag_s:c.lag_s, lag_pts:c.lag_pts, hold_s:c.hold_s, status:c.status, note:c.note } : null; };
     var dv = function(list){ return list.map(function(v){ return { tag:v.tag, what:v.what, why:v.why, r_effect:v.r_effect == null ? null : +v.r_effect, usd_effect:v.usd_effect == null ? null : +v.usd_effect }; }); };
     var tradeOut = function(k){ var o = side(k.copy); o.inst = k.inst; o.dir = k.dir; o.deviations = dv(k.deviations); delete o.status; return o; };
     return { schema:'yc-day-1', date:date, day_no:d.day_no, account:d.account, balance_start:d.balance_start == null ? null : +d.balance_start, balance_eod:d.balance_eod == null ? null : +d.balance_eod, commissions:d.commissions == null ? null : +d.commissions, day_low:d.day_low == null ? null : +d.day_low, size_pct:d.size_pct == null ? null : +d.size_pct, near_payout:!!d.near_payout, state:d.state, notion_url:d.notion_url,
       calls:cs.filter(function(k){ return !k.waiting; }).map(function(k){ var o = { n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, yush:k.yush, copy:side(k.copy), deviations:dv(k.deviations) }; if (!k.copy){ o.missed = k.missed; o.miss_tag = k.missTag || null; o.note = k.note || null; } return o; }),
       trades:tr.filter(function(k){ return k.kind === 'pending'; }).map(tradeOut), extras:tr.filter(function(k){ return k.kind === 'extra'; }).map(tradeOut) };
   }
-  $('b-export').addEventListener('click', function(){ var out = myDates().map(dayExport); download(JSON.stringify(out, null, 1), 'application/json', 'tracklog-export-' + new Date().toISOString().slice(0,10) + '.json'); });
+  /* every date that holds any of my rows (days, or copies such as a call marked missed without a day file) */
+  function myDataDates(){ var o = {}; days.forEach(function(d){ o[d.date] = 1; }); copies.forEach(function(c){ if (c.date) o[c.date] = 1; }); return Object.keys(o).sort(); }
+  $('clr-in').addEventListener('input', function(){ $('b-clear').disabled = this.value.trim().toUpperCase() !== 'CLEAR'; });
+  $('b-clear').addEventListener('click', function(){
+    var b = this; if ($('clr-in').value.trim().toUpperCase() !== 'CLEAR') return;
+    var cIds = copies.map(function(c){ return c.id; }), dIds = days.map(function(d){ return d.id; });
+    if (!cIds.length && !dIds.length){ msg('clr-msg', 'Nothing to clear.', 'ok'); return; }
+    b.disabled = true;
+    try { download(JSON.stringify(myDataDates().map(dayExport), null, 1), 'application/json', 'tracklog-before-clear-' + new Date().toISOString().slice(0,10) + '.json'); }
+    catch (e){ msg('clr-msg', 'Export failed, nothing deleted: ' + (e.message || e), 'err'); b.disabled = false; return; }
+    var del = function(t, ids){ return ids.length ? sb.from(t).delete().in('id', ids).then(function(r){ if (r.error) throw r.error; }) : Promise.resolve(); };
+    del('yc_deviations', devs.filter(function(v){ return cIds.indexOf(v.copy_id) >= 0; }).map(function(v){ return v.id; }))
+      .then(function(){ return del('yc_copies', cIds); }).then(function(){ return del('yc_days', dIds); })
+      .then(load).then(function(){ openDate = null; $('clr-in').value = ''; renderAll(); msg('clr-msg', 'Cleared. ' + dIds.length + ' days and ' + cIds.length + ' trades removed; export saved.', 'ok'); })
+      .catch(function(e){ msg('clr-msg', 'Clear stopped: ' + (e.message || e) + '. Your export is saved.', 'err'); b.disabled = false; load().then(renderAll); });
+  });
+  $('b-export').addEventListener('click', function(){ var out = myDataDates().map(dayExport); download(JSON.stringify(out, null, 1), 'application/json', 'tracklog-export-' + new Date().toISOString().slice(0,10) + '.json'); });
 
   /* ===== DAY TEMPLATE ===== */
   function renderTemplateDates(){
