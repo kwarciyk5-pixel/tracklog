@@ -275,7 +275,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v9';
+var YC_VERSION = 'yc-v10';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -1117,13 +1117,36 @@ if (typeof module !== 'undefined') module.exports = YC;
     var tr = j.trades.map(function(k){ return asTrade(k, 'pending'); }).concat(j.extras.map(function(k){ return asTrade(k, 'extra'); }));
     var t = YC.dayStats(j.calls, tr), exists = !!dayRow(j.date), pct = j.size_pct != null ? j.size_pct : pctOf();
     var warn = [];
-    j.calls.forEach(function(k){ var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; }); if (isAdmin && c && c.stamped_at && (+c.y_entry !== k.yush.entry || +c.y_sl !== k.yush.sl)) warn.push('#' + k.n + ' differs from the call logged live (' + (+c.y_entry) + ' / ' + (+c.y_sl) + ')'); });
     if (j.trades.length) warn.push(j.trades.length + ' trade' + (j.trades.length > 1 ? 's' : '') + ' to link to the caller’s calls after saving (Log → Needs you).');
     return '<div style="display:grid;gap:2px"><div><b>' + fmtDate(j.date) + '</b> · Day ' + (j.day_no || '?') + ' · size ' + pct + '%' + (j.near_payout ? ' · near payout' : '') + (exists ? ' · <span class="warn">replaces your existing day</span>' : '') + '</div>' +
       '<div>' + j.calls.length + ' calls · ' + t.taken + ' taken · ' + t.missed + ' missed · ' + t.devs + ' deviations' + (j.extras.length ? ' · ' + j.extras.length + ' extra' : '') + '</div>' +
       '<div>Caller ' + YC.r2(t.yR) + 'R · Copy ' + YC.r2(t.cR) + 'R · gap ' + YC.r2(t.gap) + 'R · net ' + YC.usd(t.cUsd) + '</div>' +
       '<div>balance ' + (j.balance_start == null ? '—' : j.balance_start) + ' → ' + (j.balance_eod == null ? '—' : j.balance_eod) + ' · comm ' + (j.commissions == null ? '—' : j.commissions) + ' · day low ' + (j.day_low == null ? '—' : j.day_low) + '</div>' +
       warn.map(function(w){ return '<div class="warn">' + esc(w) + '</div>'; }).join('') + '</div>';
+  }
+  /* admin only: what an import would change in the caller's calls already on the server (old -> new) */
+  function callChanges(j){
+    var out = [], numOrNull = function(v){ return v == null || v === '' ? null : +v; };
+    var exitsKey = function(e){ return JSON.stringify((e || []).map(function(x){ return [+x.px, +x.qty]; })); };
+    (j.calls || []).forEach(function(k){
+      var c = calls.find(function(x){ return x.date === j.date && x.n === k.n; }), y = k.yush || {};
+      if (!c){ out.push({ add:true, txt:shortD(j.date) + ' #' + k.n + ': new call, added (' + (k.dir || '') + ' ' + (k.inst || '') + ' ' + y.entry + ' / ' + y.sl + ')' }); return; }
+      var d = [];
+      var cmp = function(label, a, b){ if (a !== b) d.push(label + ' ' + (a == null ? '—' : a) + ' → ' + (b == null ? '—' : b)); };
+      cmp('time', String(c.time_et || '').slice(0,8) || null, k.time_et ? String(k.time_et).slice(0,8) : null);
+      cmp('source', c.source || null, k.source || null);
+      cmp('instrument', c.inst || null, k.inst || null);
+      cmp('direction', c.dir || null, k.dir || null);
+      cmp('entry', numOrNull(c.y_entry), numOrNull(y.entry));
+      cmp('stop', numOrNull(c.y_sl), numOrNull(y.sl));
+      cmp('target', numOrNull(c.y_tp), numOrNull(y.tp));
+      cmp('size', numOrNull(c.y_qty), numOrNull(y.qty));
+      cmp('contract', c.y_contract || null, y.contract || null);
+      if (exitsKey(c.y_exits) !== exitsKey(y.exits)) d.push('exits ' + (c.y_exits || []).map(function(x){ return x.qty + '@' + x.px; }).join(', ') + ' → ' + (y.exits || []).map(function(x){ return x.qty + '@' + x.px; }).join(', '));
+      cmp('est $', numOrNull(c.y_net_usd_est), numOrNull(y.net_usd_est));
+      if (d.length) out.push({ add:false, txt:shortD(j.date) + ' #' + k.n + ': ' + d.join(' · ') });
+    });
+    return out;
   }
   /* a single day file, a list of days (an export), or several files: all checked first; one bad day stops the whole batch */
   function preview(){
@@ -1145,7 +1168,17 @@ if (typeof module !== 'undefined') module.exports = YC;
     $('l-out').innerHTML = '<div style="display:grid;gap:10px">' + list.map(previewDay).join('<hr style="border:0;border-top:1px solid var(--border);margin:0">') + '</div>';
     var rep = list.filter(function(d){ return !!dayRow(d.date); }).length;
     msg('l-msg', 'Valid: ' + list.length + (list.length === 1 ? ' day' : ' days') + (rep ? ' (' + rep + ' replace' + (rep === 1 ? 's' : '') + ' an existing day)' : '') + '. Check the numbers, then Save.', 'ok');
-    pending = list; $('l-save').disabled = false;
+    /* guard: an admin import that would change the caller's calls must be confirmed */
+    var ch = isAdmin ? [].concat.apply([], list.map(callChanges)) : [], edits = ch.filter(function(c){ return !c.add; }), adds = ch.filter(function(c){ return c.add; });
+    if (ch.length){
+      $('l-out').innerHTML += '<div class="guard" style="margin-top:10px;padding:10px;border:1px solid ' + (edits.length ? 'var(--loss)' : 'var(--border-strong)') + ';border-radius:6px;display:grid;gap:4px">' +
+        (edits.length ? '<b style="color:var(--loss)">This changes the caller’s calls for everyone (' + edits.length + ')</b>' + edits.map(function(c){ return '<div class="num" style="font-size:12px">' + esc(c.txt) + '</div>'; }).join('') : '') +
+        (adds.length ? '<b>' + (edits.length ? 'Also adds ' : 'Adds ') + adds.length + ' new caller call' + (adds.length > 1 ? 's' : '') + '</b>' + adds.map(function(c){ return '<div class="num" style="font-size:12px">' + esc(c.txt) + '</div>'; }).join('') : '') +
+        (edits.length ? '<label style="display:flex;gap:8px;align-items:center;margin-top:4px"><input type="checkbox" id="l-guard"> Yes, change the caller’s calls</label>' : '') + '</div>';
+    }
+    pending = list; $('l-save').disabled = edits.length > 0;
+    if (edits.length){ msg('l-msg', 'Your file changes ' + edits.length + ' of the caller’s calls. Check them; Save stays off until you tick the box.', 'err');
+      $('l-guard').addEventListener('change', function(){ $('l-save').disabled = !this.checked; }); }
   }
   function saveDay(j){
     var pct = j.size_pct != null ? j.size_pct : pctOf();
