@@ -123,6 +123,8 @@ h2{font-size:11px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
 .btn{flex:1;min-width:120px;border:1px solid var(--border-strong);background:var(--surface-2);color:var(--text);border-radius:6px;padding:11px 12px;font:500 13px var(--sans);cursor:pointer;text-align:left}
 .btn.sm{flex:none;min-width:0;padding:7px 11px;font-size:12px;text-align:center}
 .btn.p{background:var(--accent);color:#1a1408;border-color:var(--accent)}
+.nlink{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#1a1408;border:1px solid var(--accent);border-radius:6px;padding:11px 12px;font:600 13px var(--sans);text-decoration:none}.nlink:focus-visible{outline:2px solid var(--cy);outline-offset:1px}
+.tag.t-not{background:var(--accent);color:#1a1408;border-color:var(--accent);font-weight:600}
 .btn:disabled{opacity:.5;cursor:default}
 .btn small{display:block;font-weight:400;font-size:11px;opacity:.75;margin-top:1px}
 .set{display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:8px;overflow:hidden}
@@ -283,7 +285,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v12';
+var YC_VERSION = 'yc-v13';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -549,6 +551,8 @@ if (typeof module !== 'undefined') module.exports = YC;
   function myDates(){ return days.map(function(d){ return d.date; }).sort(); }
   /* every date shown on screen: my days plus every date with a caller call (the caller's side is the same for everyone) */
   function allDates(){ var o = {}; days.forEach(function(d){ o[d.date] = 1; }); calls.forEach(function(c){ o[c.date] = 1; }); return Object.keys(o).sort(); }
+  /* the day's Notion page: the caller's calls carry it for everyone (yc-v13); else my own day row */
+  function notionOf(date){ var c = calls.find(function(x){ return x.date === date && x.notion_url; }), r = dayRow(date); return (c && c.notion_url) || (r && r.notion_url) || null; }
   function dayNoOf(date){ var r = dayRow(date); return (r && r.day_no) || (allDates().indexOf(date) + 1) || null; }
   function devsOf(copyId){ return devs.filter(function(d){ return d.copy_id === copyId; }); }
   function sideOf(cp){ return { entry:+cp.c_entry, sl:+cp.c_sl, tp:cp.c_tp == null ? null : +cp.c_tp, qty:cp.c_qty, contract:cp.c_contract, exits:cp.c_exits || [], net_usd:cp.c_net_usd == null ? null : +cp.c_net_usd, lag_s:cp.lag_s, lag_pts:cp.lag_pts == null ? null : +cp.lag_pts, hold_s:cp.hold_s, status:cp.status, note:cp.note, t_entry:cp.t_entry ? String(cp.t_entry).slice(0,8) : null }; }
@@ -861,6 +865,7 @@ if (typeof module !== 'undefined') module.exports = YC;
       if (t.missed) b.push('<span class="tag t-miss">' + t.missed + ' miss</span>');
       if (t.extras) b.push('<span class="tag t-ext">' + t.extras + ' extra</span>');
       if (t.pending || t.waiting) b.push('<span class="tag t-wait">to link</span>');
+      if (notionOf(d)) b.push('<span class="tag t-not">Notion</span>');
       h += '<button class="row' + (d === openDate ? ' open' : '') + '" data-date="' + d + '"><span class="d">' + fmtDate(d) + '<small>Day ' + (dayNoOf(d) || '?') + (row && row.near_payout ? ' · near payout' : '') + (row && row.state ? ' · ' + esc(row.state) : '') + '</small></span>' +
         '<span class="r num gold">' + YC.r2(t.yR) + '</span><span class="r num ' + (t.cR < 0 ? 'neg' : 'pos') + '">' + YC.r2(t.cR) + '</span><span class="r num ' + cls(t.cUsd) + '">' + YC.usd(t.cUsd) + '</span><span class="r badges">' + b.join('') + '</span></button>';
     });
@@ -892,6 +897,8 @@ if (typeof module !== 'undefined') module.exports = YC;
     var hasRow = !!dayRow(openDate), d = dayRow(openDate) || { day_no:dayNoOf(openDate) }, dc = callsOn(openDate), tr = tradesOn(openDate), t = YC.dayStats(dc, tr), pct = d.size_pct != null ? +d.size_pct : pctOf();
     var h = '<div class="card" style="display:grid;gap:14px;margin-top:12px"><div class="day-top"><span class="t">' + fmtDate(openDate) + ' · Day ' + (d.day_no || '?') + '</span>' + (hasRow ? '<button class="sw" id="dv-np" aria-pressed="' + !!d.near_payout + '"><i></i>Near target / payout</button>' : '<span class="tag t-wait">no day file yet</span>') + '</div>';
     h += '<div class="day-top" style="margin-top:-6px"><span class="meta num">' + (d.balance_start != null ? (+d.balance_start).toLocaleString('en-US') : '—') + ' → ' + (d.balance_eod != null ? (+d.balance_eod).toLocaleString('en-US') : '—') + (d.commissions != null ? ' · comm ' + (+d.commissions).toFixed(2) : '') + (d.day_low != null ? ' · day low ' + YC.usd(+d.day_low) : '') + ' · size ' + pct + '%</span></div>';
+    var nurl = notionOf(openDate);
+    if (nurl) h += '<a class="nlink" href="' + esc(nurl) + '" target="_blank" rel="noopener">Open Notion day page ↗</a>';
     h += '<div class="strip"><div><span class="l">Caller</span><span class="v gold">' + YC.r2(t.yR) + 'R</span><span class="s">' + t.yW + 'W ' + t.yL + 'L · ' + YC.r2(t.yPts) + ' pts</span></div><div><span class="l">Copy</span><span class="v ' + (t.cR < 0 ? 'neg' : 'cyan') + '">' + YC.r2(t.cR) + 'R</span><span class="s">' + t.cW + 'W ' + t.cL + 'L · ' + YC.r2(t.cPts) + ' pts</span></div><div' + dt(CAUSE.map(function(c){ return c[2] + ' ' + YC.r2(t.cause[c[0]]); }).join('\n')) + '><span class="l">Gap</span><span class="v ' + cls(t.gap) + '">' + YC.r2(t.gap) + 'R</span><span class="s">tap for causes</span></div><div><span class="l">Net $</span><span class="v ' + cls(t.cUsd) + '">' + YC.usd(t.cUsd) + '</span><span class="s">Caller est. ' + YC.usd(t.yUsd) + '</span></div></div>';
     dc.forEach(function(k){
       h += '<div><div class="day-top" style="margin-bottom:8px"><span style="font-size:13px;font-weight:500">#' + k.n + ' · ' + (k.dir === 'short' ? 'Short' : 'Long') + ' ' + esc(k.inst) + ' · ' + (k.time_et || '').slice(0,5) + ' ET / ' + YC.bkkOf(k.date, k.time_et) + ' BKK</span><span class="tag">' + (k.source === 'discord' ? 'Discord' : 'Live') + (k.stamped_at ? ' · stamped' : '') + '</span></div>';
@@ -911,7 +918,6 @@ if (typeof module !== 'undefined') module.exports = YC;
       h += '<div class="side" style="grid-template-columns:1fr"><div><div class="who c">Copy · ' + k.copy.qty + ' ' + esc(k.copy.contract || '') + '</div>' + sideKv(k.copy, k.dir, null) + '</div></div>' + devList(k.deviations) + '</div>';
     });
     if (d.state) h += '<div><h2>State</h2><p class="state">' + esc(d.state) + '</p></div>';
-    if (d.notion_url) h += '<p class="note"><a href="' + esc(d.notion_url) + '" target="_blank" rel="noopener">Notion day page</a></p>';
     el.innerHTML = h + '</div>';
     if (hasRow) $('dv-np').addEventListener('click', function(){ var b = this, v = b.getAttribute('aria-pressed') !== 'true'; b.disabled = true;
       sb.from('yc_days').update({ near_payout:v }).eq('id', d.id).then(function(r){ if (r.error) throw r.error; d.near_payout = v; renderAll(); }).catch(function(e){ alert('Could not save: ' + (e.message || e)); b.disabled = false; }); });
@@ -1215,6 +1221,7 @@ if (typeof module !== 'undefined') module.exports = YC;
       if (!j.calls.length) return { data:[] };
       if (!isAdmin) return sb.from('yc_calls').select('id,n,stamped_at,inst,dir').eq('date', j.date); /* copiers never write the caller's calls */
       var callRows = j.calls.map(function(k){ return { date:j.date, n:k.n, time_et:k.time_et, source:k.source, inst:k.inst, dir:k.dir, y_entry:k.yush.entry, y_sl:k.yush.sl, y_tp:k.yush.tp, y_qty:k.yush.qty, y_contract:k.yush.contract, y_exits:k.yush.exits || [], y_net_usd_est:k.yush.net_usd_est == null ? null : k.yush.net_usd_est }; });
+      if (j.notion_url) callRows.forEach(function(x){ x.notion_url = j.notion_url; });  /* shared with every member (yc-v13) */
       return sb.from('yc_calls').upsert(callRows, {onConflict:'date,n'}).select('id,n,stamped_at,inst,dir');
     }).then(function(r){ if (r.error) throw r.error;
       r.data.forEach(function(x){ ids[x.n] = x.id; stamps[x.n] = x.stamped_at; callRow[x.n] = x; });
