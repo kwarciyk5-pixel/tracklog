@@ -267,7 +267,7 @@ a{color:var(--accent)}
       <div class="card"><h2 style="margin:0 0 4px">Caller data</h2><p class="note">Yush&rsquo;s calls come from the server. They are set by the admin, the same for everyone, and read-only here. Your import adds only your side.</p></div>
       <div><h2>Deviation tags</h2><div class="set guide" id="set-tags"></div></div>
       <div><h2>Missed calls</h2><div class="set guide" id="set-miss"></div></div>
-      <div><h2>Rule changes</h2><div class="set" id="set-rules"></div></div>
+      <div><h2>Caller&rsquo;s Core Rules for Prop Firm</h2><div class="set guide"><div><span><b style="font-weight:500">Daily Max Risk</b></span><span>Max Drawdown &divide; 3 = $667 on a 50K with $2,000 DD</span></div></div></div>
       <div><h2>App</h2><div class="set" id="set-rows"></div></div>
       <div class="btnrow"><button class="btn" id="b-export">Export all<small>JSON of every day</small></button><button class="btn" id="b-logout">Sign out</button></div>
       <div class="card form" style="border-color:var(--loss)">
@@ -285,7 +285,7 @@ a{color:var(--accent)}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 /* ===== CALC (pure; tested headless) ===== */
-var YC_VERSION = 'yc-v13';
+var YC_VERSION = 'yc-v14';
 var YC = {
   mult: {NQ:20, MNQ:2, ES:50, MES:5},  /* fixed by the exchange */
   /* universal deviation tags (yc-v6). Code is stored; label + meaning are shown. */
@@ -477,7 +477,7 @@ if (typeof module !== 'undefined') module.exports = YC;
   var SB_KEY = 'sb_publishable__bBgcqi4VfhIryjgI5w0VQ_hUHsambk';
   var sb = supabase.createClient(SB_URL, SB_KEY);
   var $ = function(id){ return document.getElementById(id); };
-  var me = null, members = [], days = [], calls = [], copies = [], devs = [], settings = null, rules = [], openDate = null, pending = null, isAdmin = false;
+  var me = null, members = [], days = [], calls = [], copies = [], devs = [], settings = null, openDate = null, pending = null, isAdmin = false;
   var MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'], DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var esc = function(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); };
   var fmtDate = function(d){ var x = new Date(d + 'T12:00:00Z'); return x.getUTCDate() + ' ' + MON[x.getUTCMonth()] + ' (' + DOW[x.getUTCDay()] + ')'; };
@@ -534,14 +534,13 @@ if (typeof module !== 'undefined') module.exports = YC;
       sb.from('yc_calls').select('*').order('date').order('n'),
       sb.from('yc_copies').select('*'),
       sb.from('yc_deviations').select('*'),
-      sb.from('yc_settings').select('*'),
-      sb.from('yc_rule_changes').select('*').order('date', {ascending:false})
+      sb.from('yc_settings').select('*')
     ]).then(function(r){
       var err = r.find(function(x){ return x.error; });
       if (err) throw err.error;
       var em = me.email.toLowerCase(), mine = function(x){ return String(x.copier).toLowerCase() === em; };
       members = r[0].data || []; days = (r[1].data || []).filter(mine); calls = r[2].data || []; copies = (r[3].data || []).filter(mine); devs = r[4].data || [];
-      settings = (r[5].data || []).find(mine) || null; rules = r[6].data || [];
+      settings = (r[5].data || []).find(mine) || null;
       var mrow = members.find(function(m){ return String(m.email).toLowerCase() === em; });
       if (!mrow) throw new Error('not a member');
       isAdmin = mrow.role === 'admin';
@@ -1058,7 +1057,6 @@ if (typeof module !== 'undefined') module.exports = YC;
     $('set-miss').innerHTML = YC.MISS.map(function(m){ return '<div><span><b style="font-weight:500">' + m[0] + '</b></span><span>' + m[1].slice(5) + '</span></div>'; }).join('') + '<div><span><b style="font-weight:500">Payout pressure</b></span><span>Can be added to a miss: skipped to protect a target or payout.</span></div>';
     var rows = [['Signed in', me.email], ['Version', YC_VERSION], ['Trade date', 'US session date (ET)'], ['Days stored', String(days.length)]];
     $('set-rows').innerHTML = rows.map(function(r){ return '<div><span>' + r[0] + '</span><span>' + esc(r[1]) + '</span></div>'; }).join('');
-    $('set-rules').innerHTML = rules.length ? rules.map(function(r){ return '<div><span>' + esc(r.date || '') + ' · ' + esc(r.rule || '') + '</span><span>' + esc(r.old || '—') + ' → ' + esc(r.new || '—') + (r.why ? '<br><small>' + esc(r.why) + '</small>' : '') + '</span></div>'; }).join('') : '<div><span class="xs">None yet.</span><span></span></div>';
   }
   $('st-save').addEventListener('click', function(){
     var pct = $('st-size').value === 'x' ? num('st-pct') : +$('st-size').value, dll = num('st-dll');
